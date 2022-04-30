@@ -154,7 +154,7 @@ namespace RoR2EditorKit.Core.Inspectors
         /// </summary>
         protected virtual void OnEnable()
         {
-            EditorApplication.hierarchyChanged += OnObjectNameChanged;
+            EditorApplication.projectChanged += OnObjectNameChanged;
         }
 
         /// <summary>
@@ -162,12 +162,15 @@ namespace RoR2EditorKit.Core.Inspectors
         /// </summary>
         protected virtual void OnDisable()
         {
-            EditorApplication.hierarchyChanged -= OnObjectNameChanged;
+            EditorApplication.projectChanged -= OnObjectNameChanged;
         }
 
         private void OnObjectNameChanged()
         {
-            if (Settings.InspectorSettings.enableNamingConventions && this is IObjectNameConvention objNameConvention)
+            if (this == null || serializedObject.targetObject == null)
+                return;
+
+            if (serializedObject.targetObject && Settings.InspectorSettings.enableNamingConventions && this is IObjectNameConvention objNameConvention)
             {
                 if(serializedObject.targetObject.name.StartsWith(objNameConvention.Prefix))
                 {

@@ -16,14 +16,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
     [CustomEditor(typeof(EliteDef))]
     public sealed class EliteDefInspector : ScriptableObjectInspector<EliteDef>, IObjectNameConvention
     {
-        private EquipmentDef equipmentDef;
-        private List<IMGUIContainer> equipDefMessages = new List<IMGUIContainer>();
-
-        VisualElement header = null;
         VisualElement inspectorData = null;
-        VisualElement messages = null;
-
-        ColorField color = null;
 
         public string Prefix => "ed";
 
@@ -32,26 +25,16 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         protected override void OnEnable()
         {
             base.OnEnable();
-            equipmentDef = TargetType.eliteEquipmentDef;
 
             OnVisualTreeCopy += () =>
             {
-                header = Find<VisualElement>("Header");
-                inspectorData = Find<VisualElement>("InspectorData");
-                color = Find<ColorField>(inspectorData, "color");
-                messages = Find<VisualElement>("Messages");
+                var container = Find<VisualElement>("Container");
+                inspectorData = Find<VisualElement>(container, "InspectorDataContainer");
             };
         }
 
         protected override void DrawInspectorGUI()
         {
-            var label = Find<Label>(header, "m_Name");
-
-            Find<Button>(inspectorData, "tokenSetter").clicked += SetTokens;
-
-            color = Find<ColorField>(inspectorData, "color");
-            Find<Button>(color, "colorSetter").clicked += SetColor;
-
             var equipDef = Find<PropertyField>(inspectorData, "eliteEquipmentDef");
             equipDef.RegisterCallback<ChangeEvent<EquipmentDef>>(CheckEquipDef);
             CheckEquipDef();
@@ -59,7 +42,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private void CheckEquipDef(ChangeEvent<EquipmentDef> evt = null)
         {
-            var button = Find<Button>(color, "colorSetter");
+            /*var button = Find<Button>(color, "colorSetter");
             foreach(IMGUIContainer container in equipDefMessages)
             {
                 if (container != null)
@@ -92,20 +75,20 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 equipDefMessages.Add(msg);
             }
 
-            button.style.display = (equipmentDef.passiveBuffDef && equipmentDef.passiveBuffDef.eliteDef == TargetType) ? DisplayStyle.Flex : DisplayStyle.None;
+            button.style.display = (equipmentDef.passiveBuffDef && equipmentDef.passiveBuffDef.eliteDef == TargetType) ? DisplayStyle.Flex : DisplayStyle.None;*/
         }
 
         private void SetColor()
         {
-            if(equipmentDef && equipmentDef.passiveBuffDef && equipmentDef.passiveBuffDef.eliteDef == TargetType)
+            /*if(equipmentDef && equipmentDef.passiveBuffDef && equipmentDef.passiveBuffDef.eliteDef == TargetType)
             {
                 TargetType.color = equipmentDef.passiveBuffDef.buffColor;
-            }
+            }*/
         }
 
         private void SetTokens()
         {
-            if(Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
+            /*if(Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
                 throw ErrorShorthands.NullTokenPrefix();
 
             string objName = TargetType.name.ToLowerInvariant();
@@ -113,7 +96,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             {
                 objName = objName.Replace(Prefix.ToLowerInvariant(), "");
             }
-            TargetType.modifierToken = $"{Settings.GetPrefixUppercase()}_AFFIX_{objName.ToUpperInvariant()}";
+            TargetType.modifierToken = $"{Settings.GetPrefixUppercase()}_AFFIX_{objName.ToUpperInvariant()}";*/
         }
 
         public PrefixData GetPrefixData()

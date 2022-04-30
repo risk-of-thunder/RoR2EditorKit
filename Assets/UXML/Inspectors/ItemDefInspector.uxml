@@ -8,7 +8,7 @@
                 <uie:PropertyField name="deprecatedTier" binding-path="deprecatedTier" label="ItemTier Enum" tooltip="The tier this item belongs to, if your item has a custom tier def, set this to &quot;AssignedAtRuntime&quot;" />
                 <uie:PropertyField name="itemTierDef" binding-path="_itemTierDef" label="Custom ItemTierDef" tooltip="The itemTier this item belongs to, put your custom itemTierDef here, if you want to reference a vanilla tier, set the tier from &quot;ItemTier Enum&quot; instead." />
             </ui:VisualElement>
-            <ui:Label text="ItemSettings" name="ItemSettings" class="genericHolderHeader" style="font-size: 10px;" />
+            <ui:Label text="ItemSettings" name="ItemSettings" class="genericHolderHeader separatorLabel" />
             <uie:PropertyField name="pickupModelPrefab" binding-path="pickupModelPrefab" tooltip="The model that&apos;s used for the pickup" />
             <uie:PropertyField name="pickupIconSprite" binding-path="pickupIconSprite" tooltip="The icon that&apos;s showed when this item is picked up" />
             <uie:PropertyField name="hidden" tooltip="Hidden items do not appear in the Logbook nor the Inventory" binding-path="hidden" />

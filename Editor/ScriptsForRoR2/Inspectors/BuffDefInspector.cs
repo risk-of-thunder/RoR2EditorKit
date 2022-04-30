@@ -23,11 +23,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         private NetworkSoundEventDef networkSoundEventDef;
         private IMGUIContainer networkSoundEventdefMessage = null;
 
-        VisualElement header = null;
         VisualElement inspectorData = null;
-        VisualElement messages = null;
-
-        VisualElement buffColor = null;
 
         public string Prefix => "bd";
 
@@ -38,34 +34,27 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             base.OnEnable();
             eliteDef = TargetType.eliteDef;
             networkSoundEventDef = TargetType.startSfx;
+            serializedObject.FindProperty(nameof(BuffDef.iconPath)).stringValue = "";
+            serializedObject.ApplyModifiedProperties();
 
             OnVisualTreeCopy += () =>
             {
-                header = Find<VisualElement>("Header");
-                inspectorData = Find<VisualElement>("InspectorData");
-                messages = Find<VisualElement>("Messages");
-                buffColor = Find<ColorField>(inspectorData, "buffColor");
-                Find<Button>(buffColor, "colorSetter").clicked += () => TargetType.buffColor = eliteDef.color;
+                var container = Find<VisualElement>("Container");
+                inspectorData = Find<VisualElement>(container, "InspectorDataHolder");
             };
         }
         protected override void DrawInspectorGUI()
         {
-            var label = Find<Label>(header, "m_Name");
-
-            Find<ObjectField>(inspectorData, "iconSprite").SetObjectType<Sprite>();
-
-            var eliteDef = Find<ObjectField>(inspectorData, "eliteDef");
-            eliteDef.SetObjectType<EliteDef>();
-            eliteDef.RegisterValueChangedCallback(CheckEliteDef);
+            var eliteDef = Find<PropertyField>(inspectorData, "eliteDef");
+            eliteDef.RegisterCallback<ChangeEvent<EliteDef>>(CheckEliteDef);
             CheckEliteDef();
 
-            var startSfx = Find<ObjectField>(inspectorData, "startSfx");
-            startSfx.SetObjectType<NetworkSoundEventDef>();
-            startSfx.RegisterValueChangedCallback(CheckSoundEvent);
+            var startSfx = Find<PropertyField>(inspectorData, "startSfx");
+            startSfx.RegisterCallback<ChangeEvent<NetworkSoundEventDef>>(CheckSoundEvent);
             CheckSoundEvent();
         }
 
-        private void CheckSoundEvent(ChangeEvent<UnityEngine.Object> evt = null)
+        private void CheckSoundEvent(ChangeEvent<NetworkSoundEventDef> evt = null)
         {
             if(networkSoundEventdefMessage != null)
             {
@@ -75,16 +64,15 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             if (!networkSoundEventDef)
                 return;
 
-            if(networkSoundEventDef.eventName.IsNullOrEmptyOrWhitespace())
+            /*if(networkSoundEventDef.eventName.IsNullOrEmptyOrWhitespace())
             {
                 networkSoundEventdefMessage = CreateHelpBox($"You've associated a NetworkSoundEventDef ({networkSoundEventDef.name}) to this buff, but the EventDef's eventName is Null, Empty or Whitespace!", MessageType.Warning);
                 messages.Add(networkSoundEventdefMessage);
-            }
+            }*/
         }
 
-        private void CheckEliteDef(ChangeEvent<UnityEngine.Object> evt = null)
+        private void CheckEliteDef(ChangeEvent<EliteDef> evt = null)
         {
-            var button = Find<Button>(buffColor, "colorSetter");
             foreach (IMGUIContainer container in eliteDefMessages)
             {
                 if (container != null)
@@ -94,13 +82,11 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
             if (!eliteDef)
             {
-                button.style.display = DisplayStyle.None;
                 return;
             }
-            button.style.display = DisplayStyle.Flex;
 
             IMGUIContainer msg = null;
-            if(!eliteDef.eliteEquipmentDef)
+            /*if(!eliteDef.eliteEquipmentDef)
             {
                 msg = CreateHelpBox($"You've associated an EliteDef ({eliteDef.name}) to this buff, but the EliteDef has no EquipmentDef assigned!", MessageType.Warning);
                 messages.Add(msg);
@@ -119,7 +105,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 msg = CreateHelpBox($"You've associated an EliteDef ({eliteDef.name}) to this buff, but the assigned EliteDef's EquipmentDef ({eliteDef.eliteEquipmentDef.name})'s \"passiveBuffDef\" is not the inspected BuffDef!", MessageType.Warning);
                 messages.Add(msg);
                 eliteDefMessages.Add(msg);
-            }
+            }*/
         }
 
         public PrefixData GetPrefixData()

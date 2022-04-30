@@ -15,12 +15,6 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
     [CustomEditor(typeof(EquipmentDef))]
     public sealed class EquipmentDefInspector : ScriptableObjectInspector<EquipmentDef>
     {
-        IMGUIContainer cooldownMsg;
-
-        FloatField field;
-
-        BuffDef passiveBuffDef;
-        IMGUIContainer buffMessage;
 
         bool DoesNotAppear => (!TargetType.appearsInMultiPlayer && !TargetType.appearsInSinglePlayer);
 
@@ -28,106 +22,38 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         IMGUIContainer notAppearMessage;
 
-        VisualElement header = null;
         VisualElement inspectorData = null;
-        VisualElement messages = null;
         VisualElement tokenHolder = null;
-
-        Slider slider = null;
 
         Button objectNameSetter;
         protected override void OnEnable()
         {
             base.OnEnable();
-            passiveBuffDef = TargetType.passiveBuffDef;
 
             OnVisualTreeCopy += () =>
             {
-                header = Find<VisualElement>("Header");
-                inspectorData = Find<VisualElement>("InspectorData");
-                slider = Find<Slider>(inspectorData, "dropOnDeathChance");
-                field = Find<FloatField>(slider, "floatField");
-                Find<Button>(slider, "chanceSetter").clicked += () => TargetType.dropOnDeathChance = 0.00025f;
-                tokenHolder = Find<Foldout>(inspectorData, "tokenFoldout").Q<VisualElement>("tokenHolder");
-
-                messages = Find<VisualElement>("Messages");
+                var container = DrawInspectorElement.Q<VisualElement>("Container");
+                inspectorData = container.Q<VisualElement>("InspectorDataHolder");
+                tokenHolder = inspectorData.Q<Foldout>("TokenHolder");
             };
         }
+
+
         protected override void DrawInspectorGUI()
         {
-            var label = Find<Label>(header, "m_Name");
-
-            Find<PropertyField>(inspectorData, "cooldown").RegisterCallback<ChangeEvent<float>>(OnCooldownSet);
-            OnCooldownSet();
-
-            Find<PropertyField>(inspectorData, "passiveBuffDef").RegisterCallback<ChangeEvent<BuffDef>>(OnBuffDefSet);
-            OnBuffDefSet();
-
-            slider.RegisterValueChangedCallback(OnDropChanceSet);
-            Find<FloatField>(slider, "floatField").RegisterValueChangedCallback(OnDropChanceSet);
-
-            Find<PropertyField>(inspectorData, "appearsInSinglePlayer").RegisterCallback<ChangeEvent<bool>>(OnXPlayerToggle);
-            Find<PropertyField>(inspectorData, "appearsInMultiPlayer").RegisterCallback<ChangeEvent<bool>>(OnXPlayerToggle);
-            OnXPlayerToggle();
-
-            Find<Button>(tokenHolder, "tokenSetter").clicked += SetTokens;
+            tokenHolder.AddManipulator(new ContextualMenuManipulator((x) =>
+            {
+                x.menu.AppendAction("Set Tokens", SetTokens, (callback) =>
+                {
+                    var tokenPrefix = Settings.TokenPrefix;
+                    if (string.IsNullOrEmpty(tokenPrefix))
+                        return DropdownMenuAction.Status.Disabled;
+                    return DropdownMenuAction.Status.Normal;
+                });
+            }));
         }
 
-        private void OnDropChanceSet(ChangeEvent<float> evt = null)
-        {
-            float value = Mathf.Clamp01(evt.newValue);
-            TargetType.dropOnDeathChance = value;
-            field.value = (float)Math.Round((decimal)value, 5);
-        }
-
-        private void OnXPlayerToggle(ChangeEvent<bool> evt = null)
-        {
-            if(notAppearMessage != null)
-            {
-                notAppearMessage.RemoveFromHierarchy();
-            }
-
-            if(DoesNotAppear)
-            {
-                notAppearMessage = CreateHelpBox("You've set both \"Appears in SinglePlayer\" and \"Appears in MultiPlayer\" false! The equipment will not appear!", MessageType.Warning);
-                messages.Add(notAppearMessage);
-            }
-        }
-
-        private void OnCooldownSet(ChangeEvent<float> evt = null)
-        {
-            if(cooldownMsg != null)
-            {
-                cooldownMsg.RemoveFromHierarchy();
-            }
-            if(TargetType.cooldown < 0)
-            {
-                cooldownMsg = CreateHelpBox("You've set cooldown to a negative value! this is not allowed!", MessageType.Error);
-                messages.Add(cooldownMsg);
-            }
-        }
-
-        private void OnBuffDefSet(ChangeEvent<BuffDef> evt = null)
-        {
-            var button = Find<Button>(slider, "chanceSetter");
-            buffMessage?.RemoveFromHierarchy();
-
-            if (!passiveBuffDef)
-                return;
-
-            if(passiveBuffDef.eliteDef && passiveBuffDef.eliteDef.eliteEquipmentDef != TargetType)
-            {
-                buffMessage = CreateHelpBox($"You've assigned a BuffDef ({TargetType.passiveBuffDef.name}) to this EquipmentDef, And the BuffDef has an EliteDef ({TargetType.passiveBuffDef.eliteDef.name}), But said EliteDef's Elite Equipment Def is not the inspected EquipmentDef!", MessageType.Warning);
-                messages.Add(buffMessage);
-                Find<Button>(slider, "chanceSetter").style.display = DisplayStyle.None;
-            }
-            else
-            {
-                Find<Button>(slider, "chanceSetter").style.display = DisplayStyle.Flex;
-            }
-        }
-
-        private void SetTokens()
+        private void SetTokens(DropdownMenuAction act)
         {
             if (Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
                 throw ErrorShorthands.NullTokenPrefix();
