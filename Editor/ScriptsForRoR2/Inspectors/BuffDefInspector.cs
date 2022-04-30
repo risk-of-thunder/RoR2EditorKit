@@ -39,17 +39,17 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
             OnVisualTreeCopy += () =>
             {
-                var container = Find<VisualElement>("Container");
-                inspectorData = Find<VisualElement>(container, "InspectorDataHolder");
+                var container = DrawInspectorElement.Q<VisualElement>("Container");
+                inspectorData = container.Q<VisualElement>("InspectorDataHolder");
             };
         }
         protected override void DrawInspectorGUI()
         {
-            var eliteDef = Find<PropertyField>(inspectorData, "eliteDef");
+            var eliteDef = inspectorData.Q<PropertyField>("eliteDef");
             eliteDef.RegisterCallback<ChangeEvent<EliteDef>>(CheckEliteDef);
             CheckEliteDef();
 
-            var startSfx = Find<PropertyField>(inspectorData, "startSfx");
+            var startSfx = inspectorData.Q<PropertyField>("startSfx");
             startSfx.RegisterCallback<ChangeEvent<NetworkSoundEventDef>>(CheckSoundEvent);
             CheckSoundEvent();
         }

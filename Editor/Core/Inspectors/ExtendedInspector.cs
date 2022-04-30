@@ -14,6 +14,27 @@ namespace RoR2EditorKit.Core.Inspectors
 {
     using static ThunderKit.Core.UIElements.TemplateHelpers;
 
+    public struct ContextMenuData
+    {
+        public string menuName;
+        public Action<DropdownMenuAction> menuAction;
+        public Func<DropdownMenuAction, DropdownMenuAction.Status> actionStatusCheck;
+
+        public ContextMenuData(string name, Action<DropdownMenuAction> action)
+        {
+            menuName = name;
+            menuAction = action;
+            actionStatusCheck = x => DropdownMenuAction.Status.Normal;
+        }
+
+        public ContextMenuData(string name, Action<DropdownMenuAction> action, Func<DropdownMenuAction, DropdownMenuAction.Status> statusCheck)
+        {
+            menuName = name;
+            menuAction = action;
+            actionStatusCheck = statusCheck;
+        }
+    }
+
     /// <summary>
     /// Base inspector for all the RoR2EditorKit Inspectors. Uses visual elements instead of IMGUI
     /// <para>Automatically retrieves the UXML asset for the editor by looking for an UXML asset with the same name as the inheriting type</para>
@@ -146,6 +167,7 @@ namespace RoR2EditorKit.Core.Inspectors
         #region Fields
         private IMGUIContainer prefixContainer = null;
         private bool hasDoneFirstDrawing = false;
+        private Dictionary<VisualElement, (ContextualMenuManipulator, List<ContextMenuData>)> elementToContextMenu = new Dictionary<VisualElement, (ContextualMenuManipulator, List<ContextMenuData>)>();
         #endregion Fields
 
         #region Methods
@@ -270,6 +292,29 @@ namespace RoR2EditorKit.Core.Inspectors
         {
             DrawDefaultInspector();
         }
+
+        private IMGUIContainer EnsureNamingConventions(IObjectNameConvention objectNameConvention)
+        {
+            PrefixData prefixData = objectNameConvention.GetPrefixData();
+
+            IMGUIContainer container = new IMGUIContainer(() =>
+            {
+                EditorGUILayout.HelpBox($"This {typeof(T).Name}'s name should start with \"{objectNameConvention.Prefix}\" so it follows naming conventions", MessageType.Info);
+            });
+
+            container.tooltip = prefixData.tooltipMessage;
+
+            container.AddManipulator(new ContextualMenuManipulator((menuBuilder) =>
+            {
+                menuBuilder.menu.AppendAction("Fix naming convention", (action) =>
+                {
+                    prefixData.contextMenuAction();
+                    OnObjectNameChanged();
+                });
+            }));
+
+            return container;
+        }
         #endregion Methods
 
         #region Delegates
@@ -301,110 +346,6 @@ namespace RoR2EditorKit.Core.Inspectors
 
         #region Util Methods
         /// <summary>
-        /// Shorthand for finding a visual element. the element you're requesting will be queried on the DrawInspectorElement.
-        /// </summary>
-        /// <typeparam name="TElement">The type of visual element.</typeparam>
-        /// <param name="name">Optional parameter to find the element</param>
-        /// <param name="ussClass">Optional parameter to find the element</param>
-        /// <returns>The VisualElement specified</returns>
-        protected TElement Find<TElement>(string name = null, string ussClass = null) where TElement : VisualElement
-        {
-            return DrawInspectorElement.Q<TElement>(name, ussClass);
-        }
-
-        /// <summary>
-        /// Shorthand for finding a visual element. the element you're requesting will be queried on the "elementToSearch"
-        /// </summary>
-        /// <typeparam name="TElement">The Type of VisualElement</typeparam>
-        /// <param name="elementToSearch">The VisualElement where the Quering process will be done.</param>
-        /// <param name="name">Optional parameter to find the element</param>
-        /// <param name="ussClass">Optional parameter to find the element</param>
-        /// <returns>The VisualElement specified</returns>
-        protected TElement Find<TElement>(VisualElement elementToSearch, string name = null, string ussClass = null)where TElement : VisualElement
-        {
-            return elementToSearch.Q<TElement>(name, ussClass);
-        }
-        /// <summary>
-        /// Queries a visual element of type T from the DrawInspectorElement, and binds it to a property on the serialized object.
-        /// <para>Property is found by using the Element's name as the binding path</para>
-        /// </summary>
-        /// <typeparam name="TElement">The Type of VisualElement, must inherit IBindable</typeparam>
-        /// <param name="name">Optional parameter to find the Element, used in the Quering</param>
-        /// <param name="ussClass">Optional parameter of the name of a USSClass the element youre finding uses</param>
-        /// <returns>The VisualElement specified, with a binding to the property</returns>
-        protected TElement FindAndBind<TElement>(string name = null, string ussClass = null) where TElement : VisualElement, IBindable
-        {
-            var bindableElement = DrawInspectorElement.Q<TElement>(name, ussClass);
-            if (bindableElement == null)
-                throw new NullReferenceException($"Could not find element of type {typeof(TElement)} inside the DrawInspectorElement.");
-
-            bindableElement.bindingPath = bindableElement.name;
-            bindableElement.BindProperty(serializedObject);
-
-            return bindableElement;
-        }
-
-        /// <summary>
-        /// Queries a visual element of type T from the DrawInspectorElement, and binds it to a property on the serialized object.
-        /// </summary>
-        /// <typeparam name="TElement">The Type of VisualElement, must inherit IBindable</typeparam>
-        /// <param name="prop">The property which is used in the Binding process</param>
-        /// <param name="name">Optional parameter to find the Element, used in the Quering</param>
-        /// <param name="ussClass">Optional parameter of the name of a USSClass the element youre finding uses</param>
-        /// <returns>The VisualElement specified, with a binding to the property</returns>
-        protected TElement FindAndBind<TElement>(SerializedProperty prop, string name = null, string ussClass = null) where TElement : VisualElement, IBindable
-        {
-            var bindableElement = DrawInspectorElement.Q<TElement>(name, ussClass);
-            if (bindableElement == null)
-                throw new NullReferenceException($"Could not find element of type {typeof(TElement)} inside the DrawInspectorElement.");
-
-            bindableElement.BindProperty(prop);
-
-            return bindableElement;
-        }
-
-        /// <summary>
-        /// Queries a visual element of type T from the elementToSearch argument, and binds it to a property on the serialized object.
-        /// <para>Property is found by using the Element's name as the binding path</para>
-        /// </summary>
-        /// <typeparam name="TElement">The Type of VisualElement, must inherit IBindable</typeparam>
-        /// <param name="elementToSearch">The VisualElement where the Quering process will be done.</param>
-        /// <param name="name">Optional parameter to find the Element, used in the Quering</param>
-        /// <param name="ussClass">The name of a USSClass the element youre finding uses</param>
-        /// <returns>The VisualElement specified, with a binding to the property</returns>
-        protected TElement FindAndBind<TElement>(VisualElement elementToSearch, string name = null, string ussClass = null) where TElement : VisualElement, IBindable
-        {
-            var bindableElement = elementToSearch.Q<TElement>(name, ussClass);
-            if (bindableElement == null)
-                throw new NullReferenceException($"Could not find element of type {typeof(TElement)} inside element {elementToSearch.name}.");
-
-            bindableElement.bindingPath = bindableElement.name;
-            bindableElement.BindProperty(serializedObject);
-
-            return bindableElement;
-        }
-
-        /// <summary>
-        /// Queries a visual element of type T from the elementToSearch argument, and binds it to a property on the serialized object.
-        /// <para>Property is found by using the Element's name as the binding path</para>
-        /// </summary>
-        /// <typeparam name="TElement">The Type of VisualElement, must inherit IBindable</typeparam>
-        /// <param name="elementToSearch">The VisualElement where the Quering process will be done.</param>
-        /// <param name="name">Optional parameter to find the Element, used in the Quering</param>
-        /// <param name="ussClass">The name of a USSClass the element youre finding uses</param>
-        /// <returns>The VisualElement specified, with a binding to the property</returns>
-        protected TElement FindAndBind<TElement>(VisualElement elementToSearch, SerializedProperty prop, string name = null, string ussClass = null) where TElement : VisualElement, IBindable
-        {
-            var bindableElement = elementToSearch.Q<TElement>(name, ussClass);
-            if (bindableElement == null)
-                throw new NullReferenceException($"Could not find element of type {typeof(TElement)} inside element {elementToSearch.name}.");
-
-            bindableElement.BindProperty(prop);
-
-            return bindableElement;
-        }
-
-        /// <summary>
         /// Creates a HelpBox and attatches it to a visualElement using IMGUIContainer
         /// </summary>
         /// <param name="message">The message that'll appear on the help box</param>
@@ -424,27 +365,27 @@ namespace RoR2EditorKit.Core.Inspectors
             return container;
         }
 
-        private IMGUIContainer EnsureNamingConventions(IObjectNameConvention objectNameConvention)
+        protected void AddSimpleContextMenu(VisualElement element, ContextMenuData contextMenuData)
         {
-            PrefixData prefixData = objectNameConvention.GetPrefixData();
-
-            IMGUIContainer container = new IMGUIContainer(() =>
+            if (!elementToContextMenu.ContainsKey(element))
             {
-                EditorGUILayout.HelpBox($"This {typeof(T).Name}'s name should start with \"{objectNameConvention.Prefix}\" so it follows naming conventions", MessageType.Info);
-            });
+                var manipulator = new ContextualMenuManipulator(x => CreateMenu(element, x));
+                elementToContextMenu.Add(element, (manipulator, new List<ContextMenuData>()));
+                element.AddManipulator(manipulator);
+            }
+            var tuple = elementToContextMenu[element];
+            if(!tuple.Item2.Contains(contextMenuData))
+                tuple.Item2.Add(contextMenuData);
+        }
 
-            container.tooltip = prefixData.tooltipMessage;
+        private void CreateMenu(VisualElement element, ContextualMenuPopulateEvent populateEvent)
+        {
+            var contextMenus = elementToContextMenu[element].Item2;
 
-            container.AddManipulator(new ContextualMenuManipulator((menuBuilder) =>
+            foreach(ContextMenuData data in contextMenus)
             {
-                menuBuilder.menu.AppendAction("Fix naming convention", (action) =>
-                {
-                    prefixData.contextMenuAction();
-                    OnObjectNameChanged();
-                });
-            }));
-
-            return container;
+                populateEvent.menu.AppendAction(data.menuName, data.menuAction, data.actionStatusCheck);
+            }
         }
         #endregion
     }

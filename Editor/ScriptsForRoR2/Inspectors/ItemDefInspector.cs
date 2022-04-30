@@ -40,16 +40,16 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
             itemTierDef.style.display = enumValue == ItemTier.AssignedAtRuntime ? DisplayStyle.Flex : DisplayStyle.None;
 
-            tokenHolder.AddManipulator(new ContextualMenuManipulator((manipulator) =>
-            {
-                manipulator.menu.AppendAction("Set Tokens", SetTokens, (callback) =>
+            AddSimpleContextMenu(tokenHolder, new ContextMenuData(
+                "Set Tokens",
+                SetTokens,
+                callback =>
                 {
                     var tokenPrefix = Settings.TokenPrefix;
                     if (string.IsNullOrEmpty(tokenPrefix))
                         return DropdownMenuAction.Status.Disabled;
                     return DropdownMenuAction.Status.Normal;
-                });
-            }));
+                }));
         }
 
         private void SetTokens(DropdownMenuAction action)
@@ -69,7 +69,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         private void OnTierEnumSet(ChangeEvent<string> evt)
         {
             string val = evt.newValue.Replace(" ", "");
-            if(Enum.TryParse<ItemTier>(val, out ItemTier newTier))
+            if(Enum.TryParse(val, out ItemTier newTier))
             {
                 itemTierDef.style.display = newTier == ItemTier.AssignedAtRuntime ? DisplayStyle.Flex : DisplayStyle.None;
             }

@@ -41,16 +41,16 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         protected override void DrawInspectorGUI()
         {
-            tokenHolder.AddManipulator(new ContextualMenuManipulator((x) =>
-            {
-                x.menu.AppendAction("Set Tokens", SetTokens, (callback) =>
+            AddSimpleContextMenu(tokenHolder, new ContextMenuData(
+                "Set Tokens",
+                SetTokens,
+                callback =>
                 {
                     var tokenPrefix = Settings.TokenPrefix;
                     if (string.IsNullOrEmpty(tokenPrefix))
                         return DropdownMenuAction.Status.Disabled;
                     return DropdownMenuAction.Status.Normal;
-                });
-            }));
+                }));
         }
 
         private void SetTokens(DropdownMenuAction act)

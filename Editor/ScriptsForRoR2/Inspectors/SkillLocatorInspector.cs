@@ -26,8 +26,8 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
             OnVisualTreeCopy += () =>
             {
-                inspectorData = Find<VisualElement>("InspectorData");
-                passiveSkillHolder = Find<Foldout>(inspectorData, "passiveSkill").Q<VisualElement>("PassiveSkillHolder");
+                inspectorData = DrawInspectorElement.Q<VisualElement>("InspectorData");
+                passiveSkillHolder = inspectorData.Q<Foldout>("passiveSkill").Q<VisualElement>("PassiveSkillHolder");
             };
         }
         protected override void DrawInspectorGUI()
@@ -36,7 +36,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             skillToPropField.Clear();
             foreach(string field in fieldNames)
             {
-                var propField = Find<PropertyField>(field);
+                var propField = DrawInspectorElement.Q<PropertyField>(field);
                 var genericSkill = serializedObject.FindProperty(propField.bindingPath).objectReferenceValue as GenericSkill;
 
                 if(genericSkill)

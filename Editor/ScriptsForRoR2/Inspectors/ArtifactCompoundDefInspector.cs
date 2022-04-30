@@ -38,17 +38,15 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             var value = inspectorDataHolder.Q<PropertyField>("value");
             value.RegisterCallback<ChangeEvent<int>>(OnValueSet);
             OnValueSet();
-            value.AddManipulator(new ContextualMenuManipulator(BuildValueMenu));
-        }
 
-        private void BuildValueMenu(ContextualMenuPopulateEvent obj)
-        {
-            obj.menu.AppendAction("Use RNG for Value", (dma) =>
-            {
-                var valueProp = serializedObject.FindProperty("value");
-                valueProp.intValue = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
-                serializedObject.ApplyModifiedProperties();
-            });
+            AddSimpleContextMenu(value, new ContextMenuData(
+                "Use RNG for Value",
+                dma =>
+                {
+                    var valueProp = serializedObject.FindProperty("value");
+                    valueProp.intValue = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+                    serializedObject.ApplyModifiedProperties();
+                }));
         }
 
         private void OnValueSet(ChangeEvent<int> evt = null)

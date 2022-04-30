@@ -32,9 +32,9 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
             OnVisualTreeCopy += () =>
             {
-                inspectorData = Find<VisualElement>("InspectorData");
-                arraySize = Find<IntegerField>(inspectorData, "arraySize");
-                stateMachineHolder = Find<VisualElement>(inspectorData, "StateMachineHolder");
+                inspectorData = DrawInspectorElement.Q<VisualElement>("InspectorData");
+                arraySize = inspectorData.Q<IntegerField>("arraySize");
+                stateMachineHolder = inspectorData.Q<VisualElement>("StateMachineHolder");
             };
         }
         protected override void DrawInspectorGUI()

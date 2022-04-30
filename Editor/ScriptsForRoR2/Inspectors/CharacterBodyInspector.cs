@@ -20,11 +20,11 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         protected override void DrawInspectorGUI()
         {
-            inspectorData = Find<VisualElement>("inspectorData");
+            inspectorData = DrawInspectorElement.Q<VisualElement>("inspectorData");
 
-            Find<Button>(inspectorData, "tokenSetter").clicked += SetTokens;
+            inspectorData.Q<Button>("tokenSetter").clicked += SetTokens;
 
-            var rootMotionInState = Find<Toggle>(inspectorData, "rootMotion");
+            var rootMotionInState = inspectorData.Q<Toggle>("rootMotion");
             rootMotionInState.RegisterValueChangedCallback(OnRootMotionSet);
             OnRootMotionSet();
 
@@ -51,8 +51,8 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private void OnRootMotionSet(ChangeEvent<bool> evt = null)
         {
-            var rootSpeed = Find<FloatField>(inspectorData, "mainRootSpeed");
-            bool value = evt == null ? Find<Toggle>(inspectorData, "rootMotion").value : evt.newValue;
+            var rootSpeed = inspectorData.Q<FloatField>("mainRootSpeed");
+            bool value = evt == null ? inspectorData.Q<Toggle>("rootMotion").value : evt.newValue;
             rootSpeed.style.display = value ? DisplayStyle.Flex : DisplayStyle.None;
         }
     }
