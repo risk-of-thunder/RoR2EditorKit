@@ -1,7 +1,9 @@
 ﻿
 using RoR2EditorKit.Common;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -121,7 +123,28 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
                 typeTreePicker.serializableSystemTypeReference = systemTypeReference;
                 typeTreePicker.serializedObject = serializedObject;
 
-                //First lookup for the required base type attribute.
+                Type requiredBaseType = GetRequiredBaseType();
+
+                typeTreePicker.treeView.AssignDefaults();
+                typeTreePicker.treeView.SetRootItem(requiredBaseType != null ? $"Types subclassing {requiredBaseType}" : "Types");
+
+                List<Type> types = new List<Type>();
+                foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    Utilities.ReflectionUtils.GetTypesSafe(assembly, out Type[] ts);
+                    types.AddRange(ts);
+                }
+
+                var finalTypes = types.Where((t) => !t.IsAbstract);
+
+                if (requiredBaseType != null)
+                    finalTypes = finalTypes.Where(t => t.IsSubclassOf(requiredBaseType));
+
+                finalTypes.ToList().ForEach(t => typeTreePicker.treeView.PopulateItem(t));
+            }
+
+            private Type GetRequiredBaseType()
+            {
                 Type typeOfObject = serializedObject.targetObject.GetType();
 
 
@@ -164,24 +187,7 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
                     }
                 }
 
-                typeTreePicker.treeView.AssignDefaults();
-                typeTreePicker.treeView.SetRootItem("Types");
-                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                foreach (var assembly in assemblies)
-                {
-                    try
-                    {
-                        var types = assembly.GetTypes()
-                            .Where(type => !type.IsAbstract);
-
-                        if (requiredBaseType != null)
-                            types = types.Where(type => type.IsSubclassOf(requiredBaseType));
-
-                        types.ToList()
-                             .ForEach(type => typeTreePicker.treeView.PopulateItem(type));
-                    }
-                    catch { }
-                }
+                return requiredBaseType;
             }
         }
 

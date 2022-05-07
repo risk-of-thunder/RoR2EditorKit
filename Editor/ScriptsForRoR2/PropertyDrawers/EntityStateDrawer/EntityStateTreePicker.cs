@@ -1,6 +1,7 @@
 ﻿using EntityStates;
 using RoR2EditorKit.Common;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -122,18 +123,17 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
 
                 stateTreePicker.treeView.AssignDefaults();
                 stateTreePicker.treeView.SetRootItem("Entity States");
-                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                foreach (var assembly in assemblies)
+
+                List<Type> types = new List<Type>();
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
                 {
-                    try
-                    {
-                        assembly.GetTypes()
-                            .Where(type => type.IsSubclassOf(typeof(EntityState)) && !type.IsAbstract)
-                            .ToList()
-                            .ForEach(type => stateTreePicker.treeView.PopulateItem(type));
-                    }
-                    catch { }
+                    Utilities.ReflectionUtils.GetTypesSafe(assembly, out Type[] ts);
+                    types.AddRange(ts);
                 }
+
+                types.Where(type => type.IsSubclassOf(typeof(EntityState)) && !type.IsAbstract)
+                    .ToList()
+                    .ForEach(type => stateTreePicker.treeView.PopulateItem(type));
             }
         }
 

@@ -34,7 +34,17 @@ A more detailed Contribution guideline can be found [here](https://github.com/ri
 
 ### Current
 
+### '3.0.1'
+
+* Core Changes:
+	* Fixed ScriptalbeObjectInspector drawing multiple InspectorEnabled toggles (3 inspectors = 3 toggles)
+	* Added ReflectionUtils class
+
+* RoR2EditorScripts changes:
+	* Changed the method that the EntityStateDrawer and SerializableSystemTypeDrawer uses for getting the current Types in the AppDomain
+
 ### '3.0.0'
+
 * General Changes:
 	* Transformed the main repository from a __Project Repository__ to a __Package Repository__ (This change alone justifies the major version change)
 
