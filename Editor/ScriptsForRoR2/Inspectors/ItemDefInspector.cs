@@ -25,10 +25,10 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             OnVisualTreeCopy += () =>
             {
                 var container = DrawInspectorElement.Q<VisualElement>("Container");
-                inspectorDataHolder = container.Q<VisualElement>("InspectorDataHolder");
-                itemTierHolder = inspectorDataHolder.Q<VisualElement>("ItemTierHolder");
+                inspectorDataHolder = container.Q<VisualElement>("InspectorDataContainer");
+                itemTierHolder = inspectorDataHolder.Q<VisualElement>("ItemTierContainer");
                 itemTierDef = itemTierHolder.Q<PropertyField>("itemTierDef");
-                tokenHolder = inspectorDataHolder.Q<VisualElement>("TokenHolder");
+                tokenHolder = inspectorDataHolder.Q<VisualElement>("TokenContainer");
             };
         }
         protected override void DrawInspectorGUI()
@@ -54,10 +54,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private void SetTokens(DropdownMenuAction action)
         {
-            if (string.IsNullOrEmpty(Settings.TokenPrefix))
-                throw ErrorShorthands.NullTokenPrefix();
-
-            string tokenBase = $"{Settings.GetPrefixUppercase()}_ITEM_{serializedObject.targetObject.name.ToUpperInvariant()}_";
+            string tokenBase = $"{Settings.GetPrefixUppercase()}_ITEM_{serializedObject.targetObject.name.ToUpperInvariant().Replace(" ", "")}_";
             TargetType.nameToken = $"{tokenBase}NAME";
             TargetType.pickupToken = $"{tokenBase}PICKUP";
             TargetType.descriptionToken = $"{tokenBase}DESC";

@@ -1,54 +1,56 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:VisualElement name="inspectorData">
-        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/CharacterBodyInspector.uss" />
-        <ui:Button text="Set tokens from GameObject name" name="tokenSetter" tooltip="Automatically set the tokens for this body" class="tokenSetter" />
-        <ui:TextField picking-mode="Ignore" label="Base Name Token" max-length="-1" tooltip="The token that&apos;s used to display this body&apos;s name" binding-path="baseNameToken" name="baseNameToken" />
-        <ui:TextField picking-mode="Ignore" label="Subtitle Name Token" max-length="-1" tooltip="The token that&apos;s used to display this body&apos;s name" binding-path="subtitleNameToken" name="subtitleNameToken" />
-        <uie:PropertyField tooltip="What body flags this Body has" binding-path="bodyFlags" name="bodyFlags" />
-        <ui:Toggle label="Root Motion in Main State" name="rootMotion" binding-path="rootMotionInMainState" value="false" />
-        <uie:FloatField label="Main Root Speed" value="0" binding-path="mainRootSpeed" tooltip="if the previous toggle is enabled, this sets the speed of the root motion" name="mainRootSpeed" />
-        <uie:FloatField label="Sprinting Speed Multiplier" value="0" binding-path="sprintingSpeedMultiplier" tooltip="Multiplier that&apos;s applied to the speed when the character starts sprinting" name="sprintingMultiplier" />
-        <uie:PropertyField name="spreadBloomDecay" binding-path="spreadBloomDecayTime" />
-        <uie:CurveField label="Spread Bloom Curve" name="spreadBloomCuirve" tooltip="The curve used during the Spread Bloom" binding-path="spreadBloomCurve" />
-        <uie:PropertyField name="defaultCrosshair" binding-path="defaultCrosshairPrefab" />
-        <uie:PropertyField name="aimOrigin" binding-path="aimOriginTransform" />
-        <uie:PropertyField name="hullClassification" binding-path="hullClassification" />
-        <uie:PropertyField name="portraitIcon" binding-path="portraitIcon" />
-        <uie:PropertyField name="bodyColor" binding-path="bodyColor" />
-        <ui:Toggle label="Is Boss Monster" name="isBoss" binding-path="isChampion" tooltip="Whether this character is a &quot;boss monster&quot;, IE: Beetle Queen, Stone Titan, etc" />
-        <uie:PropertyField name="preferredPod" binding-path="preferredPodPrefab" />
-        <uie:PropertyField name="preferredInitialState" binding-path="preferredInitialStateType" />
-        <uie:PropertyField name="customKillTotalStat" binding-path="customKillTotalStatName" style="white-space: normal;" />
+    <ui:Template name="ComponentInspectorBase" src="/Packages/riskofthunder-ror2editorkit/Assets/UXML/ComponentInspectorBase.uxml" />
+    <ui:Instance template="ComponentInspectorBase" name="ComponentInspectorBase">
+        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ComponentInspector.uss" />
+    </ui:Instance>
+    <ui:VisualElement name="InspectorDataContainer" class="genericHolder">
+        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ComponentInspector.uss" />
+        <uie:PropertyField name="bodyFlags" tooltip="Flags for this body, certain flags have special effects" binding-path="bodyFlags" />
+        <uie:PropertyField name="hullClassification" binding-path="hullClassification" tooltip="The size of the hull of this body, used for calculating movement via nodes" />
+        <uie:PropertyField name="preferredPodPrefab" binding-path="preferredPodPrefab" tooltip="The pod this body uses when spawning for the first time in a run" />
+        <uie:PropertyField name="defaultCrosshairPrefab" binding-path="defaultCrosshairPrefab" tooltip="The default crosshair for this body" />
+        <uie:PropertyField name="portraitIcon" binding-path="portraitIcon" tooltip="The icon for this body, used in the ally display among other places" />
         <uie:PropertyField name="overrideCoreTransform" binding-path="overrideCoreTransform" />
-        <ui:Toggle label="Auto Calculate Level Stats" name="autoCalc" binding-path="autoCalculateLevelStats" tooltip="Automatically calculates the &quot;Level&quot; stats based off their base values." />
-        <ui:Foldout text="Base Stats" tooltip="Shows or Hides the base stats" name="baseStats" value="true">
-            <ui:VisualElement name="baseStatsElement" class="StatsFoldoutElement">
-                <uie:PropertyField binding-path="baseMaxHealth" name="bMaxHealth" />
-                <uie:PropertyField binding-path="baseRegen" name="bRegen" />
-                <uie:PropertyField binding-path="baseMaxShield" name="bMaxShield" />
-                <uie:PropertyField binding-path="baseMoveSpeed" name="bMovespeed" />
-                <uie:PropertyField binding-path="baseAcceleration" name="bAcceleration" />
-                <uie:PropertyField binding-path="baseJumpPower" name="bJumpPower" />
-                <uie:PropertyField binding-path="baseDamage" name="bDamage" />
-                <uie:PropertyField binding-path="baseAttackSpeed" name="bAttackSpeed" />
-                <uie:PropertyField binding-path="baseCrit" name="bCrit" />
-                <uie:PropertyField binding-path="baseArmor" name="bArmor" />
-                <uie:PropertyField binding-path="baseVisionDistance" name="bVisionDistance" />
-                <uie:PropertyField binding-path="baseJumpCount" name="bJumpCount" />
-            </ui:VisualElement>
+        <uie:PropertyField name="bodyColor" binding-path="bodyColor" tooltip="The main color for this body, used in the logbook" />
+        <uie:PropertyField name="preferredInitialStateType" tooltip="The initial state type for this body" binding-path="preferredInitialStateType" />
+        <uie:PropertyField name="sprintingSpeedMultiplier" binding-path="sprintingSpeedMultiplier" tooltip="Multiplier thats applied to the body when it starts sprinting" />
+        <uie:PropertyField name="customkillTotalStatName" binding-path="customKillTotalStatName" />
+        <uie:PropertyField name="isChampion" tooltip="Wether this body is a &quot;Boss Monsters&quot; examples of these include the Clay Dunestrider, Imp Overlord, Beetle Queen, etc" binding-path="isChampion" label="Is Boss Monster" />
+        <uie:PropertyField name="rootMotionInMainState" tooltip="Flags for this body, certain flags have special effects" binding-path="rootMotionInMainState" />
+        <uie:PropertyField name="mainRootSpeed" tooltip="Flags for this body, certain flags have special effects" binding-path="mainRootSpeed" />
+        <ui:Foldout text="Tokens" name="TokenContainer" value="false" class="genericHolderFoldout">
+            <uie:PropertyField name="baseNameToken" binding-path="baseNameToken" tooltip="The name of this body, used when pinging" />
+            <uie:PropertyField name="subtitleNameToken" binding-path="subtitleNameToken" tooltip="The subtitle for this body, used when the body has a healthbar UI, like teleporter bosses" />
         </ui:Foldout>
-        <ui:Foldout text="Level Stats" tooltip="Shows or Hides the level stats" name="levelStats" value="true">
-            <ui:VisualElement name="levelStatsElement" class="StatsFoldoutElement">
-                <uie:PropertyField binding-path="levelMaxHealth" name="lMaxHealth" />
-                <uie:PropertyField binding-path="levelRegen" name="lRegen" />
-                <uie:PropertyField binding-path="levelMaxShield" name="lMaxShield" />
-                <uie:PropertyField binding-path="levelMovespeed" name="lMoveSpeed" />
-                <uie:PropertyField binding-path="levelJumpPower" name="lJumpPower" />
-                <uie:PropertyField binding-path="levelDamage" name="lDamage" />
-                <uie:PropertyField binding-path="levelAttackSpeed" name="lAttackSpeed" />
-                <uie:PropertyField binding-path="levelCrit" name="lCrit" />
-                <uie:PropertyField binding-path="levelArmor" name="lArmor" />
-            </ui:VisualElement>
+        <ui:Foldout text="Spread Bloom Settings" name="SpreadBloomContainer" value="false" class="genericHolderFoldout">
+            <uie:PropertyField name="spreadBloomDecayTime" binding-path="spreadBloomDecayTime" />
+            <uie:PropertyField name="spreadBloomCurve" binding-path="spreadBloomCurve" tooltip="The curve used during the spread bloom" />
+        </ui:Foldout>
+        <ui:Foldout text="Base Stats" tooltip="Shows or Hides the base stats" name="BaseStatsContainer" value="false" class="genericHolderFoldout">
+            <uie:PropertyField binding-path="baseMaxHealth" name="bMaxHealth" />
+            <uie:PropertyField binding-path="baseRegen" name="bRegen" />
+            <uie:PropertyField binding-path="baseMaxShield" name="bMaxShield" />
+            <uie:PropertyField binding-path="baseMoveSpeed" name="bMovespeed" />
+            <uie:PropertyField binding-path="baseAcceleration" name="bAcceleration" />
+            <uie:PropertyField binding-path="baseDamage" name="bDamage" />
+            <uie:PropertyField binding-path="baseAttackSpeed" name="bAttackSpeed" />
+            <uie:PropertyField binding-path="baseCrit" name="bCrit" />
+            <uie:PropertyField binding-path="baseArmor" name="bArmor" />
+            <uie:PropertyField binding-path="baseVisionDistance" name="bVisionDistance" />
+            <uie:PropertyField binding-path="baseJumpCount" name="bJumpCount" />
+            <uie:PropertyField binding-path="baseJumpPower" name="bJumpPower" />
+        </ui:Foldout>
+        <ui:Foldout text="Level Stats" tooltip="Shows or Hides the level stats" name="LevelStatsContainer" value="false" class="genericHolderFoldout">
+            <uie:PropertyField name="autoCalculateLevelStats" binding-path="autoCalculateLevelStats" tooltip="Automatically calculates the level stats for this body, using the base stats as a reference" />
+            <uie:PropertyField binding-path="levelMaxHealth" name="lMaxHealth" />
+            <uie:PropertyField binding-path="levelRegen" name="lRegen" />
+            <uie:PropertyField binding-path="levelMaxShield" name="lMaxShield" />
+            <uie:PropertyField binding-path="levelMovespeed" name="lMoveSpeed" />
+            <uie:PropertyField binding-path="levelJumpPower" name="lJumpPower" />
+            <uie:PropertyField binding-path="levelDamage" name="lDamage" />
+            <uie:PropertyField binding-path="levelAttackSpeed" name="lAttackSpeed" />
+            <uie:PropertyField binding-path="levelCrit" name="lCrit" />
+            <uie:PropertyField binding-path="levelArmor" name="lArmor" />
         </ui:Foldout>
     </ui:VisualElement>
 </ui:UXML>

@@ -16,8 +16,12 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
     [CustomEditor(typeof(EliteDef))]
     public sealed class EliteDefInspector : ScriptableObjectInspector<EliteDef>, IObjectNameConvention
     {
-        VisualElement inspectorData = null;
+        public const string Tier1Address = "RoR2/Base/EliteFire/edFire.asset";
+        public const string Tier1HonorAddress = "RoR2/Base/EliteFire/edFireHonor.asset";
+        public const string Tier2Address = "RoR2/Base/ElitePoison/edPoison.asset";
 
+        VisualElement inspectorData;
+        PropertyValidator<UnityEngine.Object> equipValidator;
         public string Prefix => "ed";
 
         public bool UsesTokenForPrefix => false;
@@ -30,73 +34,117 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             {
                 var container = DrawInspectorElement.Q<VisualElement>("Container");
                 inspectorData = container.Q<VisualElement>("InspectorDataContainer");
+                equipValidator = new PropertyValidator<UnityEngine.Object>(inspectorData.Q<PropertyField>("eliteEquipmentDef"), DrawInspectorElement);
             };
         }
 
         protected override void DrawInspectorGUI()
         {
-            var equipDef = inspectorData.Q<PropertyField>("eliteEquipmentDef");
-            equipDef.RegisterCallback<ChangeEvent<EquipmentDef>>(CheckEquipDef);
-            CheckEquipDef();
+            SetupEquipValidator(equipValidator);
+            equipValidator.ForceValidation();
+
+            var modifierToken = inspectorData.Q<PropertyField>("modifierToken");
+            AddSimpleContextMenu(modifierToken, new ContextMenuData(
+                "Set Token",
+                SetToken,
+                statusCheck =>
+                {
+                    if (Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
+                        return DropdownMenuAction.Status.Disabled;
+                    return DropdownMenuAction.Status.Normal;
+                }));
+
+            var eliteColor = inspectorData.Q<PropertyField>("color");
+            AddSimpleContextMenu(eliteColor, new ContextMenuData(
+                "Set Color to Buff Color",
+                SetColor,
+                statusCheck =>
+                {
+                    if(TargetType.eliteEquipmentDef && TargetType.eliteEquipmentDef.passiveBuffDef)
+                        return DropdownMenuAction.Status.Normal;
+                    return DropdownMenuAction.Status.Hidden;
+                }));
+
+            var statCoefficients = inspectorData.Q<Foldout>("StatCoefficientContainer");
+            BuildContextMenu(statCoefficients);
         }
 
-        private void CheckEquipDef(ChangeEvent<EquipmentDef> evt = null)
+        private void SetupEquipValidator(PropertyValidator<UnityEngine.Object> validator)
         {
-            /*var button = Find<Button>(color, "colorSetter");
-            foreach(IMGUIContainer container in equipDefMessages)
+            validator.AddValidator(() =>
             {
-                if (container != null)
-                    container.RemoveFromHierarchy();
-            }
-            equipDefMessages.Clear();
+                var eqp = GetEquipmentDef();
+                return !eqp;
+            },
+            "This EliteDef has no EquipmentDef assigned! Is this intentional?");
 
-            IMGUIContainer msg = null;
-            if(!equipmentDef)
+            validator.AddValidator(() =>
             {
-                msg = CreateHelpBox("This EliteDef has no EquipmentDef assigned! Is this intentional?", MessageType.Info);
-                messages.Add(msg);
-                equipDefMessages.Add(msg);
+                var eqp = GetEquipmentDef();
+                return eqp && !eqp.passiveBuffDef;
+            },
+            $"You've assigned an EquipmentDef to this Elite, but the assigned Equipment's has no passiveBuffDef assigned!", MessageType.Warning);
+
+            validator.AddValidator(() =>
+            {
+                var eqp = GetEquipmentDef();
+                return eqp && eqp.passiveBuffDef && eqp.passiveBuffDef.eliteDef != TargetType;
+            }, $"You've associated an EquipmentDef to this Elite, but the assigned EquipmentDef's \"passiveBuffDef\"'s EliteDef is not the inspected EliteDef!", MessageType.Warning);
+            
+            EquipmentDef GetEquipmentDef() => validator.ChangeEvent == null ? TargetType.eliteEquipmentDef : (EquipmentDef)validator.ChangeEvent.newValue;
+        }
+
+        private void SetToken(DropdownMenuAction act)
+        {
+            string objectName = target.name;
+            if(objectName.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                objectName = objectName.Substring(Prefix.Length);
+            }
+            objectName = objectName.Replace(" ", "");
+            TargetType.modifierToken = $"{Settings.GetPrefixUppercase()}_ELITE_MODIFIER_{objectName.ToUpperInvariant()}";
+        }
+
+        private void SetColor(DropdownMenuAction act)
+        {
+            TargetType.color = TargetType.eliteEquipmentDef.passiveBuffDef.buffColor;
+        }
+
+        private void BuildContextMenu(Foldout statCoefficients)
+        {
+            Add("Tier1Honor");
+            Add("Tier1");
+            Add("Tier2");
+
+            void Add(string name)
+            {
+                AddSimpleContextMenu(statCoefficients, new ContextMenuData($"Set Coefficients To/{name}", SetCoefficients, check =>
+                {
+                    return AddressablesUtils.AddressableCatalogExists ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.None;
+                }));
+            }
+        }
+
+        private async void SetCoefficients(DropdownMenuAction action)
+        {
+            string assetName = action.name.Substring($"Set Coefficients To/".Length);
+            string address = string.Empty;
+            switch(assetName)
+            {
+                case "Tier1Honor": address = Tier1HonorAddress; break;
+                case "Tier1": address = Tier1Address; break;
+                case "Tier2": address = Tier2Address; break;
+            }
+            if (address == string.Empty)
                 return;
-            }
 
+            EliteDef vanillaEliteDef = await AddressablesUtils.LoadAssetFromCatalog<EliteDef>(address);
 
-            if(!equipmentDef.passiveBuffDef)
-            {
-                msg = CreateHelpBox($"You've assigned an EquipmentDef ({equipmentDef.name}) to this Elite, but the assigned Equipment's has no passiveBuffDef assigned!", MessageType.Warning);
-                messages.Add(msg);
-                equipDefMessages.Add(msg);
-            }
+            if (!vanillaEliteDef)
+                return;
 
-
-            if(equipmentDef.passiveBuffDef && equipmentDef.passiveBuffDef.eliteDef != TargetType)
-            {
-                msg = CreateHelpBox($"You've associated an EquipmentDef ({equipmentDef.name}) to this Elite, but the assigned EquipmentDef's \"passiveBuffDef\" ({equipmentDef.passiveBuffDef.name})'s EliteDef is not the inspected EliteDef!", MessageType.Warning);
-                messages.Add(msg);
-                equipDefMessages.Add(msg);
-            }
-
-            button.style.display = (equipmentDef.passiveBuffDef && equipmentDef.passiveBuffDef.eliteDef == TargetType) ? DisplayStyle.Flex : DisplayStyle.None;*/
-        }
-
-        private void SetColor()
-        {
-            /*if(equipmentDef && equipmentDef.passiveBuffDef && equipmentDef.passiveBuffDef.eliteDef == TargetType)
-            {
-                TargetType.color = equipmentDef.passiveBuffDef.buffColor;
-            }*/
-        }
-
-        private void SetTokens()
-        {
-            /*if(Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
-                throw ErrorShorthands.NullTokenPrefix();
-
-            string objName = TargetType.name.ToLowerInvariant();
-            if(objName.Contains(Prefix.ToLowerInvariant()))
-            {
-                objName = objName.Replace(Prefix.ToLowerInvariant(), "");
-            }
-            TargetType.modifierToken = $"{Settings.GetPrefixUppercase()}_AFFIX_{objName.ToUpperInvariant()}";*/
+            TargetType.healthBoostCoefficient = vanillaEliteDef.healthBoostCoefficient;
+            TargetType.damageBoostCoefficient = vanillaEliteDef.damageBoostCoefficient;
         }
 
         public PrefixData GetPrefixData()

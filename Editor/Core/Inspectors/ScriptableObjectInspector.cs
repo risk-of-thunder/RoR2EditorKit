@@ -33,18 +33,17 @@ namespace RoR2EditorKit.Core.Inspectors
                 }
             };
         }
-
-        private void OnDisable()
+        
+        protected override void OnDisable()
         {
+            base.OnDisable();
             finishedDefaultHeaderGUI -= DrawEnableToggle;
         }
 
         private void DrawEnableToggle(Editor obj)
         {
             if (obj is ScriptableObjectInspector<T> soInspector)
-            {
                 InspectorEnabled = EditorGUILayout.ToggleLeft($"Enable {ObjectNames.NicifyVariableName(target.GetType().Name)} Inspector", InspectorEnabled);
-            }
         }
     }
 }

@@ -15,7 +15,9 @@
         "HGCSharpUtils.dll",
         "Assembly-CSharp.dll",
         "HGUnityUtils.dll",
-        "com.unity.multiplayer-hlapi.Runtime.dll"
+        "com.unity.multiplayer-hlapi.Runtime.dll",
+        "Unity.ResourceManager.dll",
+        "Unity.Addressables.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

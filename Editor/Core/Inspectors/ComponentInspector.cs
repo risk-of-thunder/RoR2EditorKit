@@ -20,12 +20,34 @@ namespace RoR2EditorKit.Core.Inspectors
         {
             base.OnEnable();
             container = new IMGUIContainer(DisplayToggle);
-            OnRootElementsCleared += AddIMGUIContainer;
+            OnVisualTreeCopy += AddToggle;
         }
 
-        protected void AddIMGUIContainer()
+        private void AddToggle()
         {
-            RootVisualElement.Add(container);
+            if(!InspectorEnabled)
+            {
+                RootVisualElement.Add(container);
+            }
+            else
+            {
+                try
+                {
+                    var componentBase = DrawInspectorElement.Q<VisualElement>("ComponentInspectorBase");
+                    var container = componentBase.Q<VisualElement>("ComponentToggleContainer");
+                    var toggle = container.Q<Toggle>("InspectorToggle");
+                    toggle.value = InspectorEnabled;
+                    toggle.RegisterValueChangedCallback(cb => InspectorEnabled = cb.newValue);
+
+                    var scriptType = toggle.Q<Label>("scriptType");
+                    scriptType.text = serializedObject.FindProperty("m_Script").objectReferenceValue.name;
+                }
+                catch(Exception ex)
+                {
+                    Debug.LogWarning($"Cannot setup toggle and header for component inspector {GetType().Name}, resorting to IMGUI container\n\n{ex}");
+                    RootVisualElement.Add(container);
+                }
+            }
         }
 
         private void DisplayToggle()

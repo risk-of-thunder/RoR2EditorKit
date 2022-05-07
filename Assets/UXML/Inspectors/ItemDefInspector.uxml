@@ -1,9 +1,9 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
     <ui:VisualElement name="Container" class="genericHolder">
-        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Generic.uss" />
+        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ScriptableObjectInspector.uss" />
         <ui:Label text="Label" name="scriptType" class="genericHolderHeader scriptType" />
-        <ui:VisualElement name="InspectorDataHolder">
-            <ui:VisualElement name="ItemTierHolder">
+        <ui:VisualElement name="InspectorDataContainer">
+            <ui:VisualElement name="ItemTierContainer">
                 <ui:Label text="ItemTier" name="ItemTier" class="genericHolderHeader" style="font-size: 10px;" />
                 <uie:PropertyField name="deprecatedTier" binding-path="deprecatedTier" label="ItemTier Enum" tooltip="The tier this item belongs to, if your item has a custom tier def, set this to &quot;AssignedAtRuntime&quot;" />
                 <uie:PropertyField name="itemTierDef" binding-path="_itemTierDef" label="Custom ItemTierDef" tooltip="The itemTier this item belongs to, put your custom itemTierDef here, if you want to reference a vanilla tier, set the tier from &quot;ItemTier Enum&quot; instead." />
@@ -17,7 +17,7 @@
             <ui:Label text="Unlockable and ExpansionDef" name="UnlockableAndExpansionDef" class="genericHolderHeader" style="font-size: 10px;" />
             <uie:PropertyField name="unlockableDef" binding-path="unlockableDef" tooltip="If set, this unlockable needs to be unlocked before this item can appear" />
             <uie:PropertyField name="requiredExpansion" binding-path="requiredExpansion" tooltip="If set, this item cannot appear if it&apos;s expansionDef is not enabled" />
-            <ui:Foldout text="Language Tokens" tooltip="Tokens for this ItemDef" name="TokenHolder" class="genericHolderFoldout">
+            <ui:Foldout text="Language Tokens" tooltip="Tokens for this ItemDef" name="TokenContainer" class="genericHolderFoldout">
                 <uie:PropertyField name="nameToken" binding-path="nameToken" tooltip="Ingame name of the item" />
                 <uie:PropertyField name="pickupToken" binding-path="pickupToken" tooltip="Short description of the item&apos;s effects, shows on pickup" />
                 <uie:PropertyField name="descriptionToken" binding-path="descriptionToken" tooltip="Detailed descriptions of the item&apos;s effects, shows in the loogbook" />

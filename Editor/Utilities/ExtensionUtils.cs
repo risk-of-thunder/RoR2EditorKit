@@ -27,6 +27,23 @@ namespace RoR2EditorKit.Utilities
         }
         #endregion
 
+        #region KeyValuePair Extensions
+        /// <summary>
+        /// Extension to allow tuple style deconstruction of keys and values when enumerating a dictionary.
+        /// Example: foreach(var (key, value) in myDictionary)
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="kvp"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> kvp, out TKey key, out TValue value)
+        {
+            key = kvp.Key;
+            value = kvp.Value;
+        }
+        #endregion
+
         #region SerializedProperties/Objects  Extensions
         /// <summary>
         /// Returns the serialized property that's bound to this ObjectField.
@@ -64,6 +81,12 @@ namespace RoR2EditorKit.Utilities
             }
             return list;
         }
+
+        public static void UpdateAndApply(this SerializedObject serializedObject)
+        {
+            serializedObject.Update();
+            serializedObject.ApplyModifiedProperties();
+        }
         #endregion
 
         #region Visual Element Extensions
@@ -85,6 +108,26 @@ namespace RoR2EditorKit.Utilities
             visualElement.Clear();
             visualElement.ClearClassList();
             visualElement.Unbind();
+        }
+
+        /// <summary>
+        /// Queries a visual element from the FoldoutElement's container
+        /// </summary>
+        /// <typeparam name="T">The type of VisualElement to query</typeparam>
+        /// <param name="foldout">The foldout to query from</param>
+        /// <param name="name">The name of the visual element to query</param>
+        /// <param name="className">The class name of the visual element to query</param>
+        /// <returns>The queried element if found, null otherwise</returns>
+        public static T QContainer<T>(this Foldout foldout, string name = null, string className = null) where T : VisualElement
+        {
+            return foldout.Q<VisualElement>("unity-content").Q<T>(name, className);
+        }
+        #endregion
+
+        #region GameObject Extensions
+        public static GameObject GetRootObject(this GameObject obj)
+        {
+            return obj.transform.root.gameObject;
         }
         #endregion
     }

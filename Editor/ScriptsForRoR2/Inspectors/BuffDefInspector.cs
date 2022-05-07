@@ -17,13 +17,9 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
     [CustomEditor(typeof(RoR2.BuffDef))]
     public sealed class BuffDefInspector : ScriptableObjectInspector<BuffDef>, IObjectNameConvention
     {
-        private EliteDef eliteDef;
-        private List<IMGUIContainer> eliteDefMessages = new List<IMGUIContainer>();
-
-        private NetworkSoundEventDef networkSoundEventDef;
-        private IMGUIContainer networkSoundEventdefMessage = null;
-
-        VisualElement inspectorData = null;
+        private PropertyValidator<UnityEngine.Object> eliteDefValidator;
+        private PropertyValidator<UnityEngine.Object> startSfxValidator;
+        private VisualElement inspectorData = null;
 
         public string Prefix => "bd";
 
@@ -32,80 +28,77 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         protected override void OnEnable()
         {
             base.OnEnable();
-            eliteDef = TargetType.eliteDef;
-            networkSoundEventDef = TargetType.startSfx;
             serializedObject.FindProperty(nameof(BuffDef.iconPath)).stringValue = "";
             serializedObject.ApplyModifiedProperties();
 
             OnVisualTreeCopy += () =>
             {
                 var container = DrawInspectorElement.Q<VisualElement>("Container");
-                inspectorData = container.Q<VisualElement>("InspectorDataHolder");
+                inspectorData = container.Q<VisualElement>("InspectorDataContainer");
+                eliteDefValidator = new PropertyValidator<UnityEngine.Object>(inspectorData.Q<PropertyField>("eliteDef"), DrawInspectorElement);
+                startSfxValidator = new PropertyValidator<UnityEngine.Object>(inspectorData.Q<PropertyField>("startSfx"), DrawInspectorElement);
             };
         }
         protected override void DrawInspectorGUI()
         {
-            var eliteDef = inspectorData.Q<PropertyField>("eliteDef");
-            eliteDef.RegisterCallback<ChangeEvent<EliteDef>>(CheckEliteDef);
-            CheckEliteDef();
+            var color = inspectorData.Q<PropertyField>("buffColor");
+            AddSimpleContextMenu(color, new ContextMenuData(
+                "Set Color to Elite Color",
+                SetColor,
+                statusCheck =>
+                {
+                    if (TargetType.eliteDef)
+                        return DropdownMenuAction.Status.Normal;
+                    return DropdownMenuAction.Status.Hidden;
+                }));
 
-            var startSfx = inspectorData.Q<PropertyField>("startSfx");
-            startSfx.RegisterCallback<ChangeEvent<NetworkSoundEventDef>>(CheckSoundEvent);
-            CheckSoundEvent();
+            SetupEliteValidator(eliteDefValidator);
+            eliteDefValidator.ForceValidation();
+
+            SetupSfxValidator(startSfxValidator);
+            startSfxValidator.ForceValidation();
         }
 
-        private void CheckSoundEvent(ChangeEvent<NetworkSoundEventDef> evt = null)
+        private void SetColor(DropdownMenuAction act)
         {
-            if(networkSoundEventdefMessage != null)
-            {
-                networkSoundEventdefMessage.RemoveFromHierarchy();
-            }
-
-            if (!networkSoundEventDef)
-                return;
-
-            /*if(networkSoundEventDef.eventName.IsNullOrEmptyOrWhitespace())
-            {
-                networkSoundEventdefMessage = CreateHelpBox($"You've associated a NetworkSoundEventDef ({networkSoundEventDef.name}) to this buff, but the EventDef's eventName is Null, Empty or Whitespace!", MessageType.Warning);
-                messages.Add(networkSoundEventdefMessage);
-            }*/
+            TargetType.buffColor = TargetType.eliteDef.color;
         }
 
-        private void CheckEliteDef(ChangeEvent<EliteDef> evt = null)
+        private void SetupEliteValidator(PropertyValidator<UnityEngine.Object> validator)
         {
-            foreach (IMGUIContainer container in eliteDefMessages)
+            validator.AddValidator(() =>
             {
-                if (container != null)
-                    container.RemoveFromHierarchy();
-            }
-            eliteDefMessages.Clear();
+                var ed = GetEliteDef();
+                return ed && !ed.eliteEquipmentDef;
+            },
+            $"You've associated an EliteDef to this buff, but the EliteDef has no EquipmentDef assigned!", MessageType.Warning);
 
-            if (!eliteDef)
+            validator.AddValidator(() =>
             {
-                return;
-            }
+                var ed = GetEliteDef();
+                return ed && ed.eliteEquipmentDef && !ed.eliteEquipmentDef.passiveBuffDef;
+            },
+            "You've assigned an EliteDef to this buff, but the EliteDef's EquippmentDef has no assigned passiveBuffDef!", MessageType.Warning);
 
-            IMGUIContainer msg = null;
-            /*if(!eliteDef.eliteEquipmentDef)
+            validator.AddValidator(() =>
             {
-                msg = CreateHelpBox($"You've associated an EliteDef ({eliteDef.name}) to this buff, but the EliteDef has no EquipmentDef assigned!", MessageType.Warning);
-                messages.Add(msg);
-                eliteDefMessages.Add(msg);
-            }
+                var ed = GetEliteDef();
+                return ed && ed.eliteEquipmentDef && ed.eliteEquipmentDef.passiveBuffDef && ed.eliteEquipmentDef.passiveBuffDef != TargetType;
+            }, $"You've associated an EliteDef to this buff, but the assigned EliteDef's EquippmentDef's ppassiveBuffDef is not the inspected buffDef!", MessageType.Warning);
 
-            if(eliteDef.eliteEquipmentDef && !eliteDef.eliteEquipmentDef.passiveBuffDef)
-            {
-                msg = CreateHelpBox($"You've associated an EliteDef ({eliteDef.name}) to this buff, but the assigned EliteDef's EquipmentDef ({eliteDef.eliteEquipmentDef.name})'s \"passiveBuffDef\" is not asigned!", MessageType.Warning);
-                messages.Add(msg);
-                eliteDefMessages.Add(msg);
-            }
+            EliteDef GetEliteDef() => validator.ChangeEvent == null ? TargetType.eliteDef : (EliteDef)validator.ChangeEvent.newValue;
+        }
 
-            if(eliteDef.eliteEquipmentDef && eliteDef.eliteEquipmentDef.passiveBuffDef != TargetType)
+        private void SetupSfxValidator(PropertyValidator<UnityEngine.Object> validator)
+        {
+            validator.AddValidator(() =>
             {
-                msg = CreateHelpBox($"You've associated an EliteDef ({eliteDef.name}) to this buff, but the assigned EliteDef's EquipmentDef ({eliteDef.eliteEquipmentDef.name})'s \"passiveBuffDef\" is not the inspected BuffDef!", MessageType.Warning);
-                messages.Add(msg);
-                eliteDefMessages.Add(msg);
-            }*/
+                var nsed = GetEventDef();
+                return nsed && nsed.eventName.IsNullOrEmptyOrWhitespace();
+            },
+            $"You've associated a NetworkSoundEventDef to this buff, but the EventDef's eventName is Null, Empty or Whitespace!", MessageType.Warning);
+
+            NetworkSoundEventDef GetEventDef () => validator.ChangeEvent == null ? TargetType.startSfx : (NetworkSoundEventDef)validator.ChangeEvent.newValue;
         }
 
         public PrefixData GetPrefixData()

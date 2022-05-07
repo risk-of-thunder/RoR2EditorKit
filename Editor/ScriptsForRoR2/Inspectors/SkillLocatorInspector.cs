@@ -15,10 +15,8 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
     public sealed class SkillLocatorInspector : ComponentInspector<SkillLocator>
     {
         VisualElement inspectorData;
-        VisualElement passiveSkillHolder;
 
         Dictionary<GenericSkill, PropertyField> skillToPropField = new Dictionary<GenericSkill, PropertyField>();
-        protected override bool HasVisualTreeAsset => true;
 
         protected override void OnEnable()
         {
@@ -26,8 +24,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
             OnVisualTreeCopy += () =>
             {
-                inspectorData = DrawInspectorElement.Q<VisualElement>("InspectorData");
-                passiveSkillHolder = inspectorData.Q<Foldout>("passiveSkill").Q<VisualElement>("PassiveSkillHolder");
+                inspectorData = DrawInspectorElement.Q<VisualElement>("InspectorDataContainer");
             };
         }
         protected override void DrawInspectorGUI()

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using RoR2;
@@ -17,13 +18,10 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
     [CustomEditor(typeof(NetworkStateMachine))]
     public sealed class NetworkStateMachineInspector : ComponentInspector<NetworkStateMachine>
     {
+        ListView stateMachinesView;
         SerializedProperty stateMachines;
 
         VisualElement inspectorData;
-        IntegerField arraySize;
-        VisualElement stateMachineHolder;
-
-        Dictionary<EntityStateMachine, ObjectField> ESMToField = new Dictionary<EntityStateMachine, ObjectField>();
 
         protected override void OnEnable()
         {
@@ -32,16 +30,86 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
             OnVisualTreeCopy += () =>
             {
-                inspectorData = DrawInspectorElement.Q<VisualElement>("InspectorData");
-                arraySize = inspectorData.Q<IntegerField>("arraySize");
-                stateMachineHolder = inspectorData.Q<VisualElement>("StateMachineHolder");
+                inspectorData = DrawInspectorElement.Q<VisualElement>("InspectorDataContainer");
+                SetupListView();
+                /*arraySize = inspectorData.Q<IntegerField>("arraySize");
+                stateMachineHolder = inspectorData.Q<VisualElement>("StateMachineHolder");*/
             };
         }
         protected override void DrawInspectorGUI()
         {
+            /*var arraySize = inspectorData.Q<IntegerField>("arraySize");
             arraySize.value = stateMachines.arraySize;
-            arraySize.RegisterValueChangedCallback(SetSize);
-            SetSize();
+            arraySize.isDelayed = true;
+            arraySize.RegisterValueChangedCallback(OnArraySet);*/
+        }
+
+        /*private void OnArraySet(ChangeEvent<int> evt)
+        {
+            stateMachines.arraySize = evt.newValue;
+            serializedObject.ApplyModifiedProperties();
+            stateMachinesView.Refresh();
+        }*/
+
+        private void SetupListView()
+        {
+            stateMachinesView = new ListView();
+            stateMachinesView.itemHeight = (int)(EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing);
+            stateMachinesView.bindingPath = "stateMachines";
+            stateMachinesView.style.height = 100;
+            //stateMachinesView.makeItem = CreateField;
+            //stateMachinesView.bindItem = BindField;
+
+            inspectorData.Add(stateMachinesView);
+
+            /*VisualElement CreateField() => new ObjectField();
+
+            void BindField(VisualElement arg1, int arg2)
+            {
+                try
+                {
+                    SerializedProperty prop = stateMachines.FindPropertyRelative($"Array.data[{arg2}]");
+                    ObjectField field = arg1 as ObjectField;
+
+                    field.SetObjectType<EntityStateMachine>();
+                    field.bindingPath = prop.propertyPath;
+
+                    if (prop != null && prop.objectReferenceValue)
+                    {
+                        EntityStateMachine esm = prop.objectReferenceValue as EntityStateMachine;
+                        field.label = esm.customName;
+                        field.tooltip = $"Initial State Type: \"{esm.initialStateType.typeName}\"" +
+                            $"\n\nMain State Type: \"{esm.mainStateType.typeName}\"";
+                    }
+                    else
+                    {
+                        field.label = $"Element {arg2}";
+                    }
+                    field.BindProperty(serializedObject);
+                }
+                catch (Exception ex)
+                {
+                    arg1.style.display = DisplayStyle.None;
+                }
+            }*/
+        }
+
+        /*private void OnESMSet(ChangeEvent<UnityEngine.Object> evt)
+        {
+            ObjectField field = evt.target as ObjectField;
+            var obj = evt.newValue;
+            if (!obj)
+            {
+                field.label = $"Element {field.parent.IndexOf(field)}";
+                field.tooltip = "";
+            }
+            else
+            {
+                EntityStateMachine esm = evt.newValue as EntityStateMachine;
+                field.label = esm.customName;
+                field.tooltip = $"Initial State Type: \"{esm.initialStateType.typeName}\"" +
+                    $"\n\nMain State Type: \"{esm.mainStateType.typeName}\"";
+            }
         }
 
         private void SetSize(ChangeEvent<int> evt = null)
@@ -63,18 +131,6 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                     continue;
                 }
 
-                UpdateOrCreateField(esm);
-            }
-        }
-
-        private void OnESMSet(ChangeEvent<UnityEngine.Object> evt)
-        {
-            var obj = evt.newValue;
-            if (!obj)
-                return;
-            
-            if(obj is EntityStateMachine esm)
-            {
                 UpdateOrCreateField(esm);
             }
         }
@@ -102,6 +158,6 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 stateMachineHolder.Add(objField);
                 ESMToField.Add(esm, objField);
             }
-        }
+        }*/
     }
 }

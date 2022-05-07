@@ -21,7 +21,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private IMGUIContainer valueMessageContainer;
 
-        private Button objectNameSetter;
+        private PropertyValidator<int> valueValidator;
 
         protected override void OnEnable()
         {
@@ -29,15 +29,16 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             OnVisualTreeCopy += () =>
             {
                 var container = DrawInspectorElement.Q<VisualElement>("Container");
-                inspectorDataHolder = container.Q<VisualElement>("InspectorDataHolder");
+                inspectorDataHolder = container.Q<VisualElement>("InspectorDataContainer");
             };
         }
 
         protected override void DrawInspectorGUI()
         {
             var value = inspectorDataHolder.Q<PropertyField>("value");
-            value.RegisterCallback<ChangeEvent<int>>(OnValueSet);
-            OnValueSet();
+            valueValidator = new PropertyValidator<int>(value, DrawInspectorElement);
+            SetupValidator(valueValidator);
+            valueValidator.ForceValidation();
 
             AddSimpleContextMenu(value, new ContextMenuData(
                 "Use RNG for Value",
@@ -49,43 +50,21 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 }));
         }
 
-        private void OnValueSet(ChangeEvent<int> evt = null)
+        private void SetupValidator(PropertyValidator<int> validator)
         {
-            int value = evt == null ? TargetType.value : evt.newValue;
+            validator.AddValidator(() => GetValue() == 1, MessageMaker(1, "Circle"), MessageType.Error);
 
-            if(valueMessageContainer != null)
-            {
-                valueMessageContainer.RemoveFromHierarchy();
-            }
+            validator.AddValidator(() => GetValue() == 3, MessageMaker(3, "Triangle"), MessageType.Error);
 
-            switch(value)
-            {
-                case 1:
-                    valueMessageContainer = CompoundHelpBox(value, "Circle");
-                    break;
-                case 5:
-                    valueMessageContainer = CompoundHelpBox(value, "Diamond");
-                    break;
-                case 11:
-                    valueMessageContainer = CompoundHelpBox(value, "Empty");
-                    break;
-                case 7:
-                    valueMessageContainer = CompoundHelpBox(value, "Square");
-                    break;
-                case 3:
-                    valueMessageContainer = CompoundHelpBox(value, "Triangle");
-                    break;
-                default:
-                    valueMessageContainer = null;
-                    break;
-            }
+            validator.AddValidator(() => GetValue() == 5, MessageMaker(5, "Diamond"), MessageType.Error);
 
-            if(valueMessageContainer != null)
-            {
-                DrawInspectorElement.Add(valueMessageContainer);
-            }
+            validator.AddValidator(() => GetValue() == 7, MessageMaker(7, "Square"), MessageType.Error);
 
-            IMGUIContainer CompoundHelpBox(int v, string name) => CreateHelpBox($"Compound value cannot be {v}, as that value is reserved for the {name} compound", MessageType.Error);
+            validator.AddValidator(() => GetValue() == 11, MessageMaker(11, "Empty"), MessageType.Error);
+
+
+            int GetValue() => validator.ChangeEvent == null ? TargetType.value : validator.ChangeEvent.newValue;
+            string MessageMaker(int value, string vanillaType) => $"Compound value cannot be {value}, as that value is reserved for the {vanillaType} compound";
         }
 
         public PrefixData GetPrefixData()

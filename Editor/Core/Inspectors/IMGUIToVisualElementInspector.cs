@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
-using RoR2;
-using RoR2.Skills;
 using RoR2EditorKit.Utilities;
 using UnityEngine;
 

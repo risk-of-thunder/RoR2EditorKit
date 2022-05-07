@@ -9,6 +9,7 @@ using RoR2EditorKit.Common;
 using System;
 using Object = UnityEngine.Object;
 using RoR2EditorKit.Utilities;
+using System.Threading.Tasks;
 
 namespace RoR2EditorKit.Core.Inspectors
 {
@@ -189,7 +190,7 @@ namespace RoR2EditorKit.Core.Inspectors
 
         private void OnObjectNameChanged()
         {
-            if (this == null || serializedObject.targetObject == null)
+            if (this == null || serializedObject == null || serializedObject.targetObject == null)
                 return;
 
             if (serializedObject.targetObject && Settings.InspectorSettings.enableNamingConventions && this is IObjectNameConvention objNameConvention)
@@ -365,15 +366,23 @@ namespace RoR2EditorKit.Core.Inspectors
             return container;
         }
 
-        protected void AddSimpleContextMenu(VisualElement element, ContextMenuData contextMenuData)
+        protected /*async*/ void AddSimpleContextMenu(VisualElement element, ContextMenuData contextMenuData)
         {
-            if (!elementToContextMenu.ContainsKey(element))
+            VisualElement actualElement = null;
+            /*if(element is PropertyField pField)
             {
-                var manipulator = new ContextualMenuManipulator(x => CreateMenu(element, x));
-                elementToContextMenu.Add(element, (manipulator, new List<ContextMenuData>()));
-                element.AddManipulator(manipulator);
+                await Task.Delay(100);
+                actualElement = pField[0];
+                TurnChildrenNotFocusable(actualElement);
+            }*/
+            actualElement = actualElement ?? element;
+            if (!elementToContextMenu.ContainsKey(actualElement))
+            {
+                var manipulator = new ContextualMenuManipulator(x => CreateMenu(actualElement, x));
+                elementToContextMenu.Add(actualElement, (manipulator, new List<ContextMenuData>()));
+                actualElement.AddManipulator(manipulator);
             }
-            var tuple = elementToContextMenu[element];
+            var tuple = elementToContextMenu[actualElement];
             if(!tuple.Item2.Contains(contextMenuData))
                 tuple.Item2.Add(contextMenuData);
         }
@@ -385,6 +394,18 @@ namespace RoR2EditorKit.Core.Inspectors
             foreach(ContextMenuData data in contextMenus)
             {
                 populateEvent.menu.AppendAction(data.menuName, data.menuAction, data.actionStatusCheck);
+            }
+        }
+
+        private void TurnChildrenNotFocusable(VisualElement element)
+        {
+            for(int i = 0; i < element.childCount; i++)
+            {
+                VisualElement ve = element[i];
+                ve.pickingMode = PickingMode.Ignore;
+                if(ve.childCount > 0)
+                    TurnChildrenNotFocusable(ve);
+                continue;
             }
         }
         #endregion
