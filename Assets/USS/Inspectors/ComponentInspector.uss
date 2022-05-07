@@ -49,3 +49,17 @@
 .separatorLabel {
     font-size: 10px;
 }
+
+.listView {
+    padding-left: 8px;
+    background-color: rgb(66, 66, 66);
+    border-left-color: rgb(61, 61, 61);
+    border-right-color: rgb(61, 61, 61);
+    border-top-color: rgb(61, 61, 61);
+    border-bottom-color: rgb(61, 61, 61);
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    height: 100px;
+}

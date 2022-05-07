@@ -5,5 +5,6 @@
     </ui:Instance>
     <ui:VisualElement name="InspectorDataContainer" class="genericHolder">
         <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ComponentInspector.uss" />
+        <ui:ListView focusable="true" name="stateMachines" item-height="20" binding-path="stateMachines" class="listView" />
     </ui:VisualElement>
 </ui:UXML>
