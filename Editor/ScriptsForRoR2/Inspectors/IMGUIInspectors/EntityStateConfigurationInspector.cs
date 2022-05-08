@@ -22,14 +22,32 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         VisualElement instanceFieldsContainer;
         VisualElement staticFieldsContainer;
         VisualElement unrecognizedFieldsContainer;
-        PropertyValidator<string> targetTypeValidator;
+        PropertyValidator<HG.SerializableSystemType> targetTypeValidator;
 
-        private Type entityStateType;
+        public Type EntityStateType
+        {
+            get
+            {
+                return _entityStateType;
+            }
+            private set
+            {
+                if(_entityStateType != value)
+                {
+                    _entityStateType = value;
+                    PopulateSerializableFields();
+                    SetDisplays();
+                }
+            }
+        }
+        private Type _entityStateType;
+
+        private List<FieldInfo> serializableStaticFields = new List<FieldInfo>();
+        private List<FieldInfo> serializableInstanceFields = new List<FieldInfo>();
 
         protected override void OnEnable()
         {
             base.OnEnable();
-            entityStateType = (Type)TargetType.targetType;
 
             OnVisualTreeCopy += () =>
             {
@@ -37,16 +55,51 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 instanceFieldsContainer = inspectorDataContainer.Q<VisualElement>("InstanceFieldsContainer");
                 staticFieldsContainer = inspectorDataContainer.Q<VisualElement>("StaticFieldsContainer");
                 unrecognizedFieldsContainer = inspectorDataContainer.Q<VisualElement>("UnrecognizedFieldsContainer");
+                EntityStateType = (Type)TargetType.targetType;
             };
         }
 
         protected override void DrawInspectorGUI()
         {
             var targetType = inspectorDataContainer.Q<PropertyField>("targetType");
-            SetupValidator(new PropertyValidator<string>(targetType, DrawInspectorElement));
+            SetupValidator(new PropertyValidator<HG.SerializableSystemType>(targetType, DrawInspectorElement));
             targetTypeValidator.ForceValidation();
+            targetType.RegisterCallback<ChangeEvent<HG.SerializableSystemType>>(OnEntityStateSet);
         }
-        private void SetupValidator(PropertyValidator<string> validator)
+
+        private void OnEntityStateSet(ChangeEvent<HG.SerializableSystemType> evt) => EntityStateType = (Type)evt.newValue;
+
+        private void PopulateSerializableFields()
+        {
+            serializableInstanceFields.Clear();
+            serializableStaticFields.Clear();
+
+            if(EntityStateType == null)
+            {
+                return;
+            }
+
+            var serializableFields = EntityStateType.GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(fieldInfo =>
+                {
+                    bool canSerialize = SerializedValue.CanSerializeField(fieldInfo);
+                    bool shouldSerialize = !fieldInfo.IsStatic || (fieldInfo.DeclaringType == EntityStateType);
+                    bool doesNotHaveAttribute = fieldInfo.GetCustomAttribute<HideInInspector>() == null;
+
+                    return canSerialize && shouldSerialize && doesNotHaveAttribute;
+                });
+
+            serializableStaticFields.AddRange(serializableFields.Where(fieldInfo => fieldInfo.IsStatic));
+            serializableInstanceFields.AddRange(serializableFields.Where(fieldInfo => !fieldInfo.IsStatic));
+        }
+
+        private void SetDisplays()
+        {
+            instanceFieldsContainer.style.display = serializableInstanceFields.Count > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            staticFieldsContainer.style.display = serializableStaticFields.Count > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        private void SetupValidator(PropertyValidator<HG.SerializableSystemType> validator)
         {
             targetTypeValidator = validator;
             validator.AddValidator(() =>
@@ -78,7 +131,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
             string GetTargetType()
             {
-                Type value = validator.ChangeEvent == null ? ((Type)TargetType.targetType) : Type.GetType(validator.ChangeEvent.newValue);
+                Type value = validator.ChangeEvent == null ? ((Type)TargetType.targetType) : (Type)validator.ChangeEvent.newValue;
 
                 return value == null ? String.Empty : value.AssemblyQualifiedName;
             }
