@@ -45,10 +45,26 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             listView = new ListViewHelper(data);
         }
 
+        private void SetNamesToTransformNames(DropdownMenuAction act)
+        {
+            foreach(SerializedProperty property in nameTransformPairs)
+            {
+                var name = property.FindPropertyRelative("name");
+                var transform = property.FindPropertyRelative("transform");
+
+                if(transform.objectReferenceValue)
+                {
+                    name.stringValue = transform.objectReferenceValue.name;
+                }
+            }
+            serializedObject.ApplyModifiedProperties();
+        }
+
         private VisualElement CreateCLContainer() => TemplateHelpers.GetTemplateInstance("ChildLocatorEntry", null, (path) =>
         {
             return path.Contains(Constants.PackageName);
         });
+
         private void BindCLCContainer(VisualElement arg1, SerializedProperty arg2)
         {
             var field = arg1.Q<PropertyField>("name");

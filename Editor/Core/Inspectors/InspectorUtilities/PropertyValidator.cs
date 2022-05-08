@@ -24,7 +24,7 @@ namespace RoR2EditorKit.Core.Inspectors
         public ChangeEvent<T> ChangeEvent { get => _changeEvent; }
         private ChangeEvent<T> _changeEvent;
 
-        private Dictionary<Func<bool>, ActionContainerPair> validatorToMessageAction = new Dictionary<Func<bool>, ActionContainerPair>();
+        private Dictionary<Func<bool?>, ActionContainerPair> validatorToMessageAction = new Dictionary<Func<bool?>, ActionContainerPair>();
 
         public PropertyValidator(PropertyField propField, VisualElement parentElementToAttach)
         {
@@ -33,7 +33,7 @@ namespace RoR2EditorKit.Core.Inspectors
             TiedField.RegisterCallback<ChangeEvent<T>>(ValidateInternal);
         }
 
-        public void AddValidator(Func<bool> condition, string message, MessageType messageType = MessageType.Info)
+        public void AddValidator(Func<bool?> condition, string message, MessageType messageType = MessageType.Info)
         {
             validatorToMessageAction.Add(condition, new ActionContainerPair
             {
@@ -48,7 +48,13 @@ namespace RoR2EditorKit.Core.Inspectors
             _changeEvent = evt;
             foreach (var (validator, actionContainerPair) in validatorToMessageAction)
             {
-                if (validator())
+                bool? value = validator();
+                if (value == null)
+                {
+                    continue;
+                }
+
+                if (value.Value)
                 {
                     if (actionContainerPair.container == null)
                     {

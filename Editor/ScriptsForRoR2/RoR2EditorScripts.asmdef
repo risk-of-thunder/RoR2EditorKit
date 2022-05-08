@@ -6,7 +6,9 @@
         "ThunderKit.Core",
         "ThunderKit.Common"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
@@ -15,7 +17,6 @@
         "HGCSharpUtils.dll",
         "Assembly-CSharp.dll",
         "HGUnityUtils.dll",
-        "com.unity.multiplayer-hlapi.Runtime.dll",
         "Unity.ResourceManager.dll",
         "Unity.Addressables.dll"
     ],
