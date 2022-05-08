@@ -34,6 +34,11 @@ A more detailed Contribution guideline can be found [here](https://github.com/ri
 
 ### Current
 
+### '3.0.2'
+
+* RoR2EditorScripts changes:
+	* Made assembly Editor Only
+
 ### '3.0.1'
 
 * Core Changes:
