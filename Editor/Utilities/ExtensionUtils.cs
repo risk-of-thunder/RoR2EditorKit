@@ -110,6 +110,15 @@ namespace RoR2EditorKit.Utilities
             visualElement.Unbind();
         }
 
+        public static void RemoveChildrenStartingFrom(this VisualElement visualElement, int startingIndex)
+        {
+            for(int i = startingIndex; i < visualElement.childCount; i++)
+            {
+                VisualElement element = visualElement[i];
+                element.RemoveFromHierarchy();
+            }
+        }
+
         /// <summary>
         /// Queries a visual element from the FoldoutElement's container
         /// </summary>

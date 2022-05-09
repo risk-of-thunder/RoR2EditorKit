@@ -154,6 +154,8 @@ namespace RoR2EditorKit.Core.Inspectors
         }
         private VisualElement _imguiContianerElement;
 
+        protected bool HasDoneFirstDrawing { get => _hasDoneFirstDrawing; private set => _hasDoneFirstDrawing = value; }
+        private bool _hasDoneFirstDrawing = false;
         /// <summary>
         /// Direct access to the object that's being inspected as its type.
         /// </summary>
@@ -167,7 +169,6 @@ namespace RoR2EditorKit.Core.Inspectors
 
         #region Fields
         private IMGUIContainer prefixContainer = null;
-        private bool hasDoneFirstDrawing = false;
         private Dictionary<VisualElement, (ContextualMenuManipulator, List<ContextMenuData>)> elementToContextMenu = new Dictionary<VisualElement, (ContextualMenuManipulator, List<ContextMenuData>)>();
         #endregion Fields
 
@@ -257,7 +258,7 @@ namespace RoR2EditorKit.Core.Inspectors
                 DrawInspectorGUI();
                 RootVisualElement.Add(DrawInspectorElement);
                 OnDrawInspectorElementAdded?.Invoke();
-                if(hasDoneFirstDrawing)
+                if(_hasDoneFirstDrawing)
                 {
                     RootVisualElement.Bind(serializedObject);
                 }
@@ -285,7 +286,7 @@ namespace RoR2EditorKit.Core.Inspectors
         {
             OnInspectorEnabledChange();
             serializedObject.ApplyModifiedProperties();
-            hasDoneFirstDrawing = true;
+            _hasDoneFirstDrawing = true;
             return RootVisualElement;
         }
 

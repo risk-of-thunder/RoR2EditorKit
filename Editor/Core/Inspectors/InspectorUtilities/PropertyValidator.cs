@@ -13,13 +13,20 @@ namespace RoR2EditorKit.Core.Inspectors
 {
     public class PropertyValidator<T>
     {
+        public enum TiedElementType
+        {
+            PropertyField,
+            INotifyValueChanged,
+        }
         public class ActionContainerPair
         {
             public Action action;
             public IMGUIContainer container;
         }
 
-        public PropertyField TiedField { get; }
+        public VisualElement TiedElement { get; }
+        public TiedElementType TypeOfTiedElement { get; }
+
         public VisualElement ParentElement { get; }
         public ChangeEvent<T> ChangeEvent { get => _changeEvent; }
         private ChangeEvent<T> _changeEvent;
@@ -28,9 +35,18 @@ namespace RoR2EditorKit.Core.Inspectors
 
         public PropertyValidator(PropertyField propField, VisualElement parentElementToAttach)
         {
-            TiedField = propField;
+            TiedElement = propField;
+            TypeOfTiedElement = TiedElementType.PropertyField;
             ParentElement = parentElementToAttach;
-            TiedField.RegisterCallback<ChangeEvent<T>>(ValidateInternal);
+            TiedElement.RegisterCallback<ChangeEvent<T>>(ValidateInternal);
+        }
+
+        public PropertyValidator(INotifyValueChanged<T> valueChangedInterface, VisualElement parentElementToAttach)
+        {
+            TiedElement = valueChangedInterface as VisualElement;
+            TypeOfTiedElement = TiedElementType.INotifyValueChanged;
+            ParentElement = parentElementToAttach;
+            (TiedElement as INotifyValueChanged<T>).RegisterValueChangedCallback(ValidateInternal);
         }
 
         public void AddValidator(Func<bool?> condition, string message, MessageType messageType = MessageType.Info)
