@@ -32,7 +32,30 @@ A more detailed Contribution guideline can be found [here](https://github.com/ri
 
 (Old changelogs can be found [here](https://github.com/risk-of-thunder/RoR2EditorKit/blob/main/OldChangelogs.md))
 
-### Current
+### '3.1.0'
+
+* Core Changes:
+	* Added Missing XML Documentation
+	* Added "HasDoneFirstDrawing" property to ExtendedInspector
+	* Added "ListViewHelper" class
+	* PropertyValidator now works on PropertyFields, as well as any VisualElement that implements "INotifyValueChanged"
+	* Made the returning value of the PropertyValidator's Functions nullable (Returning null skips the container drawing process)
+	* Removed UtilityMethods from ExtendedEditorWindow
+	* Improved the look of the MaterialEditorSettings and EditorInspectorSettings inspectors & settings window
+
+* RoR2EditorScripts changes:
+	* Redid the following inspectors to use VisualElements:
+		* ChildLocator
+		* EntityStateConfiguration
+		* ObjectScaleCurve
+		*
+	* Added SerializableContentPack inspector
+
+
+### '3.0.2'
+
+* RoR2EditorScripts changes:
+	*Made assembly Editor Only
 
 ### '3.0.1'
 

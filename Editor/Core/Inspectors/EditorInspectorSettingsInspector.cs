@@ -11,28 +11,42 @@ using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.Core.Inspectors
 {
-    //This is fucking stupid
     [CustomEditor(typeof(EditorInspectorSettings))]
-    public sealed class EditorInspectorSettingsInspector : Editor
+    internal sealed class EditorInspectorSettingsInspector : Editor
     {
         public override VisualElement CreateInspectorGUI()
         {
             return StaticInspectorGUI(serializedObject);
         }
 
-        public static VisualElement StaticInspectorGUI(SerializedObject serializedObject)
+        internal static VisualElement StaticInspectorGUI(SerializedObject serializedObject, bool forSettingsWindow = false)
         {
-            VisualElement ve = new VisualElement();
+            VisualElement container = new VisualElement();
 
-            ve.Add(new PropertyField(serializedObject.FindProperty(nameof(EditorInspectorSettings.enableNamingConventions))));
+            var propertyField = new PropertyField(serializedObject.FindProperty(nameof(EditorInspectorSettings.enableNamingConventions)));
+            if (forSettingsWindow)
+                propertyField.AddToClassList("thunderkit-field-input");
+
+            container.Add(propertyField);
 
             SerializedProperty settings = serializedObject.FindProperty(nameof(EditorInspectorSettings.inspectorSettings));
 
             foreach (SerializedProperty prop in settings)
             {
-                ve.Add(new PropertyField(prop));
+                var propField = new PropertyField(prop);
+            
+                if(forSettingsWindow)
+                    propField.AddToClassList("thunderkit-field-input");
+
+                container.Add(propField);
             }
-            return ve;
+            if(forSettingsWindow)
+            {
+                container.AddToClassList("thunderkit-field");
+                container.style.flexDirection = FlexDirection.Column;
+            }
+
+            return container;
         }
     }
 }

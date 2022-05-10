@@ -34,15 +34,12 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         }
         protected override void DrawInspectorGUI()
         {
-            ListViewHelper.ListViewHelperData data = new ListViewHelper.ListViewHelperData
-            {
-                serializedObject = serializedObject,
-                property = stateMachines,
-                intField = inspectorData.Q<IntegerField>("arraySize"),
-                listView = inspectorData.Q<ListView>("stateMachines"),
-                createElement = CreateElement,
-                bindElement = BindElement
-            };
+            ListViewHelper.ListViewHelperData data = new ListViewHelper.ListViewHelperData(
+                stateMachines,
+                inspectorData.Q<ListView>("stateMachines"),
+                inspectorData.Q<IntegerField>("arraySize"),
+                CreateElement,
+                BindElement);
             listView = new ListViewHelper(data);
         }
         private VisualElement CreateElement() => new ObjectField();

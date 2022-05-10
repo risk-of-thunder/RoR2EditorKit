@@ -13,25 +13,42 @@ namespace RoR2EditorKit.Core.Inspectors
 {
     //This is also fucking stupid
     [CustomEditor(typeof(MaterialEditorSettings))]
-    public sealed class MaterialEditorSettingsInspector : Editor
+    internal sealed class MaterialEditorSettingsInspector : Editor
     {
         public override VisualElement CreateInspectorGUI()
         {
             return StaticInspectorGUI(serializedObject);
         }
 
-        public static VisualElement StaticInspectorGUI(SerializedObject serializedObject)
+        internal static VisualElement StaticInspectorGUI(SerializedObject serializedObject, bool forSettingsWindow = false)
         {
-            VisualElement ve = new VisualElement();
-            ve.Add(new PropertyField(serializedObject.FindProperty(nameof(MaterialEditorSettings.EnableMaterialEditor))));
+            VisualElement container = new VisualElement();
+
+            var propertyField = new PropertyField(serializedObject.FindProperty(nameof(MaterialEditorSettings.EnableMaterialEditor)));
+            if (forSettingsWindow)
+                propertyField.AddToClassList("thunderkit-field-input");
+
+            container.Add(propertyField);
 
             SerializedProperty settings = serializedObject.FindProperty(nameof(MaterialEditorSettings.shaderStringPairs));
 
             foreach (SerializedProperty prop in settings)
             {
-                ve.Add(new PropertyField(prop));
+                var propField = new PropertyField(prop);
+
+                if (forSettingsWindow)
+                    propField.AddToClassList("thunderkit-field-input");
+
+                container.Add(propField);
             }
-            return ve;
+
+            if (forSettingsWindow)
+            {
+                container.AddToClassList("thunderkit-field");
+                container.style.flexDirection = FlexDirection.Column;
+            }
+
+            return container;
         }
     }
 }

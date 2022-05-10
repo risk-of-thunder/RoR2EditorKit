@@ -10,17 +10,35 @@ using System;
 using Object = UnityEngine.Object;
 using RoR2EditorKit.Utilities;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace RoR2EditorKit.Core.Inspectors
 {
     using static ThunderKit.Core.UIElements.TemplateHelpers;
 
+    /// <summary>
+    /// Data that defines a ContextMenu that's going to be handled by the ExtendedInspector
+    /// </summary>
     public struct ContextMenuData
     {
+        /// <summary>
+        /// The menu name for this contextMenu
+        /// </summary>
         public string menuName;
+        /// <summary>
+        /// The action that runs when the context menu is clicked
+        /// </summary>
         public Action<DropdownMenuAction> menuAction;
+        /// <summary>
+        /// A status check to see if the menu should appear or not
+        /// </summary>
         public Func<DropdownMenuAction, DropdownMenuAction.Status> actionStatusCheck;
 
+        /// <summary>
+        /// ContextMenuData Constructor
+        /// </summary>
+        /// <param name="name">The name of the Context Menu</param>
+        /// <param name="action">An action that runs when the Context Menu is clicked</param>
         public ContextMenuData(string name, Action<DropdownMenuAction> action)
         {
             menuName = name;
@@ -28,6 +46,12 @@ namespace RoR2EditorKit.Core.Inspectors
             actionStatusCheck = x => DropdownMenuAction.Status.Normal;
         }
 
+        /// <summary>
+        /// ContextMenuData Constructor
+        /// </summary>
+        /// <param name="name">The name of the ContextMenu</param>
+        /// <param name="action">An action that runs when the ContextMenu is clicked</param>
+        /// <param name="statusCheck">A function to check if the ContextMenu is clickable or not</param>
         public ContextMenuData(string name, Action<DropdownMenuAction> action, Func<DropdownMenuAction, DropdownMenuAction.Status> statusCheck)
         {
             menuName = name;
@@ -154,8 +178,14 @@ namespace RoR2EditorKit.Core.Inspectors
         }
         private VisualElement _imguiContianerElement;
 
+        /// <summary>
+        /// Wether the inspector has done its first drawing.
+        /// <para>When the inspector draws for the first time, unity calls Bind() on <see cref="RootVisualElement"/>, this creates all the necesary fields for property fields, however, this runs only once.</para>
+        /// <para>When HasDoneFirstDrawing is true, the ExtendedInspector will call Bind() to ensure property fields always appear.</para>
+        /// </summary>
         protected bool HasDoneFirstDrawing { get => _hasDoneFirstDrawing; private set => _hasDoneFirstDrawing = value; }
         private bool _hasDoneFirstDrawing = false;
+
         /// <summary>
         /// Direct access to the object that's being inspected as its type.
         /// </summary>
@@ -367,23 +397,20 @@ namespace RoR2EditorKit.Core.Inspectors
             return container;
         }
 
-        protected /*async*/ void AddSimpleContextMenu(VisualElement element, ContextMenuData contextMenuData)
+        /// <summary>
+        /// Adds a ContextMenu to a visual element using RoR2EK's <see cref="ContextMenuData"/> wrapper
+        /// </summary>
+        /// <param name="element">The element that's going to be used for the ContextMenu</param>
+        /// <param name="contextMenuData">The data for the ContextMenu</param>
+        protected void AddSimpleContextMenu(VisualElement element, ContextMenuData contextMenuData)
         {
-            VisualElement actualElement = null;
-            /*if(element is PropertyField pField)
+            if (!elementToContextMenu.ContainsKey(element))
             {
-                await Task.Delay(100);
-                actualElement = pField[0];
-                TurnChildrenNotFocusable(actualElement);
-            }*/
-            actualElement = actualElement ?? element;
-            if (!elementToContextMenu.ContainsKey(actualElement))
-            {
-                var manipulator = new ContextualMenuManipulator(x => CreateMenu(actualElement, x));
-                elementToContextMenu.Add(actualElement, (manipulator, new List<ContextMenuData>()));
-                actualElement.AddManipulator(manipulator);
+                var manipulator = new ContextualMenuManipulator(x => CreateMenu(element, x));
+                elementToContextMenu.Add(element, (manipulator, new List<ContextMenuData>()));
+                element.AddManipulator(manipulator);
             }
-            var tuple = elementToContextMenu[actualElement];
+            var tuple = elementToContextMenu[element];
             if(!tuple.Item2.Contains(contextMenuData))
                 tuple.Item2.Add(contextMenuData);
         }
@@ -395,18 +422,6 @@ namespace RoR2EditorKit.Core.Inspectors
             foreach(ContextMenuData data in contextMenus)
             {
                 populateEvent.menu.AppendAction(data.menuName, data.menuAction, data.actionStatusCheck);
-            }
-        }
-
-        private void TurnChildrenNotFocusable(VisualElement element)
-        {
-            for(int i = 0; i < element.childCount; i++)
-            {
-                VisualElement ve = element[i];
-                ve.pickingMode = PickingMode.Ignore;
-                if(ve.childCount > 0)
-                    TurnChildrenNotFocusable(ve);
-                continue;
             }
         }
         #endregion

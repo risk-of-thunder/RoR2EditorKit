@@ -33,15 +33,12 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         }
         protected override void DrawInspectorGUI()
         {
-            var data = new ListViewHelper.ListViewHelperData
-            {
-                serializedObject = serializedObject,
-                property = nameTransformPairs,
-                listView = inspectorData.Q<ListView>("nameTransformPairs"),
-                intField = inspectorData.Q<IntegerField>("arraySize"),
-                createElement = CreateCLContainer,
-                bindElement = BindCLCContainer,
-            };
+            var data = new ListViewHelper.ListViewHelperData(
+                nameTransformPairs,
+                inspectorData.Q<ListView>("nameTransformPairs"),
+                inspectorData.Q<IntegerField>("arraySize"),
+                CreateCLContainer,
+                BindCLContainer);
             listView = new ListViewHelper(data);
         }
 
@@ -65,7 +62,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             return path.Contains(Constants.PackageName);
         });
 
-        private void BindCLCContainer(VisualElement arg1, SerializedProperty arg2)
+        private void BindCLContainer(VisualElement arg1, SerializedProperty arg2)
         {
             var field = arg1.Q<PropertyField>("name");
             field.bindingPath = arg2.FindPropertyRelative("name").propertyPath;

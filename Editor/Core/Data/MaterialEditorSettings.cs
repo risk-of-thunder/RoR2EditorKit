@@ -58,7 +58,7 @@ namespace RoR2EditorKit.Settings
             if (materialEditorSettingsSO == null)
                 materialEditorSettingsSO = new SerializedObject(this);
 
-            rootElement.Add(MaterialEditorSettingsInspector.StaticInspectorGUI(materialEditorSettingsSO));
+            rootElement.Add(MaterialEditorSettingsInspector.StaticInspectorGUI(materialEditorSettingsSO, true));
 
             rootElement.Bind(materialEditorSettingsSO);
         }

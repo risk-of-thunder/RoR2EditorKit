@@ -82,6 +82,10 @@ namespace RoR2EditorKit.Utilities
             return list;
         }
 
+        /// <summary>
+        /// Runs SerializedObject.Update(), then applies modified properties.
+        /// </summary>
+        /// <param name="serializedObject"></param>
         public static void UpdateAndApply(this SerializedObject serializedObject)
         {
             serializedObject.Update();
@@ -110,15 +114,6 @@ namespace RoR2EditorKit.Utilities
             visualElement.Unbind();
         }
 
-        public static void RemoveChildrenStartingFrom(this VisualElement visualElement, int startingIndex)
-        {
-            for(int i = startingIndex; i < visualElement.childCount; i++)
-            {
-                VisualElement element = visualElement[i];
-                element.RemoveFromHierarchy();
-            }
-        }
-
         /// <summary>
         /// Queries a visual element from the FoldoutElement's container
         /// </summary>
@@ -134,6 +129,11 @@ namespace RoR2EditorKit.Utilities
         #endregion
 
         #region GameObject Extensions
+        /// <summary>
+        /// Retrieves the root GameObject, aka the first object in the hierarchy of a prefab
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns>The root GameObject</returns>
         public static GameObject GetRootObject(this GameObject obj)
         {
             return obj.transform.root.gameObject;

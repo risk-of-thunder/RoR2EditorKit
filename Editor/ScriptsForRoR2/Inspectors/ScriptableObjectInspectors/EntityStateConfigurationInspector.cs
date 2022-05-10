@@ -136,6 +136,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
     $"\nFound a total of {staticSerializableFields.Count} serializable static fields" +
     $"\nFound a total of {unrecognizedFields.Count} unrecognized fields");
             SetContainerFlex();
+            serializedObject.ApplyModifiedProperties();
         }
 
         private void PopulateSerializableFields()
@@ -224,24 +225,44 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         }
         private void EnsureFieldsExist(List<FieldInfo> fields)
         {
-            foreach (FieldInfo field in fields)
+            foreach (FieldInfo fieldInfo in fields)
             {
-                ref SerializedField serializedField = ref TargetType.serializedFieldsCollection.GetOrCreateField(field.Name);
-                ref SerializedValue value = ref serializedField.fieldValue;
-                object val = value.GetValue(field);
-                if(val == null)
+                //If the field already exists, then it means the field either already has a value, or has already been initialized.
+                bool fieldAlreadyExists = false;
+                for(int i = 0; i < serializedFieldsProp.arraySize; i++)
                 {
-                    if(specialDefaultValueCreators.TryGetValue(field.FieldType, out var creator))
+                    var prop = serializedFieldsProp.GetArrayElementAtIndex(i);
+
+                    if(prop.FindPropertyRelative(nameof(SerializedField.fieldName)).stringValue == fieldInfo.Name)
                     {
-                        value.SetValue(field, creator());
-                    }
-                    else
-                    {
-                        value.SetValue(field, field.FieldType.IsValueType ? Activator.CreateInstance(field.FieldType) : (object)null);
+                        fieldAlreadyExists = true;
+                        break;
                     }
                 }
+                //Already exists? go to the next field.
+                if (fieldAlreadyExists)
+                    continue;
+                //Otherwise, make new serialized property and initialize.
+                serializedFieldsProp.arraySize++;
+                var serializedFieldProp = serializedFieldsProp.GetArrayElementAtIndex(serializedFieldsProp.arraySize - 1);
+                var fieldNameProp = serializedFieldProp.FindPropertyRelative(nameof(SerializedField.fieldName));
+                fieldNameProp.stringValue = fieldInfo.Name;
+
+                var fieldValueProp = serializedFieldProp.FindPropertyRelative(nameof(SerializedField.fieldValue));
+                var serializedValue = new SerializedValue();
+
+                if(specialDefaultValueCreators.TryGetValue(fieldInfo.FieldType, out var creator))
+                {
+                    serializedValue.SetValue(fieldInfo, creator());
+                }
+                else
+                {
+                    serializedValue.SetValue(fieldInfo, fieldInfo.FieldType.IsValueType ? Activator.CreateInstance(fieldInfo.FieldType) : (object)null);
+                }
+
+                fieldValueProp.FindPropertyRelative(nameof(SerializedValue.stringValue)).stringValue = serializedValue.stringValue;
+                fieldValueProp.FindPropertyRelative(nameof(SerializedValue.objectValue)).objectReferenceValue = null;
             }
-            serializedObject.Update();
         }
         private void DisplayFields(VisualElement container, List<FieldInfo> fieldInfos)
         {
