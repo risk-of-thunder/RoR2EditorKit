@@ -48,7 +48,7 @@ A more detailed Contribution guideline can be found [here](https://github.com/ri
 		* ChildLocator
 		* EntityStateConfiguration
 		* ObjectScaleCurve
-		*
+	* Readded Tooltip and Labeling from NetworkStateMachine feature
 	* Added SerializableContentPack inspector
 
 
