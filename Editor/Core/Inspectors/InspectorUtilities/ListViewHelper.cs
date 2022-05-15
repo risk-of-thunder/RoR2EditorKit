@@ -23,11 +23,11 @@ namespace RoR2EditorKit.Core.Inspectors
         /// </summary>
         public struct ListViewHelperData
         {
-            internal SerializedProperty property;
-            internal ListView listView;
-            internal IntegerField intField;
-            internal Action<VisualElement, SerializedProperty> bindElement;
-            internal Func<VisualElement> createElement;
+            public SerializedProperty property;
+            public ListView listView;
+            public IntegerField intField;
+            public Action<VisualElement, SerializedProperty> bindElement;
+            public Func<VisualElement> createElement;
 
             /// <summary>
             /// ListViewHelperData Constructor
@@ -37,13 +37,8 @@ namespace RoR2EditorKit.Core.Inspectors
             /// <param name="intfld">An IntegerField that's used for modifying the SerializedProperty's ArraySize</param>
             /// <param name="crtItem">Function for creating a new Element to display</param>
             /// <param name="bnd">Action for binding the SerializedProperty to the VisualElement, there is no need to call Bind() on any elements, as the ListViewHelper takes care of it.</param>
-            /// <exception cref="InvalidOperationException">Thrown when the <paramref name="sp"/> is not an Array Property</exception>
             public ListViewHelperData(SerializedProperty sp, ListView lv, IntegerField intfld, Func<VisualElement> crtItem, Action<VisualElement, SerializedProperty> bnd)
             {
-                if(sp.isArray)
-                {
-                    throw new InvalidOperationException($"Cannot create a ListViewHelperData with a SerializedProperty ({sp.name}) thats not an Array property!");
-                }
                 property = sp;
                 listView = lv;
                 intField = intfld;
@@ -55,11 +50,26 @@ namespace RoR2EditorKit.Core.Inspectors
         /// <summary>
         /// The SerializedObject that owns the <see cref="SerializedProperty"/>
         /// </summary>
-        public SerializedObject SerializedObject { get; }
+        public SerializedObject SerializedObject { get => _serializedObject; }
+        private SerializedObject _serializedObject;
         /// <summary>
         /// The SerializedProperty thats being used for the ListView
         /// </summary>
-        public SerializedProperty SerializedProperty { get; }
+        public SerializedProperty SerializedProperty
+        {
+            get => _serializedProperty;
+            set
+            {
+                if(_serializedProperty != value)
+                {
+                    _serializedProperty = value;
+                    _serializedObject = value.serializedObject;
+                    SetupArraySize();
+                    SetupListView();
+                }
+            }
+        }
+        private SerializedProperty _serializedProperty;
         /// <summary>
         /// The ListView element
         /// </summary>
@@ -83,8 +93,11 @@ namespace RoR2EditorKit.Core.Inspectors
         /// <param name="data">The Data for constructiong the ListView</param>
         public ListViewHelper(ListViewHelperData data)
         {
-            SerializedObject = data.property.serializedObject;
-            SerializedProperty = data.property;
+            if(data.property != null)
+            {
+                _serializedProperty = data.property;
+                _serializedObject = SerializedProperty.serializedObject;
+            }
             TiedListView = data.listView;
             ArraySize = data.intField;
             BindElement = data.bindElement;
@@ -95,7 +108,7 @@ namespace RoR2EditorKit.Core.Inspectors
         }
         private void SetupArraySize()
         {
-            ArraySize.value = SerializedProperty.arraySize;
+            ArraySize.value = SerializedProperty == null ? 0 : SerializedProperty.arraySize;
             ArraySize.isDelayed = true;
             ArraySize.RegisterValueChangedCallback(OnSizeSet);
 
@@ -103,20 +116,15 @@ namespace RoR2EditorKit.Core.Inspectors
             {
                 int value = evt.newValue < 0 ? 0 : evt.newValue;
                 ArraySize.value = value;
-                SerializedProperty.arraySize = value;
+                if(SerializedProperty != null)
+                    SerializedProperty.arraySize = value;
                 TiedListView.itemsSource = new int[value];
-                SerializedObject.ApplyModifiedProperties();
+                SerializedObject?.ApplyModifiedProperties();
             }
         }
         private void SetupListView()
         {
-            TiedListView.itemsSource = new int[SerializedProperty.arraySize];
-
-            //Ensures height is never 0
-            if(TiedListView.style.height.value.value <= 0)
-            {
-                TiedListView.style.height = 100f;
-            }
+            TiedListView.itemsSource = SerializedProperty == null ? Array.Empty<int>() : new int[SerializedProperty.arraySize];
 
             TiedListView.makeItem = CreateElement;
             TiedListView.bindItem = BindItemInternal;

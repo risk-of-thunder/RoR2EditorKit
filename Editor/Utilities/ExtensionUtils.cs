@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -91,6 +92,44 @@ namespace RoR2EditorKit.Utilities
             serializedObject.Update();
             serializedObject.ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Finds the parent property of the selected serialized property
+        /// </summary>
+        public static SerializedProperty GetParentProperty(this SerializedProperty serializedProperty)
+        {
+            var propertyPaths = serializedProperty.propertyPath.Split('.');
+            if (propertyPaths.Length <= 1)
+            {
+                return default;
+            }
+
+            var parentSerializedProperty = serializedProperty.serializedObject.FindProperty(propertyPaths.First());
+            for (var index = 1; index < propertyPaths.Length - 1; index++)
+            {
+                if (propertyPaths[index] == "Array")
+                {
+                    if (index + 1 == propertyPaths.Length - 1)
+                    {
+                        // reached the end
+                        break;
+                    }
+                    if (propertyPaths.Length > index + 1 && Regex.IsMatch(propertyPaths[index + 1], "^data\\[\\d+\\]$"))
+                    {
+                        var match = Regex.Match(propertyPaths[index + 1], "^data\\[(\\d+)\\]$");
+                        var arrayIndex = int.Parse(match.Groups[1].Value);
+                        parentSerializedProperty = parentSerializedProperty.GetArrayElementAtIndex(arrayIndex);
+                        index++;
+                    }
+                }
+                else
+                {
+                    parentSerializedProperty = parentSerializedProperty.FindPropertyRelative(propertyPaths[index]);
+                }
+            }
+
+            return parentSerializedProperty;
+        }
         #endregion
 
         #region Visual Element Extensions
@@ -126,6 +165,15 @@ namespace RoR2EditorKit.Utilities
         {
             return foldout.Q<VisualElement>("unity-content").Q<T>(name, className);
         }
+
+        /// <summary>
+        /// Quickly sets the display of a visual element
+        /// </summary>
+        /// <param name="visualElement">The element to change the display style</param>
+        /// <param name="displayStyle">new display style value</param>
+        public static void SetDisplay(this VisualElement visualElement, DisplayStyle displayStyle) => visualElement.style.display = displayStyle;
+
+        public static void SetDisplay(this VisualElement visualElement, bool display) => visualElement.style.display = display ? DisplayStyle.Flex : DisplayStyle.None;
         #endregion
 
         #region GameObject Extensions
