@@ -32,6 +32,20 @@ A more detailed Contribution guideline can be found [here](https://github.com/ri
 
 (Old changelogs can be found [here](https://github.com/risk-of-thunder/RoR2EditorKit/blob/main/OldChangelogs.md))
 
+### '3.2.0'
+* Core Changes:
+	* Added "GetParentProperty" extension for SerializedProperty
+	* Added "SetDisplay" extension for VisualElements
+	* ListViewHelper's SerializedProperty can now be changed, allowing for dynamic use of a ListView
+	* Improved the ExtendedEditorWindow:
+		* Now works like pre 2.0.0 ExtendedEditorWindow
+		* Still uses VisualElements
+		* ExtendedEditorWindows can load their UI via TemplateHelpers
+		* Contains a SerializedObject that points to the instance of the ExtendedEditorWindow
+	* Added ObjectEditingEditorWindow
+		* ObjectEditingEditorWindow's main usage is for constructing more complex editing tools for objects
+		* ObjectEditingEditorWindow's SerializedObject points to the inspected/editing object
+		
 ### '3.1.0'
 
 * Core Changes:
