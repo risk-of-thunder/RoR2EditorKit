@@ -132,6 +132,7 @@ namespace RoR2EditorKit.Core.Inspectors
         private void BindItemInternal(VisualElement ve, int i)
         {
             SerializedProperty propForElement = SerializedProperty.GetArrayElementAtIndex(i);
+            ve.name = $"element{i}";
             BindElement(ve, propForElement);
             ve.Bind(SerializedObject);
         }

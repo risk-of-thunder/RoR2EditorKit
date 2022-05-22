@@ -47,18 +47,18 @@ namespace RoR2EditorKit.Utilities
 
         #region SerializedProperties/Objects  Extensions
         /// <summary>
-        /// Returns the serialized property that's bound to this ObjectField.
+        /// Returns the serialized property that's bound to this bindable element.
         /// </summary>
-        /// <param name="objField">The objectField that has a bounded property</param>
+        /// <param name="objField">The BindableElement that has a bounded property</param>
         /// <param name="objectBound">The SerializedObject that has the objectField's property binding path.</param>
         /// <returns>The serialized property</returns>
         /// <exception cref="NullReferenceException">when the objField does not have a bindingPath set.</exception>
-        public static SerializedProperty GetBindedProperty(this ObjectField objField, SerializedObject objectBound)
+        public static SerializedProperty GetBindedProperty(this IBindable bindableElement, SerializedObject objectBound)
         {
-            if (objField.bindingPath.IsNullOrEmptyOrWhitespace())
-                throw new NullReferenceException($"{objField} does not have a bindingPath set");
+            if (bindableElement.bindingPath.IsNullOrEmptyOrWhitespace())
+                throw new NullReferenceException($"{bindableElement} does not have a bindingPath set");
 
-            return objectBound.FindProperty(objField.bindingPath);
+            return objectBound.FindProperty(bindableElement.bindingPath);
         }
 
         /// <summary>
