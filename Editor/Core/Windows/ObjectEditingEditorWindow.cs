@@ -48,6 +48,7 @@ namespace RoR2EditorKit.Core.EditorWindows
 
             TEditorWindow window = GetWindow<TEditorWindow>(windowName == null ? ObjectNames.NicifyVariableName(typeof(TEditorWindow).Name) : windowName);
             window.SerializedObject = new SerializedObject(obj);
+            window.TargetType = window.SerializedObject.targetObject as TObject;
             window.OnWindowOpened();
         }
     }
