@@ -1,12 +1,6 @@
 ﻿using RoR2EditorKit.Settings;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.UIElements;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.Core.Inspectors
@@ -34,13 +28,13 @@ namespace RoR2EditorKit.Core.Inspectors
             foreach (SerializedProperty prop in settings)
             {
                 var propField = new PropertyField(prop);
-            
-                if(forSettingsWindow)
+
+                if (forSettingsWindow)
                     propField.AddToClassList("thunderkit-field-input");
 
                 container.Add(propField);
             }
-            if(forSettingsWindow)
+            if (forSettingsWindow)
             {
                 container.AddToClassList("thunderkit-field");
                 container.style.flexDirection = FlexDirection.Column;

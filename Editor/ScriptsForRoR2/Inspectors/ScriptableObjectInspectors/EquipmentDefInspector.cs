@@ -1,12 +1,10 @@
 ﻿using RoR2;
 using RoR2EditorKit.Core.Inspectors;
-using UnityEngine;
-using UnityEngine.UIElements;
+using RoR2EditorKit.Utilities;
 using UnityEditor;
 using UnityEditor.UIElements;
-using Object = UnityEngine.Object;
-using System.Collections.Generic;
-using RoR2EditorKit.Utilities;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
@@ -69,7 +67,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         {
             float value = evt == null ? TargetType.cooldown : evt.newValue;
 
-            if(value < 0)
+            if (value < 0)
             {
                 TargetType.cooldown = 0;
                 Debug.LogError($"Cannot set an equipment's cooldown to a number less than 0");

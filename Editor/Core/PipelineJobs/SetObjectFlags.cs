@@ -1,16 +1,14 @@
-using ThunderKit.Core.Pipelines;
-using ThunderKit.Core.Attributes;
-using ThunderKit.Core.Manifests.Datum;
 using RoR2EditorKit.Core.ManifestDatums;
-using UnityEngine;
-using UnityEditor;
-using System.Linq;
+using RoR2EditorKit.Utilities;
 using System.Collections.Generic;
 using System.IO;
-using ThunderKit.Core.Data;
+using System.Linq;
 using System.Threading.Tasks;
-using System.Text;
-using RoR2EditorKit.Utilities;
+using ThunderKit.Core.Attributes;
+using ThunderKit.Core.Data;
+using ThunderKit.Core.Pipelines;
+using UnityEditor;
+using UnityEngine;
 
 namespace RoR2EditorKit.Core.PipelineJobs
 {
@@ -30,9 +28,9 @@ namespace RoR2EditorKit.Core.PipelineJobs
             var manifests = pipeline.Manifests;
 
             var files = new List<SetObjectFlagsDatum>();
-            for(int i = 0; i < manifests.Length; i++)
+            for (int i = 0; i < manifests.Length; i++)
             {
-                foreach(var filesDatum in manifests[i].Data.OfType<SetObjectFlagsDatum>())
+                foreach (var filesDatum in manifests[i].Data.OfType<SetObjectFlagsDatum>())
                 {
                     files.Add(filesDatum);
                 }
@@ -48,7 +46,7 @@ namespace RoR2EditorKit.Core.PipelineJobs
             PopulateWithExplicitAssets(explicitAssets, explicitAssetPaths);
 
 
-            for(int defIndex = 0; defIndex < files.Count; defIndex++)
+            for (int defIndex = 0; defIndex < files.Count; defIndex++)
             {
                 var fileDatum = filesDatums[defIndex];
                 var assets = new List<string>();
@@ -59,7 +57,7 @@ namespace RoR2EditorKit.Core.PipelineJobs
                 {
                     PopulateWithExplicitAssets(fileDatum.objects, assets);
 
-                    if(AffectsDependencies)
+                    if (AffectsDependencies)
                     {
                         var dependencies = assets.SelectMany(assetPath => AssetDatabase.GetDependencies(assetPath))
                             .Where(dep => !explicitAssetPaths.Contains(dep))

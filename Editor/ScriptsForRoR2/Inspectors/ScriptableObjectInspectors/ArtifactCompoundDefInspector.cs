@@ -1,13 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UIElements;
-using UnityEditor.UIElements;
-using UnityEditor;
+﻿using RoR2;
 using RoR2EditorKit.Core.Inspectors;
-using RoR2;
-using System;
 using RoR2EditorKit.Utilities;
+using UnityEditor;
+using UnityEditor.UIElements;
+using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {

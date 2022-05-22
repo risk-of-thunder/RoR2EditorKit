@@ -32,7 +32,18 @@ A more detailed Contribution guideline can be found [here](https://github.com/ri
 
 (Old changelogs can be found [here](https://github.com/risk-of-thunder/RoR2EditorKit/blob/main/OldChangelogs.md))
 
+### '3.2.1'
+
+* Core Changes:
+	* Cleaned up the code
+	* Added XML documentation file
+	* ListViewHelper now has a refresh method
+
+* RoR2EditorScripts changes:
+	* Cleaned up the code
+
 ### '3.2.0'
+
 * Core Changes:
 	* Added "GetParentProperty" extension for SerializedProperty
 	* Added "SetDisplay" extension for VisualElements
@@ -49,6 +60,7 @@ A more detailed Contribution guideline can be found [here](https://github.com/ri
 
 * RoR2EditorScripts changes:
 	* Added an AssetCollectionInspector
+
 ### '3.1.0'
 
 * Core Changes:

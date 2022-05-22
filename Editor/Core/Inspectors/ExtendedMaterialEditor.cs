@@ -1,6 +1,5 @@
 ﻿using RoR2EditorKit.Settings;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -46,7 +45,7 @@ namespace RoR2EditorKit.Core.Inspectors
         public override void Awake()
         {
             base.Awake();
-            if(MaterialEditorEnabled)
+            if (MaterialEditorEnabled)
             {
                 material = target as Material;
                 chosenActionForMaterial = GetActionForMaterial();
@@ -77,9 +76,9 @@ namespace RoR2EditorKit.Core.Inspectors
 
         private Action GetActionForMaterial()
         {
-            foreach(var shaderStringPair in Settings.MaterialEditorSettings.shaderStringPairs)
+            foreach (var shaderStringPair in Settings.MaterialEditorSettings.shaderStringPairs)
             {
-                if(shaderNameToAction.ContainsKey(shaderStringPair.shaderName) && material.shader == shaderStringPair.shader)
+                if (shaderNameToAction.ContainsKey(shaderStringPair.shaderName) && material.shader == shaderStringPair.shader)
                 {
                     return shaderNameToAction[shaderStringPair.shaderName];
                 }
@@ -168,7 +167,7 @@ namespace RoR2EditorKit.Core.Inspectors
         /// <param name="label">The text for the label used in this header</param>
         /// <param name="tooltip">A tooltip that's displayed after the mouse hovers over the label</param>
         public static void Header(string label, string tooltip) => Header(new GUIContent(label, tooltip));
-        
+
         private static void Header(GUIContent content) => EditorGUILayout.LabelField(content, EditorStyles.boldLabel);
     }
 }

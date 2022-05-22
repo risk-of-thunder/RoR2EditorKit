@@ -1,12 +1,9 @@
-﻿using UnityEngine;
-using UnityEngine.UIElements;
+﻿using RoR2;
+using RoR2EditorKit.Core.Inspectors;
+using System;
 using UnityEditor;
 using UnityEditor.UIElements;
-using RoR2EditorKit.Core.Inspectors;
-using RoR2;
-using System;
-using ThunderKit.Core.Data;
-using RoR2EditorKit.Settings;
+using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
@@ -66,7 +63,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         private void OnTierEnumSet(ChangeEvent<string> evt)
         {
             string val = evt.newValue.Replace(" ", "");
-            if(Enum.TryParse(val, out ItemTier newTier))
+            if (Enum.TryParse(val, out ItemTier newTier))
             {
                 itemTierDef.style.display = newTier == ItemTier.AssignedAtRuntime ? DisplayStyle.Flex : DisplayStyle.None;
             }

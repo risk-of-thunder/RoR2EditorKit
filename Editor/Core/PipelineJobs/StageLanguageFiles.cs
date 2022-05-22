@@ -1,18 +1,18 @@
-using System.Threading.Tasks;
-using ThunderKit.Core.Pipelines;
-using ThunderKit.Core.Attributes;
 using RoR2EditorKit.Core.ManifestDatums;
-using System.Linq;
-using System;
-using System.IO;
-using ThunderKit.Core.Paths;
-using UnityEngine;
-using UnityEditor;
-using System.Collections.Generic;
-using UnityEngine.Networking;
-using System.Text;
-using SimpleJSON;
 using RoR2EditorKit.Utilities;
+using SimpleJSON;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using ThunderKit.Core.Attributes;
+using ThunderKit.Core.Paths;
+using ThunderKit.Core.Pipelines;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.Networking;
 
 namespace RoR2EditorKit.Core.PipelineJobs
 {
@@ -107,17 +107,17 @@ namespace RoR2EditorKit.Core.PipelineJobs
             foreach (var languageFolderTree in folderTrees)
             {
                 var languageNames = languageFolderTree.languageFolders.Select(lf => lf.languageName).ToArray();
-                foreach(var outputPath in languageFolderTree.StagingPaths.Select(path => path.Resolve(pipeline, this)))
+                foreach (var outputPath in languageFolderTree.StagingPaths.Select(path => path.Resolve(pipeline, this)))
                 {
                     foreach (string dirPath in Directory.GetDirectories(languageArtifactPath, "*", SearchOption.AllDirectories))
                         IOUtils.EnsureDirectory(dirPath.Replace(languageArtifactPath, outputPath));
 
-                    foreach(string filePath in Directory.GetFiles(languageArtifactPath, "*", SearchOption.AllDirectories))
+                    foreach (string filePath in Directory.GetFiles(languageArtifactPath, "*", SearchOption.AllDirectories))
                     {
                         bool found = false;
-                        foreach(var languageName in languageNames)
+                        foreach (var languageName in languageNames)
                         {
-                            if(filePath.IndexOf(languageName, StringComparison.OrdinalIgnoreCase) >= 0)
+                            if (filePath.IndexOf(languageName, StringComparison.OrdinalIgnoreCase) >= 0)
                             {
                                 found = true;
                                 break;
@@ -162,7 +162,7 @@ namespace RoR2EditorKit.Core.PipelineJobs
                     }
 
                     JSONNode node2 = node["strings"];
-                    if(node2 == null)
+                    if (node2 == null)
                     {
                         invalidLangTupleList.Add((asset, InvalidLangfile.NodeError));
                         continue;

@@ -1,10 +1,6 @@
-﻿using RoR2;
-using RoR2.Skills;
-using UnityEditor;
-using UnityEngine;
-using static RoR2EditorKit.Utilities.ScriptableObjectUtils;
-using static RoR2EditorKit.Utilities.AssetDatabaseUtils;
+﻿using RoR2.Skills;
 using RoR2EditorKit.Utilities;
+using UnityEditor;
 
 namespace RoR2EditorKit.RoR2Related
 {

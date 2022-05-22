@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using RoR2;
+﻿using RoR2;
 using RoR2EditorKit.Core.Inspectors;
 using RoR2EditorKit.Utilities;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
@@ -82,7 +76,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         {
             string bodyName = obj.name.Substring("Set Base Stats To/".Length);
             string address = string.Empty;
-            switch(bodyName)
+            switch (bodyName)
             {
                 case "Commando": address = CommandoAddress; break;
                 case "Lemurian": address = LemurianAddress; break;
@@ -94,7 +88,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 return;
 
             GameObject vanillaPrefab = await AddressablesUtils.LoadAssetFromCatalog<GameObject>(address);
-            
+
             /*using (var pb = new ThunderKit.Common.Logging.ProgressBar("Copying Stats"))
             {
                 var op = Addressables.LoadAssetAsync<GameObject>(address);

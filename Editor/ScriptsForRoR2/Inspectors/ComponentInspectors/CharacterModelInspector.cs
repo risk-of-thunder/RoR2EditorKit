@@ -1,15 +1,11 @@
-﻿using RoR2EditorKit.Core.Inspectors;
+﻿using RoR2;
+using RoR2EditorKit.Core.Inspectors;
 using RoR2EditorKit.Utilities;
-using UnityEngine;
-using UnityEngine.UIElements;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
-using RoR2;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
@@ -46,7 +42,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
             foreach (Renderer renderer in root.GetComponentsInChildren<Renderer>())
             {
-                if(renderer is SkinnedMeshRenderer smr)
+                if (renderer is SkinnedMeshRenderer smr)
                 {
                     renderInfos.Add(new CharacterModel.RendererInfo
                     {
@@ -54,7 +50,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                         renderer = smr,
                     });
                 }
-                else if(renderer is MeshRenderer mr)
+                else if (renderer is MeshRenderer mr)
                 {
                     renderInfos.Add(new CharacterModel.RendererInfo
                     {
@@ -73,7 +69,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             var root = TargetType.gameObject.GetRootObject();
             List<CharacterModel.LightInfo> lightInfos = new List<CharacterModel.LightInfo>();
 
-            foreach(Light light in root.GetComponentsInChildren<Light>())
+            foreach (Light light in root.GetComponentsInChildren<Light>())
             {
                 lightInfos.Add(new CharacterModel.LightInfo
                 {

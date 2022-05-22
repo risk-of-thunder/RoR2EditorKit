@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.Core.Inspectors
@@ -25,7 +20,7 @@ namespace RoR2EditorKit.Core.Inspectors
 
         private void AddToggle()
         {
-            if(!InspectorEnabled)
+            if (!InspectorEnabled)
             {
                 RootVisualElement.Add(container);
             }
@@ -42,7 +37,7 @@ namespace RoR2EditorKit.Core.Inspectors
                     var scriptType = toggle.Q<Label>("scriptType");
                     scriptType.text = serializedObject.FindProperty("m_Script").objectReferenceValue.name;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Debug.LogWarning($"Cannot setup toggle and header for component inspector {GetType().Name}, resorting to IMGUI container\n\n{ex}");
                     RootVisualElement.Add(container);

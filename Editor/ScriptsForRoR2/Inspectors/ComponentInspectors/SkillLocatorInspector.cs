@@ -1,10 +1,6 @@
 ﻿using RoR2;
 using RoR2EditorKit.Core.Inspectors;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
@@ -31,12 +27,12 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         {
             string[] fieldNames = new string[] { "primary", "secondary", "utility", "special" };
             skillToPropField.Clear();
-            foreach(string field in fieldNames)
+            foreach (string field in fieldNames)
             {
                 var propField = DrawInspectorElement.Q<PropertyField>(field);
                 var genericSkill = serializedObject.FindProperty(propField.bindingPath).objectReferenceValue as GenericSkill;
 
-                if(genericSkill)
+                if (genericSkill)
                 {
                     skillToPropField.Add(genericSkill, propField);
                     propField.label = genericSkill.skillName;
@@ -51,7 +47,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         private void OnGenericSkillChange(ChangeEvent<GenericSkill> evt)
         {
             var genericSkill = evt.newValue;
-            if(skillToPropField.TryGetValue(genericSkill, out var field))
+            if (skillToPropField.TryGetValue(genericSkill, out var field))
             {
                 field.label = genericSkill.skillName;
                 field.tooltip = $"Type: \"{genericSkill.GetType().Name}\"" +

@@ -1,18 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.UIElements;
 using UnityEditor;
-using UnityEditor.UIElements;
 using Object = UnityEngine.Object;
 
 namespace RoR2EditorKit.Core.EditorWindows
 {
-    using static ThunderKit.Core.UIElements.TemplateHelpers;
-
     /// <summary>
     /// A variation of the <see cref="ExtendedEditorWindow"/>, this editor window is used for editing objects, allowing for more space and better control over the inspected object
     /// </summary>
@@ -41,7 +32,7 @@ namespace RoR2EditorKit.Core.EditorWindows
         /// <exception cref="NullReferenceException">Thrown when <paramref name="obj"/> is null</exception>
         public static void OpenEditorWindow<TEditorWindow>(Object obj, string windowName = null) where TEditorWindow : ObjectEditingEditorWindow<TObject>
         {
-            if(!obj)
+            if (!obj)
             {
                 throw new NullReferenceException(obj.ToString());
             }

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
@@ -60,7 +56,7 @@ namespace RoR2EditorKit.Core.Inspectors
             get => _serializedProperty;
             set
             {
-                if(_serializedProperty != value)
+                if (_serializedProperty != value)
                 {
                     _serializedProperty = value;
                     _serializedObject = value.serializedObject;
@@ -93,7 +89,7 @@ namespace RoR2EditorKit.Core.Inspectors
         /// <param name="data">The Data for constructiong the ListView</param>
         public ListViewHelper(ListViewHelperData data)
         {
-            if(data.property != null)
+            if (data.property != null)
             {
                 _serializedProperty = data.property;
                 _serializedObject = SerializedProperty.serializedObject;
@@ -106,6 +102,16 @@ namespace RoR2EditorKit.Core.Inspectors
             SetupArraySize();
             SetupListView();
         }
+
+        /// <summary>
+        /// Refreshes the listview helper by setting the serialized property's array size to itself's size
+        /// This causes a chain reaction that redraws the entirety of the elements tied to the helper
+        /// </summary>
+        public void Refresh()
+        {
+            OnSizeSetInternal(SerializedProperty == null ? 0 : SerializedProperty.arraySize);
+        }
+
         private void SetupArraySize()
         {
             ArraySize.value = SerializedProperty == null ? 0 : SerializedProperty.arraySize;
@@ -115,12 +121,17 @@ namespace RoR2EditorKit.Core.Inspectors
             void OnSizeSet(ChangeEvent<int> evt)
             {
                 int value = evt.newValue < 0 ? 0 : evt.newValue;
-                ArraySize.value = value;
-                if(SerializedProperty != null)
-                    SerializedProperty.arraySize = value;
-                TiedListView.itemsSource = new int[value];
-                SerializedObject?.ApplyModifiedProperties();
+                OnSizeSetInternal(value);
             }
+        }
+
+        private void OnSizeSetInternal(int newSize)
+        {
+            ArraySize.value = newSize;
+            if (SerializedProperty != null)
+                SerializedProperty.arraySize = newSize;
+            TiedListView.itemsSource = new int[newSize];
+            SerializedObject?.ApplyModifiedProperties();
         }
         private void SetupListView()
         {

@@ -1,17 +1,9 @@
-﻿using RoR2EditorKit.Core.Inspectors;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using RoR2;
-using UnityEngine.UIElements;
+﻿using RoR2EditorKit.Common;
+using RoR2EditorKit.Core.Inspectors;
+using ThunderKit.Core.UIElements;
 using UnityEditor;
 using UnityEditor.UIElements;
-using RoR2EditorKit.Utilities;
-using ThunderKit.Core.UIElements;
-using UnityEngine;
-using RoR2EditorKit.Common;
+using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
@@ -44,12 +36,12 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private void SetNamesToTransformNames(DropdownMenuAction act)
         {
-            foreach(SerializedProperty property in nameTransformPairs)
+            foreach (SerializedProperty property in nameTransformPairs)
             {
                 var name = property.FindPropertyRelative("name");
                 var transform = property.FindPropertyRelative("transform");
 
-                if(transform.objectReferenceValue)
+                if (transform.objectReferenceValue)
                 {
                     name.stringValue = transform.objectReferenceValue.name;
                 }

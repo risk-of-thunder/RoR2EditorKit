@@ -2,13 +2,8 @@
 using RoR2EditorKit.Core.Inspectors;
 using RoR2EditorKit.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.UIElements;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
@@ -60,7 +55,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 SetColor,
                 statusCheck =>
                 {
-                    if(TargetType.eliteEquipmentDef && TargetType.eliteEquipmentDef.passiveBuffDef)
+                    if (TargetType.eliteEquipmentDef && TargetType.eliteEquipmentDef.passiveBuffDef)
                         return DropdownMenuAction.Status.Normal;
                     return DropdownMenuAction.Status.Hidden;
                 }));
@@ -90,14 +85,14 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 var eqp = GetEquipmentDef();
                 return eqp && eqp.passiveBuffDef && eqp.passiveBuffDef.eliteDef != TargetType;
             }, $"You've associated an EquipmentDef to this Elite, but the assigned EquipmentDef's \"passiveBuffDef\"'s EliteDef is not the inspected EliteDef!", MessageType.Warning);
-            
+
             EquipmentDef GetEquipmentDef() => validator.ChangeEvent == null ? TargetType.eliteEquipmentDef : (EquipmentDef)validator.ChangeEvent.newValue;
         }
 
         private void SetToken(DropdownMenuAction act)
         {
             string objectName = target.name;
-            if(objectName.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase))
+            if (objectName.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase))
             {
                 objectName = objectName.Substring(Prefix.Length);
             }
@@ -129,7 +124,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         {
             string assetName = action.name.Substring($"Set Coefficients To/".Length);
             string address = string.Empty;
-            switch(assetName)
+            switch (assetName)
             {
                 case "Tier1Honor": address = Tier1HonorAddress; break;
                 case "Tier1": address = Tier1Address; break;

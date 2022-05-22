@@ -1,13 +1,7 @@
 ﻿using RoR2EditorKit.Common;
 using RoR2EditorKit.Settings;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
-using UnityEngine;
-using UnityEngine.UIElements;
-using Object = UnityEngine.Object;
 
 namespace RoR2EditorKit.Core.EditorWindows
 {

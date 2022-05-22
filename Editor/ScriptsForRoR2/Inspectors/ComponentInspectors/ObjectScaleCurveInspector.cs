@@ -1,14 +1,8 @@
 ﻿using RoR2;
 using RoR2EditorKit.Core.Inspectors;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
-using UnityEngine;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
@@ -47,7 +41,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         {
             bool value = evt == null ? TargetType.useOverallCurveOnly : evt.newValue;
 
-            if(value)
+            if (value)
             {
                 curveLabel.text = $"Overall Curve";
                 curveX.style.display = DisplayStyle.None;

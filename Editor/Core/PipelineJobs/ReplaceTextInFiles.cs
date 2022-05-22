@@ -1,14 +1,14 @@
 using RoR2EditorKit.Core.ManifestDatums;
+using RoR2EditorKit.Utilities;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using ThunderKit.Core.Attributes;
+using ThunderKit.Core.Data;
 using ThunderKit.Core.Pipelines;
 using UnityEditor;
 using UnityEngine;
-using ThunderKit.Core.Attributes;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using ThunderKit.Core.Data;
-using RoR2EditorKit.Utilities;
 
 namespace RoR2EditorKit.Core.PipelineJobs
 {
@@ -28,9 +28,9 @@ namespace RoR2EditorKit.Core.PipelineJobs
             var manifests = pipeline.Manifests;
 
             var files = new List<ReplaceTextInFilesDatum>();
-            for(int i = 0; i < manifests.Length; i++)
+            for (int i = 0; i < manifests.Length; i++)
             {
-                foreach(var textInFilesDatum in manifests[i].Data.OfType<ReplaceTextInFilesDatum>())
+                foreach (var textInFilesDatum in manifests[i].Data.OfType<ReplaceTextInFilesDatum>())
                 {
                     files.Add(textInFilesDatum);
                 }
@@ -45,7 +45,7 @@ namespace RoR2EditorKit.Core.PipelineJobs
 
             PopulateWithExplicitAssets(explicitAssets, explicitAssetPaths);
 
-            for(int defIndex = 0; defIndex < files.Count; defIndex++)
+            for (int defIndex = 0; defIndex < files.Count; defIndex++)
             {
                 var textFileDatum = textInFilesDatums[defIndex];
                 var assets = new List<string>();
@@ -57,14 +57,14 @@ namespace RoR2EditorKit.Core.PipelineJobs
                     PopulateWithExplicitAssets(textFileDatum.Objects, assets);
                 }
 
-                foreach(string assetPath in explicitAssetPaths.Where(p => !p.IsNullOrEmptyOrWhitespace()))
+                foreach (string assetPath in explicitAssetPaths.Where(p => !p.IsNullOrEmptyOrWhitespace()))
                 {
                     string[] text = File.ReadAllLines(assetPath);
                     List<string> newText = new List<string>();
 
-                    for(int i = 0; i < text.Length; i++)
+                    for (int i = 0; i < text.Length; i++)
                     {
-                        if(text[i].Contains(textToReplace))
+                        if (text[i].Contains(textToReplace))
                         {
                             pipeline.Log(LogLevel.Information, $"Replacing {textToReplace} (Line {i}) with {replacementText} {AssetDatabase.LoadAssetAtPath<Object>(assetPath)}");
                             newText.Add(text[i].Replace(textToReplace, replacementText));

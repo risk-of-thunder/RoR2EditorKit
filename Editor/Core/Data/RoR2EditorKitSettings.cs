@@ -1,6 +1,5 @@
 ﻿using RoR2EditorKit.Utilities;
 using System.Collections.Generic;
-using System.Linq;
 using ThunderKit.Core.Data;
 using ThunderKit.Core.Manifests;
 using ThunderKit.Markdown;
@@ -82,7 +81,7 @@ namespace RoR2EditorKit.Settings
         /// <returns>The token prefix on all uppercase</returns>
         public string GetPrefixUppercase()
         {
-            if(TokenPrefix.IsNullOrEmptyOrWhitespace())
+            if (TokenPrefix.IsNullOrEmptyOrWhitespace())
             {
                 throw ErrorShorthands.NullTokenPrefix();
             }
@@ -113,7 +112,7 @@ namespace RoR2EditorKit.Settings
             for (int i = 0; i < TokenPrefix.Length; i++)
             {
                 char letter = TokenPrefix[i];
-                if(i == 0)
+                if (i == 0)
                 {
                     prefix.Add(char.ToUpperInvariant(letter));
                 }

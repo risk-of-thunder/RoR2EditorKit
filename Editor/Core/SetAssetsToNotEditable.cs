@@ -1,11 +1,11 @@
 ﻿using RoR2EditorKit.Common;
 using RoR2EditorKit.Settings;
-using UnityEditor;
-using UnityEngine;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using ThunderKit.Core.Data;
+using UnityEditor;
+using UnityEngine;
 
 namespace RoR2EditorKit.Core
 {
@@ -15,7 +15,7 @@ namespace RoR2EditorKit.Core
         [InitializeOnLoadMethod]
         private static void Init()
         {
-            if(IsRoR2EKInPackages() && !Settings.madeRoR2EKAssetsNonEditable)
+            if (IsRoR2EKInPackages() && !Settings.madeRoR2EKAssetsNonEditable)
             {
                 MakeAssetsUneditable();
             }
@@ -43,7 +43,7 @@ namespace RoR2EditorKit.Core
 
             stringBuilder.Add($"Turned the following {explicitAssetPaths.Count} assets to notEditable.");
 
-            foreach(string assetPath in explicitAssetPaths)
+            foreach (string assetPath in explicitAssetPaths)
             {
                 Object asset = AssetDatabase.LoadAssetAtPath<Object>(assetPath);
                 if (!asset)

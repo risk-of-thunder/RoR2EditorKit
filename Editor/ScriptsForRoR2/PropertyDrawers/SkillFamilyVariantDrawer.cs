@@ -1,12 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UIElements;
+﻿using RoR2;
+using RoR2.Skills;
 using UnityEditor;
 using UnityEditor.UIElements;
-using RoR2EditorKit.Core.PropertyDrawers;
-using RoR2.Skills;
-using RoR2;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.RoR2Related.PropertyDrawers
 {

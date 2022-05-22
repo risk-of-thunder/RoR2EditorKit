@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using RoR2EditorKit.Utilities;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
-using RoR2EditorKit.Utilities;
-using UnityEngine;
 
 namespace RoR2EditorKit.Core.Inspectors
 {
@@ -31,7 +25,7 @@ namespace RoR2EditorKit.Core.Inspectors
         {
             get
             {
-                if(_visualElement == null)
+                if (_visualElement == null)
                 {
                     _visualElement = new VisualElement();
                     _visualElement.name = $"{GetType().Name}_RootElement";
@@ -54,9 +48,9 @@ namespace RoR2EditorKit.Core.Inspectors
         public sealed override VisualElement CreateInspectorGUI()
         {
             var children = serializedObject.GetVisibleChildren();
-            foreach(var child in children)
+            foreach (var child in children)
             {
-                if(child.name == "m_Script")
+                if (child.name == "m_Script")
                 {
                     ObjectField objField = new ObjectField();
                     objField.SetObjectType<MonoScript>();

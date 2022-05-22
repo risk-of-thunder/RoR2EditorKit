@@ -1,11 +1,9 @@
 ﻿using RoR2;
 using RoR2EditorKit.Core.Inspectors;
 using RoR2EditorKit.Utilities;
-using UnityEngine;
-using UnityEngine.UIElements;
-using UnityEditor;
-using UnityEditor.UIElements;
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
@@ -37,7 +35,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             var root = TargetType.gameObject.GetRootObject();
             List<HurtBox> hurtBoxes = new List<HurtBox>();
 
-            foreach(HurtBox hurtBox in root.GetComponentsInChildren<HurtBox>())
+            foreach (HurtBox hurtBox in root.GetComponentsInChildren<HurtBox>())
             {
                 hurtBoxes.Add(hurtBox);
             }

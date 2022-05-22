@@ -9,8 +9,6 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using RoR2EditorKit.Utilities;
-using EntityStates;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
@@ -58,7 +56,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             }
             set
             {
-                if(_entityStateType != value)
+                if (_entityStateType != value)
                 {
                     _entityStateType = value;
                     OnEntityStateTypeSet();
@@ -118,7 +116,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             });
 
             //If the current type is not the targetType's targetType, update it, otherwise, re-populate the containers
-            if(EntityStateType != (Type)TargetType.targetType)
+            if (EntityStateType != (Type)TargetType.targetType)
             {
                 EntityStateType = (Type)TargetType.targetType;
             }
@@ -193,7 +191,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 DisplayFields(staticFieldsContainer, staticSerializableFields);
             }
 
-            if(instanceFieldsContainer.style.display == DisplayStyle.Flex)
+            if (instanceFieldsContainer.style.display == DisplayStyle.Flex)
             {
                 //This ensures that the serializable instance fields exists as serialized properties
                 EnsureFieldsExist(instanceSerializableFields);
@@ -201,7 +199,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             }
 
             //Unrecognized fields already exist, no need to ensure their existence.
-            if(unrecognizedFieldsContainer.style.display == DisplayStyle.Flex)
+            if (unrecognizedFieldsContainer.style.display == DisplayStyle.Flex)
             {
                 DisplayUnrecognizedFields(unrecognizedFieldsContainer, unrecognizedFields);
             }
@@ -209,15 +207,15 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private void DisplayUnrecognizedFields(VisualElement container, List<KeyValuePair<SerializedProperty, int>> unrecognizedFields)
         {
-            foreach(var propertyRow in unrecognizedFields)
+            foreach (var propertyRow in unrecognizedFields)
             {
                 var name = propertyRow.Key.FindPropertyRelative(nameof(SerializedField.fieldName)).stringValue;
                 var property = propertyRow.Key.FindPropertyRelative(nameof(SerializedField.fieldValue));
-                
+
                 var propertyField = new PropertyField(property, ObjectNames.NicifyVariableName(name));
                 propertyField.name = $"{name}_Property";
                 container.Add(propertyField);
-                if(HasDoneFirstDrawing)
+                if (HasDoneFirstDrawing)
                 {
                     propertyField.Bind(serializedObject);
                 }
@@ -229,11 +227,11 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             {
                 //If the field already exists, then it means the field either already has a value, or has already been initialized.
                 bool fieldAlreadyExists = false;
-                for(int i = 0; i < serializedFieldsProp.arraySize; i++)
+                for (int i = 0; i < serializedFieldsProp.arraySize; i++)
                 {
                     var prop = serializedFieldsProp.GetArrayElementAtIndex(i);
 
-                    if(prop.FindPropertyRelative(nameof(SerializedField.fieldName)).stringValue == fieldInfo.Name)
+                    if (prop.FindPropertyRelative(nameof(SerializedField.fieldName)).stringValue == fieldInfo.Name)
                     {
                         fieldAlreadyExists = true;
                         break;
@@ -251,7 +249,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 var fieldValueProp = serializedFieldProp.FindPropertyRelative(nameof(SerializedField.fieldValue));
                 var serializedValue = new SerializedValue();
 
-                if(specialDefaultValueCreators.TryGetValue(fieldInfo.FieldType, out var creator))
+                if (specialDefaultValueCreators.TryGetValue(fieldInfo.FieldType, out var creator))
                 {
                     serializedValue.SetValue(fieldInfo, creator());
                 }
@@ -266,7 +264,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         }
         private void DisplayFields(VisualElement container, List<FieldInfo> fieldInfos)
         {
-            foreach(FieldInfo fieldInfo in fieldInfos)
+            foreach (FieldInfo fieldInfo in fieldInfos)
             {
                 //If by any chance theres already a field in the container that has this name, dont add another one.
                 if (container.Children().Any(child => child.name == $"{fieldInfo.Name}_Property"))
@@ -280,10 +278,10 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private SerializedProperty FindSerializedFieldProperty(string fieldName)
         {
-            for(int i = 0; i < serializedFieldsProp.arraySize; i++)
+            for (int i = 0; i < serializedFieldsProp.arraySize; i++)
             {
                 SerializedProperty prop = serializedFieldsProp.GetArrayElementAtIndex(i);
-                if(prop.FindPropertyRelative("fieldName").stringValue == fieldName)
+                if (prop.FindPropertyRelative("fieldName").stringValue == fieldName)
                 {
                     return prop;
                 }
@@ -295,7 +293,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         {
             var serializedValueProp = property.FindPropertyRelative(nameof(SerializedField.fieldValue));
             //If the type of the field is a unity object, just use an Object Field and set the binding path directly.
-            if(typeof(UnityEngine.Object).IsAssignableFrom(fieldInfo.FieldType))
+            if (typeof(UnityEngine.Object).IsAssignableFrom(fieldInfo.FieldType))
             {
                 var objectValue = serializedValueProp.FindPropertyRelative(nameof(SerializedValue.objectValue));
                 var objectField = new ObjectField();
@@ -306,7 +304,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 return objectField;
             }
             //Same applies for types that are string
-            else if(fieldInfo.FieldType == typeof(string))
+            else if (fieldInfo.FieldType == typeof(string))
             {
                 var stringValue = serializedValueProp.FindPropertyRelative(nameof(SerializedValue.stringValue));
                 var textField = new TextField();
@@ -363,7 +361,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 BaseField<T> target = (BaseField<T>)evt.target;
                 string fieldName = target.name.Replace("_Property", "");
                 FieldInfo fieldInfo = EntityStateType.GetField(fieldName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-                
+
                 ref SerializedField field = ref TargetType.serializedFieldsCollection.GetOrCreateField(fieldName);
                 ref SerializedValue value = ref field.fieldValue;
                 value.SetValue(fieldInfo, evt.newValue);

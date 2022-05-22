@@ -1,16 +1,13 @@
-﻿using System.Collections;
+﻿using RoR2EditorKit.Common;
+using RoR2EditorKit.Settings;
+using RoR2EditorKit.Utilities;
+using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
-using RoR2EditorKit.Settings;
-using RoR2EditorKit.Common;
-using System;
 using Object = UnityEngine.Object;
-using RoR2EditorKit.Utilities;
-using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
 
 namespace RoR2EditorKit.Core.Inspectors
 {
@@ -83,7 +80,7 @@ namespace RoR2EditorKit.Core.Inspectors
         {
             get
             {
-                if(_inspectorSetting == null)
+                if (_inspectorSetting == null)
                 {
                     _inspectorSetting = Settings.InspectorSettings.GetOrCreateInspectorSetting(GetType()); ;
                 }
@@ -91,7 +88,7 @@ namespace RoR2EditorKit.Core.Inspectors
             }
             set
             {
-                if(_inspectorSetting != value)
+                if (_inspectorSetting != value)
                 {
                     var index = Settings.InspectorSettings.inspectorSettings.IndexOf(_inspectorSetting);
                     Settings.InspectorSettings.inspectorSettings[index] = value;
@@ -113,7 +110,7 @@ namespace RoR2EditorKit.Core.Inspectors
             }
             set
             {
-                if(value != InspectorSetting.isEnabled)
+                if (value != InspectorSetting.isEnabled)
                 {
                     InspectorSetting.isEnabled = value;
                     OnInspectorEnabledChange();
@@ -226,13 +223,13 @@ namespace RoR2EditorKit.Core.Inspectors
 
             if (serializedObject.targetObject && Settings.InspectorSettings.enableNamingConventions && this is IObjectNameConvention objNameConvention)
             {
-                if(serializedObject.targetObject.name.StartsWith(objNameConvention.Prefix))
+                if (serializedObject.targetObject.name.StartsWith(objNameConvention.Prefix))
                 {
                     prefixContainer?.RemoveFromHierarchy();
                     prefixContainer = null;
                     return;
                 }
-                else if(prefixContainer == null)
+                else if (prefixContainer == null)
                 {
                     prefixContainer = EnsureNamingConventions(objNameConvention);
                     RootVisualElement.Add(prefixContainer);
@@ -265,7 +262,7 @@ namespace RoR2EditorKit.Core.Inspectors
             }
             catch (Exception ex)
             {
-                if(HasVisualTreeAsset)
+                if (HasVisualTreeAsset)
                 {
                     Debug.LogError(ex);
                 }
@@ -275,7 +272,7 @@ namespace RoR2EditorKit.Core.Inspectors
 
             OnObjectNameChanged();
 
-            if(!InspectorEnabled)
+            if (!InspectorEnabled)
             {
                 var defaultImguiContainer = new IMGUIContainer(OnInspectorGUI);
                 defaultImguiContainer.name = "defaultInspector";
@@ -288,7 +285,7 @@ namespace RoR2EditorKit.Core.Inspectors
                 DrawInspectorGUI();
                 RootVisualElement.Add(DrawInspectorElement);
                 OnDrawInspectorElementAdded?.Invoke();
-                if(_hasDoneFirstDrawing)
+                if (_hasDoneFirstDrawing)
                 {
                     RootVisualElement.Bind(serializedObject);
                 }
@@ -411,7 +408,7 @@ namespace RoR2EditorKit.Core.Inspectors
                 element.AddManipulator(manipulator);
             }
             var tuple = elementToContextMenu[element];
-            if(!tuple.Item2.Contains(contextMenuData))
+            if (!tuple.Item2.Contains(contextMenuData))
                 tuple.Item2.Add(contextMenuData);
         }
 
@@ -419,7 +416,7 @@ namespace RoR2EditorKit.Core.Inspectors
         {
             var contextMenus = elementToContextMenu[element].Item2;
 
-            foreach(ContextMenuData data in contextMenus)
+            foreach (ContextMenuData data in contextMenus)
             {
                 populateEvent.menu.AppendAction(data.menuName, data.menuAction, data.actionStatusCheck);
             }

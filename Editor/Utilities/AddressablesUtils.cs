@@ -31,7 +31,7 @@ namespace RoR2EditorKit.Utilities
             using (var pb = new ThunderKit.Common.Logging.ProgressBar("Loading Object"))
             {
                 var op = Addressables.LoadAssetAsync<T>(address);
-                while(!op.IsDone)
+                while (!op.IsDone)
                 {
                     await Task.Delay(100);
                     pb.Update($"Loading asset from address {address}, this may take a while", null, op.PercentComplete);

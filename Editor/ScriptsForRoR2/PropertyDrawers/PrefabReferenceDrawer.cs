@@ -1,5 +1,4 @@
 ﻿using RoR2;
-using RoR2EditorKit.Core.PropertyDrawers;
 using UnityEditor;
 using UnityEditor.Experimental.SceneManagement;
 using UnityEngine;

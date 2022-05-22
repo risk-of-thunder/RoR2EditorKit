@@ -1,13 +1,9 @@
-﻿using System;
+﻿using RoR2EditorKit.Utilities;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
-using RoR2EditorKit.Utilities;
-using UnityEngine;
 
 namespace RoR2EditorKit.Core.Inspectors
 {
@@ -122,7 +118,7 @@ namespace RoR2EditorKit.Core.Inspectors
                     }
                     actionContainerPair.container.BringToFront();
                 }
-                if(actionContainerPair.container != null)
+                if (actionContainerPair.container != null)
                 {
                     actionContainerPair.container.Wipe();
                     actionContainerPair.container.RemoveFromHierarchy();
