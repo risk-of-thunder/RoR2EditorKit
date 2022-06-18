@@ -1,5 +1,6 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using System.IO;
 
 namespace RoR2EditorKit.Common
 {
@@ -23,30 +24,66 @@ namespace RoR2EditorKit.Common
         private const string nullSpriteGUID = "1a8e7e70058f32f4483753ec5be3838b";
         private const string nullPrefabGUID = "f6317a68216520848aaef2c2f470c8b2";
         private const string iconGUID = "efa2e3ecb36780a4d81685ecd4789ff3";
+        private const string xmlDocGUID = "c78bcabe3d7e88545a1fbf97410ae546";
 
         /// <summary>
         /// Loads the RoR2EditorKit null material
         /// </summary>
-        public static Material NullMaterial { get => AssetDatabase.LoadAssetAtPath<Material>(AssetDatabase.GUIDToAssetPath(nullMaterialGUID)); }
+        public static Material NullMaterial => Load<Material>(nullMaterialGUID);
 
         /// <summary>
         /// Loads the RoR2EditorKit null mesh
         /// </summary>
-        public static Mesh NullMesh { get => AssetDatabase.LoadAssetAtPath<Mesh>(AssetDatabase.GUIDToAssetPath(nullMeshGUID)); }
+        public static Mesh NullMesh => Load<Mesh>(nullMeshGUID);
 
         /// <summary>
         /// Loads the RoR2EditorKit null sprite
         /// </summary>
-        public static Sprite NullSprite { get => AssetDatabase.LoadAssetAtPath<Sprite>(AssetDatabase.GUIDToAssetPath(nullSpriteGUID)); }
+        public static Sprite NullSprite => Load<Sprite>(nullSpriteGUID);
 
         /// <summary>
         /// Loads the RoR2EditorKit null prefab
         /// </summary>
-        public static GameObject NullPrefab { get => AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(nullPrefabGUID)); }
+        public static GameObject NullPrefab => Load<GameObject>(nullPrefabGUID);
 
         /// <summary>
         /// Loads the RoR2EditorKit icon
         /// </summary>
-        public static Texture Icon { get => AssetDatabase.LoadAssetAtPath<Texture>(AssetDatabase.GUIDToAssetPath(iconGUID)); }
+        public static Texture Icon => Load<Texture>(iconGUID);
+
+        /// <summary>
+        /// Loads the XMLDoc of RoR2EditorKit
+        /// </summary>
+        public static TextAsset XMLDoc => Load<TextAsset>(xmlDocGUID);
+
+        private static T Load<T>(string guid) where T : UnityEngine.Object
+        {
+            return AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(xmlDocGUID));
+        }
+
+        public static class FolderPaths
+        {
+            private const string assets = "Assets";
+            private const string lib = "Library";
+            private const string scriptAssemblies = "ScriptAssemblies";
+            public static string LibraryFolder
+            {
+                get
+                {
+                    var assetsPath = Application.dataPath;
+                    var libFolder = assetsPath.Replace(assets, lib);
+                    return libFolder;
+                }
+            }
+
+            public static string ScriptAssembliesFolder
+            {
+                get
+                {
+                    return Path.Combine(LibraryFolder, scriptAssemblies);
+                }
+            }
+        }
+
     }
 }

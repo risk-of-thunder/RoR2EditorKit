@@ -110,22 +110,19 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 }));
 
             var assemblyQualifiedName = inspectorDataContainer.Q<Label>("assemblyQualifiedName");
-            assemblyQualifiedName.RegisterValueChangedCallback((evt) =>
-            {
-                EntityStateType = Type.GetType(evt.newValue);
-            });
-
-            //If the current type is not the targetType's targetType, update it, otherwise, re-populate the containers
-            if (EntityStateType != (Type)TargetType.targetType)
-            {
-                EntityStateType = (Type)TargetType.targetType;
-            }
-            else
-            {
-                OnEntityStateTypeSet();
-            }
+            assemblyQualifiedName.RegisterValueChangedCallback(OnAssemblyQualifiedNameChange);
+            OnAssemblyQualifiedNameChange();
         }
 
+        private void OnAssemblyQualifiedNameChange(ChangeEvent<string> evt = null)
+        {
+            EntityStateType = evt != null ? Type.GetType(evt.newValue) : (Type)TargetType.targetType;
+            if (Settings.InspectorSettings.enableNamingConventions)
+            {
+                TargetType.SetNameFromTargetType();
+                Utilities.AssetDatabaseUtils.UpdateNameOfObject(target);
+            }
+        }
         private void OnEntityStateTypeSet()
         {
             PopulateSerializableFields();
