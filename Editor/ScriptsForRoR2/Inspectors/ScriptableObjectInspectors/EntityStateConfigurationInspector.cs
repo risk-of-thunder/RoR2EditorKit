@@ -288,6 +288,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private VisualElement GetVisualElementFromProperty(SerializedProperty property, FieldInfo fieldInfo)
         {
+            var tooltip = FindTooltip(fieldInfo);
             var serializedValueProp = property.FindPropertyRelative(nameof(SerializedField.fieldValue));
             //If the type of the field is a unity object, just use an Object Field and set the binding path directly.
             if (typeof(UnityEngine.Object).IsAssignableFrom(fieldInfo.FieldType))
@@ -298,6 +299,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 objectField.bindingPath = objectValue.propertyPath;
                 objectField.name = $"{fieldInfo.Name}_Property";
                 objectField.label = ObjectNames.NicifyVariableName(fieldInfo.Name);
+                objectField.tooltip = tooltip;
                 return objectField;
             }
             //Same applies for types that are string
@@ -308,6 +310,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 textField.bindingPath = stringValue.propertyPath;
                 textField.name = $"{fieldInfo.Name}_Property";
                 textField.label = ObjectNames.NicifyVariableName(fieldInfo.Name);
+                textField.tooltip = tooltip;
                 return textField;
             }
             else
@@ -323,6 +326,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 {
                     var value = serializedValue.GetValue(fieldInfo);
                     var element = elementCreator(fieldInfo, value);
+                    element.tooltip = tooltip;
 
                     //With the element created, we need to manually register value changes.
                     switch (value)
@@ -345,7 +349,14 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             //If the element is not in the dictionary, just make a property field
             var propertyField = new PropertyField(property, ObjectNames.NicifyVariableName(fieldInfo.Name));
             propertyField.name = $"{fieldInfo.Name}_Property";
+            propertyField.tooltip = tooltip;
             return propertyField;
+        }
+
+        private string FindTooltip(FieldInfo fieldInfo)
+        {
+            TooltipAttribute attribute = fieldInfo.GetCustomAttribute<TooltipAttribute>();
+            return attribute != null ? attribute.tooltip : null;
         }
 
         private void SetupCallback<T>(VisualElement element)
