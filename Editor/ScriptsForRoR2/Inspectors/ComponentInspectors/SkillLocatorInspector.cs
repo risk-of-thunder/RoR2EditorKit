@@ -27,9 +27,16 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         {
             string[] fieldNames = new string[] { "primary", "secondary", "utility", "special" };
             skillToPropField.Clear();
+            SetupFields(fieldNames, inspectorData);
+            fieldNames = new string[] { "primaryBonusStockOverrideSkill", "secondaryBonusStockOverrideSkill", "utilityBonusStockOverrideSkill", "specialBonusStockOverrideSkill" };
+            SetupFields(fieldNames, inspectorData.Q<Foldout>("BonusStockOverrideContainer").Q<VisualElement>("unity-content"));
+        }
+
+        private void SetupFields(string[] fieldNames, VisualElement parentElement)
+        {
             foreach (string field in fieldNames)
             {
-                var propField = DrawInspectorElement.Q<PropertyField>(field);
+                var propField = parentElement.Q<PropertyField>(field);
                 var genericSkill = serializedObject.FindProperty(propField.bindingPath).objectReferenceValue as GenericSkill;
 
                 if (genericSkill)
@@ -43,7 +50,6 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 }
             }
         }
-
         private void OnGenericSkillChange(ChangeEvent<GenericSkill> evt)
         {
             var genericSkill = evt.newValue;
