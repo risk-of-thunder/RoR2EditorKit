@@ -18,7 +18,7 @@ namespace RoR2EditorKit.Core.EditorWindows
         /// <summary>
         /// Not supported for ObjectEditingEditorWindows, use <see cref="OpenEditorWindow{TEditorWindow}(Object, string)"/> instead
         /// </summary>
-        public static void OpenEditorWindow<TEditorWindow>(string windowName = null) where TEditorWindow : ExtendedEditorWindow
+        public static TEditorWindow OpenEditorWindow<TEditorWindow>(string windowName = null) where TEditorWindow : ExtendedEditorWindow
         {
             throw new NotImplementedException($"Do not use \"OpenEditorWindow<TEditorWindow>(string)\" for opening ObjectEditing Windows, use \"OpenEditorWindow<TEditorWindow>(Object, string)\" instead");
         }
@@ -30,7 +30,7 @@ namespace RoR2EditorKit.Core.EditorWindows
         /// <param name="obj">The object being edited in the window, cannot be null</param>
         /// <param name="windowName">The name for this window, leaving this null nicifies the <typeparamref name="TEditorWindow"/>'s type name</param>
         /// <exception cref="NullReferenceException">Thrown when <paramref name="obj"/> is null</exception>
-        public static void OpenEditorWindow<TEditorWindow>(Object obj, string windowName = null) where TEditorWindow : ObjectEditingEditorWindow<TObject>
+        public static TEditorWindow OpenEditorWindow<TEditorWindow>(Object obj, string windowName = null) where TEditorWindow : ObjectEditingEditorWindow<TObject>
         {
             if (!obj)
             {
@@ -41,6 +41,7 @@ namespace RoR2EditorKit.Core.EditorWindows
             window.SerializedObject = new SerializedObject(obj);
             window.TargetType = window.SerializedObject.targetObject as TObject;
             window.OnWindowOpened();
+            return window;
         }
     }
 }

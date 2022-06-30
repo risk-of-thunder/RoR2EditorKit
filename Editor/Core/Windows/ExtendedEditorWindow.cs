@@ -29,11 +29,12 @@ namespace RoR2EditorKit.Core.EditorWindows
         /// </summary>
         /// <typeparam name="TEditorWindow">The type of ExtendedEditorWindow to open</typeparam>
         /// <param name="windowName">The name for this window, leaving this null nicifies the <typeparamref name="TEditorWindow"/>'s type name</param>
-        public static void OpenEditorWindow<TEditorWindow>(string windowName = null) where TEditorWindow : ExtendedEditorWindow
+        public static TEditorWindow OpenEditorWindow<TEditorWindow>(string windowName = null) where TEditorWindow : ExtendedEditorWindow
         {
             TEditorWindow window = GetWindow<TEditorWindow>(windowName == null ? ObjectNames.NicifyVariableName(typeof(TEditorWindow).Name) : windowName);
             window.SerializedObject = new SerializedObject(window);
             window.OnWindowOpened();
+            return window;
         }
 
         /// <summary>
