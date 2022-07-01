@@ -77,18 +77,6 @@ namespace RoR2EditorKit.Settings
 
                 shaderStringPairs.Add(shaderStringPair);
             }
-            else
-            {
-                CheckIfTypeExists(pair);
-            }
-        }
-
-        private void CheckIfTypeExists(ShaderStringPair ssp)
-        {
-            var type = Type.GetType(ssp.typeReference);
-            if (type == null)
-                shaderStringPairs.Remove(ssp);
-
         }
     }
 }

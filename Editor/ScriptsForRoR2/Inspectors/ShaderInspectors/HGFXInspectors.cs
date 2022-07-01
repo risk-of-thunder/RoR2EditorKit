@@ -5,10 +5,11 @@ using BlendMode = UnityEngine.Rendering.BlendMode;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
+    //
+    [InitializeOnLoad]
     public static class HGFXInspectors
     {
-        [InitializeOnLoadMethod]
-        private static void Initialize()
+        static HGFXInspectors()
         {
             if (MaterialEditorEnabled)
                 AddShaderEditor("hgCloudRemap", HGCloudRemapEditor, typeof(HGFXInspectors));
