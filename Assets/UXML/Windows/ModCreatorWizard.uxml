@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <uie:PropertyField name="authorName" binding-path="authorName" />
+    <uie:PropertyField name="modName" binding-path="modName" />
+</ui:UXML>

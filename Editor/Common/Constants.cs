@@ -15,7 +15,7 @@ namespace RoR2EditorKit.Common
         public const string PackageName = "riskofthunder-ror2editorkit";
 
         public const string RoR2EditorKitContextRoot = "Assets/Create/RoR2EditorKit/";
-        public const string RoR2EditorKitscriptableRoot = "Assets/RoR2EditorKit/";
+        public const string RoR2EditorKitScriptableRoot = "Assets/RoR2EditorKit/";
         public const string RoR2EditorKitMenuRoot = "Tools/RoR2EditorKit/";
         public const string RoR2KitSettingsRoot = "Assets/ThunderkitSettings/RoR2EditorKit/";
 
