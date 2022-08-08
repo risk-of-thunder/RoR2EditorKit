@@ -258,14 +258,12 @@ namespace RoR2EditorKit.Core.Inspectors
 
             try
             {
-                GetTemplateInstance(GetType().Name, DrawInspectorElement, ValidateUXMLPath);
+                if(HasVisualTreeAsset)
+                    GetTemplateInstance(GetType().Name, DrawInspectorElement, ValidateUXMLPath);
             }
             catch (Exception ex)
             {
-                if (HasVisualTreeAsset)
-                {
-                    Debug.LogError(ex);
-                }
+                Debug.LogError(ex);
             }
 
             OnVisualTreeCopy?.Invoke();

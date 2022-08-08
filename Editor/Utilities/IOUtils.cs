@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using UnityEditor;
 
 namespace RoR2EditorKit.Utilities
 {
@@ -15,6 +16,21 @@ namespace RoR2EditorKit.Utilities
         {
             if (!Directory.Exists(directoryPath))
                 Directory.CreateDirectory(directoryPath);
+        }
+
+        public static string FormatPathForUnity(string path)
+        {
+            return path.Replace("\\", "/");
+        }
+
+        public static string GetCurrentDirectory()
+        {
+            var activeObjectPath = Path.GetFullPath(AssetDatabase.GetAssetPath(Selection.activeObject));
+            if(File.Exists(activeObjectPath))
+            {
+                activeObjectPath = Path.GetDirectoryName(activeObjectPath);
+            }
+            return activeObjectPath;
         }
     }
 }

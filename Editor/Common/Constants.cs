@@ -25,6 +25,7 @@ namespace RoR2EditorKit.Common
         private const string nullPrefabGUID = "f6317a68216520848aaef2c2f470c8b2";
         private const string iconGUID = "efa2e3ecb36780a4d81685ecd4789ff3";
         private const string xmlDocGUID = "c78bcabe3d7e88545a1fbf97410ae546";
+        private const string mainClassTemplate = "7eb4c9a0028b715499bc7919670b7098";
 
         /// <summary>
         /// Loads the RoR2EditorKit null material
@@ -56,9 +57,14 @@ namespace RoR2EditorKit.Common
         /// </summary>
         public static TextAsset XMLDoc => Load<TextAsset>(xmlDocGUID);
 
+        /// <summary>
+        /// Loads the main class template
+        /// </summary>
+        public static TextAsset MainClassTemplate => Load<TextAsset>(mainClassTemplate);
+
         private static T Load<T>(string guid) where T : UnityEngine.Object
         {
-            return AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(xmlDocGUID));
+            return AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(guid));
         }
 
         public static class FolderPaths

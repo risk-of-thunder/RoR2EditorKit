@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -42,13 +43,13 @@ namespace RoR2EditorKit.Core.EditorWindows
             footerContainer.Q<Button>("runWizard").clicked += () => RunWizardInternal();
         }
 
-        private void RunWizardInternal()
+        private async void RunWizardInternal()
         {
             if(warning != null)
             {
                 footerContainer.Remove(warning);
             }
-            if(RunWizard())
+            if(await RunWizard())
             {
                 Close();
                 return;
@@ -58,6 +59,6 @@ namespace RoR2EditorKit.Core.EditorWindows
             footerContainer.Add(warning);
         }
 
-        protected abstract bool RunWizard();
+        protected abstract Task<bool> RunWizard();
     }
 }
