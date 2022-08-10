@@ -12,19 +12,29 @@ namespace RoR2EditorKit.Core.Inspectors
         /// </summary>
         public string tooltipMessage;
         /// <summary>
+        /// The message in the Help Box, can be null.
+        /// </summary>
+        public string helpBoxMessage;
+        /// <summary>
         /// The context menu action for the helpBox
         /// </summary>
         public Action contextMenuAction;
+        /// <summary>
+        /// A function that detemines if the object is following naming conventions
+        /// </summary>
+        public Func<bool> nameValidatorFunc;
 
         /// <summary>
         /// PrefixData constructor
         /// </summary>
         /// <param name="contextMenuAction">An action that runs when the message box is right clicked</param>
         /// <param name="tooltipMessage">Optional tooltip message</param>
-        public PrefixData(Action contextMenuAction, string tooltipMessage = null)
+        public PrefixData(Action contextMenuAction, Func<bool> nameValidatorFunc = null, string tooltipMessage = null, string helpBoxMessage = null)
         {
             this.tooltipMessage = tooltipMessage;
+            this.nameValidatorFunc = nameValidatorFunc;
             this.contextMenuAction = contextMenuAction;
+            this.helpBoxMessage = helpBoxMessage;
         }
     }
 
@@ -37,5 +47,6 @@ namespace RoR2EditorKit.Core.Inspectors
         bool UsesTokenForPrefix { get; }
 
         PrefixData GetPrefixData();
+
     }
 }

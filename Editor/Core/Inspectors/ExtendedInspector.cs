@@ -223,7 +223,10 @@ namespace RoR2EditorKit.Core.Inspectors
 
             if (serializedObject.targetObject && Settings.InspectorSettings.enableNamingConventions && this is IObjectNameConvention objNameConvention)
             {
-                if (serializedObject.targetObject.name.StartsWith(objNameConvention.Prefix))
+                PrefixData data = objNameConvention.GetPrefixData();
+
+                bool flag = data.nameValidatorFunc == null ? serializedObject.targetObject.name.StartsWith(objNameConvention.Prefix) : data.nameValidatorFunc();
+                if (flag)
                 {
                     prefixContainer?.RemoveFromHierarchy();
                     prefixContainer = null;
@@ -326,7 +329,10 @@ namespace RoR2EditorKit.Core.Inspectors
 
             IMGUIContainer container = new IMGUIContainer(() =>
             {
-                EditorGUILayout.HelpBox($"This {typeof(T).Name}'s name should start with \"{objectNameConvention.Prefix}\" so it follows naming conventions", MessageType.Info);
+                if(prefixData.helpBoxMessage.IsNullOrEmptyOrWhitespace())
+                    EditorGUILayout.HelpBox($"This {typeof(T).Name}'s name should start with \"{objectNameConvention.Prefix}\" so it follows naming conventions", MessageType.Info);
+                else
+                    EditorGUILayout.HelpBox(prefixData.helpBoxMessage, MessageType.Info);
             });
 
             container.tooltip = prefixData.tooltipMessage;

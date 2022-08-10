@@ -1,6 +1,7 @@
 ﻿using HG.GeneralSerializer;
 using RoR2;
 using RoR2EditorKit.Core.Inspectors;
+using RoR2EditorKit.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ using UnityEngine.UIElements;
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
     [CustomEditor(typeof(EntityStateConfiguration))]
-    public sealed class EntityStateConfigurationInspector : ScriptableObjectInspector<EntityStateConfiguration>
+    public sealed class EntityStateConfigurationInspector : ScriptableObjectInspector<EntityStateConfiguration>, IObjectNameConvention
     {
         #region Static methods and fields
         //For cases where the fieldInfo's type is not a unity object, we want to make specific visual elements and later serialize them as strings.
@@ -51,7 +52,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         Type EntityStateType
         {
             get
-            {
+            { 
                 return _entityStateType;
             }
             set
@@ -63,6 +64,11 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 }
             }
         }
+
+        public string Prefix => EntityStateType == null ? string.Empty : EntityStateType.FullName;
+
+        public bool UsesTokenForPrefix => false;
+
         Type _entityStateType = null;
 
         #region fields
@@ -117,11 +123,6 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         private void OnAssemblyQualifiedNameChange(ChangeEvent<string> evt = null)
         {
             EntityStateType = evt != null ? Type.GetType(evt.newValue) : (Type)TargetType.targetType;
-            if (Settings.InspectorSettings.enableNamingConventions)
-            {
-                TargetType.SetNameFromTargetType();
-                Utilities.AssetDatabaseUtils.UpdateNameOfObject(target);
-            }
         }
         private void OnEntityStateTypeSet()
         {
@@ -383,6 +384,31 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             var label = element.Q<Label>();
             element.hierarchy.Clear();
             element.Add(label);
+        }
+
+        public PrefixData GetPrefixData()
+        {
+            return new PrefixData
+            {
+                helpBoxMessage = $"This {GetType().Name}'s name should match the TargetType's FullName so it follows naming conventions",
+                contextMenuAction = UpdateName,
+                nameValidatorFunc = NameValidator
+            };
+        }
+
+        private void UpdateName()
+        {
+            TargetType.SetNameFromTargetType();
+            AssetDatabaseUtils.UpdateNameOfObject(TargetType);
+        }
+
+        private bool NameValidator()
+        {
+            Type type = (Type)TargetType.targetType;
+            if (type != null)
+                return serializedObject.targetObject.name.Equals(type.FullName);
+            else
+                return true;
         }
     }
 }

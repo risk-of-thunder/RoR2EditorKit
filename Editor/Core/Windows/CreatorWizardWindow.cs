@@ -9,10 +9,23 @@ using UnityEngine.UIElements;
 namespace RoR2EditorKit.Core.EditorWindows
 {
     using static ThunderKit.Core.UIElements.TemplateHelpers;
+
+    /// <summary>
+    /// A variation of the ExtendedEditorWindow, a CreatorWizardWindow can be used for create complex assets and jobs that are executed asynchronously.
+    /// </summary>
     public abstract class CreatorWizardWindow : ExtendedEditorWindow
     {
+        /// <summary>
+        /// The Header of the Window, contains the name of the wizard by default.
+        /// </summary>
         protected VisualElement headerContainer;
+        /// <summary>
+        /// The middle container of the window, contains the wizard's specific fields.
+        /// </summary>
         protected VisualElement wizardElementContainer;
+        /// <summary>
+        /// The footer of the Window, contains the buttons for executing the wizard.
+        /// </summary>
         protected VisualElement footerContainer;
 
         private IMGUIContainer warning;
@@ -59,6 +72,10 @@ namespace RoR2EditorKit.Core.EditorWindows
             footerContainer.Add(warning);
         }
 
+        /// <summary>
+        /// Implement your wizard's job and what it does here
+        /// </summary>
+        /// <returns>True if the wizard managed to run without issues, false if an issue has been encountered.</returns>
         protected abstract Task<bool> RunWizard();
     }
 }

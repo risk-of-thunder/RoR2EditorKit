@@ -43,6 +43,7 @@ namespace RoR2EditorKit.Settings
         /// </summary>
         public bool EnableMaterialEditor = true;
 
+        [SerializeField, HideInInspector] private string myString;
         /// <summary>
         /// The Shader String Pairs of the Material Editor Setting
         /// </summary>

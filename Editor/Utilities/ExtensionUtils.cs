@@ -171,6 +171,11 @@ namespace RoR2EditorKit.Utilities
         /// <param name="displayStyle">new display style value</param>
         public static void SetDisplay(this VisualElement visualElement, DisplayStyle displayStyle) => visualElement.style.display = displayStyle;
 
+        /// <summary>
+        /// Quickly sets the display of a visual elementt
+        /// </summary>
+        /// <param name="visualElement">The element to change the display style</param>
+        /// <param name="display">True if its displayed, false if its hidden</param>
         public static void SetDisplay(this VisualElement visualElement, bool display) => visualElement.style.display = display ? DisplayStyle.Flex : DisplayStyle.None;
         #endregion
 

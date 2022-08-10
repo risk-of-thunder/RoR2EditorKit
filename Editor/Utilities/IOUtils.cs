@@ -18,11 +18,21 @@ namespace RoR2EditorKit.Utilities
                 Directory.CreateDirectory(directoryPath);
         }
 
+        /// <summary>
+        /// Formats <paramref name="path"/> so its valid for unity's systems.
+        /// Replaces \ with /
+        /// </summary>
+        /// <param name="path">The path to modified</param>
+        /// <returns>The formatted path</returns>
         public static string FormatPathForUnity(string path)
         {
             return path.Replace("\\", "/");
         }
 
+        /// <summary>
+        /// Returns the current directory from the active object.
+        /// </summary>
+        /// <returns>The active object'sdirectory</returns>
         public static string GetCurrentDirectory()
         {
             var activeObjectPath = Path.GetFullPath(AssetDatabase.GetAssetPath(Selection.activeObject));
