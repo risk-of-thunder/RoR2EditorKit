@@ -1,13 +1,16 @@
 ﻿using RoR2;
 using RoR2.Navigation;
 using RoR2EditorKit.Core.Inspectors;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Cursor = UnityEngine.Cursor;
+using Object = UnityEngine.Object;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
@@ -19,10 +22,14 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private VisualElement inspectorData;
         private PropertyValidator<UnityEngine.Object> nodeGraphValidator;
+        private MethodInfo setIconMethod;
 
         protected override void OnEnable()
         {
             base.OnEnable();
+            var egu = typeof(EditorGUIUtility);
+            var flags = BindingFlags.InvokeMethod | BindingFlags.Static | BindingFlags.NonPublic;
+            setIconMethod = egu.GetMethod("SetIconForObject", flags, null, new Type[] { typeof(UnityEngine.Object), typeof(Texture2D) }, null);
             OnVisualTreeCopy += () =>
             {
                 inspectorData = DrawInspectorElement.Q<VisualElement>("InspectorDataContainer");
@@ -49,9 +56,9 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private void OnSceneGUI()
         {
-            if(InspectorEnabled && TargetType.nodeGraph)
+            if (InspectorEnabled && TargetType.nodeGraph)
             {
-                MapNodeGroup mapNodeGroup = (MapNodeGroup)target;
+                MapNodeGroup mapNodeGroup = TargetType;
 
                 Cursor.visible = true;
 
@@ -68,9 +75,14 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                     if (Event.current.keyCode == KeyCode.N)
                     {
                         Debug.Log(currentHitInfo);
-                        mapNodeGroup.AddNode(currentHitInfo);
+                        AddNode(mapNodeGroup, currentHitInfo);
                         // Causes repaint & accepts event has been handled
                         Event.current.Use();
+                    }
+
+                    if (Event.current.keyCode == KeyCode.M)
+                    {
+                        DeleteNearestNode(currentHitInfo);
                     }
                 }
 
@@ -131,6 +143,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
                 EditorGUILayout.LabelField($"Camera Position: {Camera.current.transform.position}");
                 EditorGUILayout.LabelField($"Press N to add map node at cursor position (raycast)");
+                EditorGUILayout.LabelField("Press M to remove the nearest map node at cursor position");
 
                 if (GUILayout.Button("Clear"))
                 {
@@ -140,7 +153,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 if (GUILayout.Button("Add Map Node at current camera position"))
                 {
                     var position = Camera.current.transform.position;
-                    mapNodeGroup.AddNode(position);
+                    AddNode(mapNodeGroup, position);
                 }
 
                 if (GUILayout.Button("Update No Ceiling Masks"))
@@ -163,6 +176,45 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 EditorGUILayout.EndVertical();
 
                 Handles.EndGUI();
+            }
+        }
+
+        private void AddNode(MapNodeGroup group, Vector3 pos)
+        {
+            GameObject node = group.AddNode(pos);
+            Texture2D icon = null;
+            switch (group.graphType)
+            {
+                case MapNodeGroup.GraphType.Air:
+                    icon = (Texture2D)EditorGUIUtility.IconContent("sv_icon_dot10_pix16_gizmo").image;
+                    break;
+                case MapNodeGroup.GraphType.Ground:
+                    icon = (Texture2D)EditorGUIUtility.IconContent("sv_icon_dot11_pix16_gizmo").image;
+                    break;
+                case MapNodeGroup.GraphType.Rail:
+                    icon = (Texture2D)EditorGUIUtility.IconContent("sv_icon_dot15_pix16_gizmo").image;
+                    break;
+            }
+            setIconMethod.Invoke(null, new object[] { node, icon });
+        }
+
+        private void DeleteNearestNode(Vector3 hitInfo)
+        {
+            float minDist = Mathf.Infinity;
+            MapNode nearestNode = null;
+            foreach (var mapNode in TargetType.GetNodes())
+            {
+                float dist = Vector3.Distance(mapNode.transform.position, currentHitInfo);
+                if(dist < minDist)
+                {
+                    nearestNode = mapNode;
+                    minDist = dist;
+                }
+            }
+
+            if(nearestNode)
+            {
+                DestroyImmediate(nearestNode.gameObject);
             }
         }
     }
