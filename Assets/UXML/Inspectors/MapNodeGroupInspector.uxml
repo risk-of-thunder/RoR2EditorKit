@@ -10,5 +10,21 @@
         <uie:PropertyField name="testPointB" binding-path="testPointB" />
         <uie:PropertyField binding-path="debugHullDef" name="debugHullDef" />
         <uie:PropertyField binding-path="graphType" name="graphType" />
+        <ui:VisualElement name="NodePlacerContainers" class="genericHolder">
+            <ui:TextField picking-mode="Ignore" label="Gate Name" value="filler text" name="gateName" />
+            <ui:Toggle label="Use Painter" name="usePainter" />
+            <uie:FloatField label="Painter Size" value="0" name="painterSize" />
+            <ui:VisualElement name="ButtonContainer1" style="flex-direction: row;">
+                <ui:Button text="Clear Nodes" name="clearNodes" class="fiftyPercentButton" />
+                <ui:Button text="Update No Ceiling Masks" name="updateNoCeilingMasks" style="width: 50%; margin-left: 0; margin-right: 0; padding-left: 0;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="ButtonContainer2" style="flex-direction: row;">
+                <ui:Button text="Update Teleporter Masks" name="updateTeleporterMasks" class="fiftyPercentButton" />
+                <ui:Button text="Bake Node Graph" name="bakeNodeGraph" class="fiftyPercentButton" />
+            </ui:VisualElement>
+            <ui:VisualElement name="ButtonContainer3">
+                <ui:Button text="Remove Node Excess" name="removeNodeExcess" />
+            </ui:VisualElement>
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
