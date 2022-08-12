@@ -32,6 +32,27 @@ A more detailed Contribution guideline can be found [here](https://github.com/ri
 
 (Old changelogs can be found [here](https://github.com/risk-of-thunder/RoR2EditorKit/blob/main/OldChangelogs.md))
 
+### '3.3.0'
+
+* Core Changes:
+	* Improved material editor so it doesnt wipe itself
+	* Addeed wizard systems
+		* A wizard allows you to create complex jobs for your project.
+	* Fixed most asset properties in Constants returning the XML doc file
+	* Added FormatPathForUnity and GetCurrentDirectory to IOUtils.
+	* Extended inspector's object name conventions have been extended.
+		*  Can now specify both a custom help box message and custom name validation function
+	
+	* RoR2EditorScripts changes:
+		* Added ModCreator wizard.
+			* Creates an Asmdef, manifest, assetbundle folder and main class for a mod
+		* Added StageCreator wizard
+			* Creates a template stage and scenedef
+		* Added MapNodeGroup inspector
+		* MapNodeGroup inspector allows for easy placement of nodes and utilities (Thanks Anreol & IDeath)
+		* EntityStateConfiguration no longer renames the asset file without consent if naming conventions are enabled.
+
+
 ### '3.2.2'
 
 * Core Changes:

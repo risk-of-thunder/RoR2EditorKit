@@ -26,6 +26,7 @@ namespace RoR2EditorKit.Common
         private const string iconGUID = "efa2e3ecb36780a4d81685ecd4789ff3";
         private const string xmlDocGUID = "c78bcabe3d7e88545a1fbf97410ae546";
         private const string mainClassTemplate = "7eb4c9a0028b715499bc7919670b7098";
+        private const string stageTemplate = "cadab9e52b34ebe45bad66b94b3b1cff";
 
         /// <summary>
         /// Loads the RoR2EditorKit null material
@@ -61,6 +62,11 @@ namespace RoR2EditorKit.Common
         /// Loads the main class template
         /// </summary>
         public static TextAsset MainClassTemplate => Load<TextAsset>(mainClassTemplate);
+
+        /// <summary>
+        /// Loads the stage template
+        /// </summary>
+        public static SceneAsset StageTemplate => Load<SceneAsset>(stageTemplate);
 
         private static T Load<T>(string guid) where T : UnityEngine.Object
         {
