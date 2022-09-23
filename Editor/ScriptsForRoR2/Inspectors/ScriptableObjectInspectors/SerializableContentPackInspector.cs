@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
     [CustomEditor(typeof(SerializableContentPack), isFallback = false)]
-    public class SerializableContentPackInspector : ScriptableObjectInspector<SerializableContentPack>
+    public sealed class SerializableContentPackInspector : ScriptableObjectInspector<SerializableContentPack>
     {
         protected override bool HasVisualTreeAsset => false;
         protected override void OnEnable()

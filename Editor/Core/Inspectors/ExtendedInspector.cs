@@ -354,22 +354,22 @@ namespace RoR2EditorKit.Core.Inspectors
         /// <summary>
         /// Invoked when the RootVisualElement, DrawInspectorElement and IMGUIContainerElement are cleared;
         /// </summary>
-        protected Action OnRootElementsCleared;
+        protected event Action OnRootElementsCleared;
 
         /// <summary>
         /// Invoked when the VisualTree assigned to this inspector has been copied to the "DrawInspectorElement"
         /// </summary>
-        protected Action OnVisualTreeCopy;
+        protected event Action OnVisualTreeCopy;
 
         /// <summary>
         /// Invoked right after "IMGUIContainerElement" is added to the "RootVisualElement"
         /// </summary>
-        protected Action OnIMGUIContainerElementAdded;
+        protected event Action OnIMGUIContainerElementAdded;
 
         /// <summary>
         /// Invoked right after the "DrawInspectorElement" is added to the "RootVisualElement"
         /// </summary>
-        protected Action OnDrawInspectorElementAdded;
+        protected event Action OnDrawInspectorElementAdded;
         #endregion
 
         /// <summary>

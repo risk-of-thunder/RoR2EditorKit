@@ -19,6 +19,9 @@ namespace RoR2EditorKit.Common
         public const string RoR2EditorKitMenuRoot = "Tools/RoR2EditorKit/";
         public const string RoR2KitSettingsRoot = "Assets/ThunderkitSettings/RoR2EditorKit/";
 
+        /// <summary>
+        /// A collection of GUIDS that represent common assets in the ror2editorkit assets folder
+        /// </summary>
         public static class AssetGUIDS
         {
             public const string nullMaterialGUID = "732339a737ef9a144812666d298e2357";
@@ -30,16 +33,30 @@ namespace RoR2EditorKit.Common
             public const string mainClassTemplateGUID = "7eb4c9a0028b715499bc7919670b7098";
             public const string stageTemplateGUID = "cadab9e52b34ebe45bad66b94b3b1cff";
             public const string characterBodyTemplateGUID = "8cf61750955a3054c9153177612aa73f";
+            /// <summary>
+            /// Loads an asset of type <typeparamref name="T"/> by using the <paramref name="guid"/> provided
+            /// </summary>
+            /// <typeparam name="T">The type of asset to load</typeparam>
+            /// <param name="guid">The guid to use</param>
+            /// <returns>The loaded Asset</returns>
             public static T QuickLoad<T>(string guid) where T : UnityEngine.Object
             {
                 return AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(guid));
             }
+            /// <summary>
+            /// Transforms <paramref name="guid"/> into its asset path.
+            /// </summary>
+            /// <param name="guid">The asset's guid</param>
+            /// <returns>The Asset's path</returns>
             public static string GetPath(string guid)
             {
                 return AssetDatabase.GUIDToAssetPath(guid);
             }
         }
 
+        /// <summary>
+        /// Used to quickly get into folders from a unity project.
+        /// </summary>
         public static class FolderPaths
         {
             private const string assets = "Assets";

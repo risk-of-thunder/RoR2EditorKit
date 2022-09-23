@@ -18,7 +18,7 @@ using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.RoR2Related.EditorWindows
 {
-    public class ModCreatorWizard : CreatorWizardWindow
+    public sealed class ModCreatorWizard : CreatorWizardWindow
     {
         public string authorName;
         public string modName;

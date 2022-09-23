@@ -16,7 +16,7 @@ using Object = UnityEngine.Object;
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
     [CustomEditor(typeof(MapNodeGroup))]
-    public class MapNodeGroupInspector : ComponentInspector<MapNodeGroup>
+    public sealed class MapNodeGroupInspector : ComponentInspector<MapNodeGroup>
     {
         private Vector3 currentHitInfo = default;
         private static Vector3 offsetUpVector = new Vector3(0, 15, 0);

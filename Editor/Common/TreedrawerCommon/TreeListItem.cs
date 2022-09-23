@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace RoR2EditorKit.Common
 {
+    /// <summary>
+    /// Represents a Tree List Item
+    /// </summary>
     [Serializable]
     public class TreeListItem
     {

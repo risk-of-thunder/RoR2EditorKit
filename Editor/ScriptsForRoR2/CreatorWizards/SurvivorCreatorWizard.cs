@@ -17,7 +17,7 @@ using RoR2EditorKit.Common;
 
 namespace RoR2EditorKit.RoR2Related.EditorWindows
 {
-    public class SurvivorCreatorWizard : CreatorWizardWindow
+    public sealed class SurvivorCreatorWizard : CreatorWizardWindow
     {
         public CharacterBody characterBody;
         public float sortPosition;

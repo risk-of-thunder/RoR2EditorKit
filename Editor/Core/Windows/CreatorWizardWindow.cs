@@ -26,8 +26,14 @@ namespace RoR2EditorKit.Core.EditorWindows
         /// </summary>
         protected VisualElement FooterContainer { get; private set; }
 
+        /// <summary>
+        /// If supplied, the Wizard's header title will display this string as a tooltip.
+        /// </summary>
         protected virtual string WizardTitleTooltip { get; }
 
+        /// <summary>
+        /// If set to true, a notice saying that a token prefix is required will be appended at the bottom of the WizardElementContainer
+        /// </summary>
         protected virtual bool RequiresTokenPrefix => false;
 
         private IMGUIContainer warning;

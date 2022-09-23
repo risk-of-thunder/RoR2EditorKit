@@ -8,7 +8,7 @@ using UnityEngine.UIElements;
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
     [CustomEditor(typeof(ItemDef))]
-    public class ItemDefInspector : ScriptableObjectInspector<ItemDef>
+    public sealed class ItemDefInspector : ScriptableObjectInspector<ItemDef>
     {
         private VisualElement inspectorDataHolder;
         private VisualElement itemTierHolder;

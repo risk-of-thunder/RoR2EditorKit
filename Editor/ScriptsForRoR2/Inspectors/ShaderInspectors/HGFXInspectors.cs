@@ -5,9 +5,8 @@ using BlendMode = UnityEngine.Rendering.BlendMode;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
-    //
     [InitializeOnLoad]
-    public static class HGFXInspectors
+    internal static class HGFXInspectors
     {
         static HGFXInspectors()
         {

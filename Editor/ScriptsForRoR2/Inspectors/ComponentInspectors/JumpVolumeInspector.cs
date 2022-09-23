@@ -11,7 +11,7 @@ using RoR2;
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
     [CustomEditor(typeof(JumpVolume))]
-    public class JumpVolumeInspector : ComponentInspector<JumpVolume>
+    public sealed class JumpVolumeInspector : ComponentInspector<JumpVolume>
     {
         private VisualElement inspectorDataContainer;
         private PropertyField targetElevationTransform;

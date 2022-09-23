@@ -16,7 +16,7 @@ using Path = System.IO.Path;
 
 namespace RoR2EditorKit.RoR2Related.EditorWindows
 {
-    public class StageCreatorWizard : CreatorWizardWindow
+    public sealed class StageCreatorWizard : CreatorWizardWindow
     {
         public string stageName;
         public int stageOrder;

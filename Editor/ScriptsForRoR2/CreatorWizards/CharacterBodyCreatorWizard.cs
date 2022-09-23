@@ -16,7 +16,7 @@ using HG;
 
 namespace RoR2EditorKit.RoR2Related.EditorWindows
 {
-    public class CharacterBodyCreatorWizard : CreatorWizardWindow
+    public sealed class CharacterBodyCreatorWizard : CreatorWizardWindow
     {
         public string characterName;
         /*public int extraEntityStateMachines;

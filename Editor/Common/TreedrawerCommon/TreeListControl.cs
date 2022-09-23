@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace RoR2EditorKit.Common
 {
+    /// <summary>
+    /// Used in tree lists
+    /// </summary>
     public class TreeListControl
     {
         public enum DisplayTypes

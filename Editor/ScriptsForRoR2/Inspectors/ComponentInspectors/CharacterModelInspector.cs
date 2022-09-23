@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
     [CustomEditor(typeof(CharacterModel))]
-    public class CharacterModelInspector : ComponentInspector<CharacterModel>
+    public sealed class CharacterModelInspector : ComponentInspector<CharacterModel>
     {
         VisualElement inspectorData;
         protected override void OnEnable()

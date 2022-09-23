@@ -11,7 +11,7 @@ using RoR2;
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
     [CustomEditor(typeof(SurvivorDef))]
-    public class SurvivorDefInspector : ScriptableObjectInspector<SurvivorDef>
+    public sealed class SurvivorDefInspector : ScriptableObjectInspector<SurvivorDef>
     {
         private VisualElement inspectorDataHolder;
         private Foldout tokenFoldout;

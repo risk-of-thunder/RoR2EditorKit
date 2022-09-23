@@ -27,6 +27,10 @@ namespace RoR2EditorKit.Utilities
             return false;
         }
 
+        /// <summary>
+        /// Gets all the types from an assembly safely by getting the types from a ReflectionTypeLoadException if one is thrown
+        /// </summary>
+        /// <returns>The types of the assembly</returns>
         public static Type[] GetTypesSafe(this Assembly assembly)
         {
             Type[] types = null;
