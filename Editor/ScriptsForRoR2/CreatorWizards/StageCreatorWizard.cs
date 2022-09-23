@@ -21,6 +21,10 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         public string stageName;
         public int stageOrder;
 
+        protected override string WizardTitleTooltip => 
+@"The StageCreatorWizard is a Custom Wizard that creates the following upon completion:
+1.- A basic Scene asset with the required components to be used as a Stage in a run
+2.- A SceneDef that points towards the  SceneAsset";
         [MenuItem(Constants.RoR2EditorKitScriptableRoot + "Wizards/Stage", priority = ThunderKit.Common.Constants.ThunderKitMenuPriority)]
         private static void OpenWindow()
         {

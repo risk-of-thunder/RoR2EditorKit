@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.Core.EditorWindows
@@ -18,15 +14,17 @@ namespace RoR2EditorKit.Core.EditorWindows
         /// <summary>
         /// The Header of the Window, contains the name of the wizard by default.
         /// </summary>
-        protected VisualElement headerContainer;
+        protected VisualElement HeaderContainer { get; private set; }
         /// <summary>
         /// The middle container of the window, contains the wizard's specific fields.
         /// </summary>
-        protected VisualElement wizardElementContainer;
+        protected VisualElement WizardElementContainer { get; private set; }
         /// <summary>
         /// The footer of the Window, contains the buttons for executing the wizard.
         /// </summary>
-        protected VisualElement footerContainer;
+        protected VisualElement FooterContainer { get; private set; }
+
+        protected virtual string WizardTitleTooltip { get; }
 
         private IMGUIContainer warning;
 
@@ -39,28 +37,29 @@ namespace RoR2EditorKit.Core.EditorWindows
             SetupDefaultElements();
 
             //Copies the inheriting class's template to wizardElement.
-            GetTemplateInstance(GetType().Name, wizardElementContainer, ValidateUXMLPath);
+            GetTemplateInstance(GetType().Name, WizardElementContainer, ValidateUXMLPath);
         }
 
         private void SetupDefaultElements()
         {
-            headerContainer = rootVisualElement.Q<VisualElement>("header");
-            var title = headerContainer.Q<Label>("wizardTitle");
+            HeaderContainer = rootVisualElement.Q<VisualElement>("header");
+            var title = HeaderContainer.Q<Label>("wizardTitle");
             title.text = ObjectNames.NicifyVariableName(GetType().Name);
+            title.tooltip = WizardTitleTooltip;
 
-            wizardElementContainer = rootVisualElement.Q<VisualElement>("wizardElement");
+            WizardElementContainer = rootVisualElement.Q<VisualElement>("wizardElement");
 
-            footerContainer = rootVisualElement.Q<VisualElement>("footer");
-            var buttons = footerContainer.Q<VisualElement>("buttons");
-            footerContainer.Q<Button>("closeWizardButton").clicked += () => Close();
-            footerContainer.Q<Button>("runWizard").clicked += () => RunWizardInternal();
+            FooterContainer = rootVisualElement.Q<VisualElement>("footer");
+            var buttons = FooterContainer.Q<VisualElement>("buttons");
+            FooterContainer.Q<Button>("closeWizardButton").clicked += () => Close();
+            FooterContainer.Q<Button>("runWizard").clicked += () => RunWizardInternal();
         }
 
         private async void RunWizardInternal()
         {
             if(warning != null)
             {
-                footerContainer.Remove(warning);
+                FooterContainer.Remove(warning);
             }
             if(await RunWizard())
             {
@@ -69,7 +68,7 @@ namespace RoR2EditorKit.Core.EditorWindows
             }
 
             warning = new IMGUIContainer(() => EditorGUILayout.HelpBox("Failed to run wizard, check console for errors.", MessageType.Error));
-            footerContainer.Add(warning);
+            FooterContainer.Add(warning);
         }
 
         /// <summary>

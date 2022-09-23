@@ -25,6 +25,13 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         public string humanReadableModName;
         public string modDescription;
 
+        protected override string WizardTitleTooltip => 
+@"The ModCreatorWizard is a custom wizard that creates the following upon completion:
+1.- An AssemblyDef with references to most common ror2 modding assemblies
+2.- A very basic MainClass following a basic MonoBehaviour Singleton pattern
+3.- A folder for your Assets for the AssetBundle
+4.- A ThunderKit Manifest for your mod.";
+
         private List<string> assemblyList = new List<string>();
         private UnityEngine.Object assetBundleFolder;
         private AssemblyDefinitionAsset assemblyDef;
@@ -39,7 +46,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         protected override void OnWindowOpened()
         {
             base.OnWindowOpened();
-            var textField = wizardElementContainer.Q<TextField>("modDescription");
+            var textField = WizardElementContainer.Q<TextField>("modDescription");
             modDescription = textField.text;
         }
 
