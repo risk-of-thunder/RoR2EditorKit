@@ -1,5 +1,4 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
     <ui:TextField picking-mode="Ignore" label="Stage Name" value="filler text" name="stageName" binding-path="stageName" />
     <uie:IntegerField label="Stage Order" value="42" name="stageOrder" binding-path="stageOrder" />
-    <ui:Label text="Note: A token prefix is required for this wizard to run." name="tokenPrefixNotice" style="-unity-font-style: bold; -unity-text-align: upper-center;" />
 </ui:UXML>

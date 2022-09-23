@@ -25,6 +25,8 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
 @"The StageCreatorWizard is a Custom Wizard that creates the following upon completion:
 1.- A basic Scene asset with the required components to be used as a Stage in a run
 2.- A SceneDef that points towards the  SceneAsset";
+        protected override bool RequiresTokenPrefix => true;
+
         [MenuItem(Constants.RoR2EditorKitScriptableRoot + "Wizards/Stage", priority = ThunderKit.Common.Constants.ThunderKitMenuPriority)]
         private static void OpenWindow()
         {
@@ -62,7 +64,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         private Task DuplicateSceneAsset()
         {
             var path = IOUtils.GetCurrentDirectory();
-            var sceneAsset = Constants.StageTemplate;
+            var sceneAsset = Constants.AssetGUIDS.QuickLoad<SceneAsset>(Constants.AssetGUIDS.stageTemplateGUID);
             var destPath = IOUtils.FormatPathForUnity(Path.Combine(path, $"{stageName}.unity"));
             var sceneAssetPath = AssetDatabase.GetAssetPath(sceneAsset);
             AssetDatabase.CopyAsset(sceneAssetPath, FileUtil.GetProjectRelativePath(destPath));

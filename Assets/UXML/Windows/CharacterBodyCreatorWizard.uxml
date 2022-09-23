@@ -1,9 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<engine:UXML
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:engine="UnityEngine.UIElements"
-    xmlns:editor="UnityEditor.UIElements"
-    xsi:noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd"
->
-    
-</engine:UXML>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <uie:PropertyField name="characterName" binding-path="characterName" tooltip="The name of this character, used for creating Tokens and setting the game object&apos;s name. should not contain &quot;Body&quot; and be written in PascalCase" />
+    <uie:PropertyField name="extraComponents" binding-path="extraComponents" tooltip="A list of components to add to the root object." />
+    <uie:PropertyField name="modelFBX" binding-path="modelFBX" tooltip="Your character&apos;s FBX object, used for creating the mdl game object for the CharacterBody" />
+</ui:UXML>

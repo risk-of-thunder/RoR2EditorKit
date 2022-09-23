@@ -24,7 +24,7 @@ namespace Packages.riskofthunder_ror2editorkit.Editor.Core
 
         private static bool ShouldCopy()
         {
-            var relativePath = AssetDatabase.GetAssetPath(Constants.XMLDoc);
+            var relativePath = Constants.AssetGUIDS.GetPath(Constants.AssetGUIDS.xmlDocGUID);
             var fullPath = Path.GetFullPath(relativePath);
             var fileName = Path.GetFileName(fullPath);
             var pathToCheck = Path.Combine(Constants.FolderPaths.ScriptAssembliesFolder, fileName);
@@ -33,7 +33,7 @@ namespace Packages.riskofthunder_ror2editorkit.Editor.Core
 
         private static void DoCopy()
         {
-            var relativePath = AssetDatabase.GetAssetPath(Constants.XMLDoc);
+            var relativePath = Constants.AssetGUIDS.GetPath(Constants.AssetGUIDS.xmlDocGUID);
             var sourcePath = Path.GetFullPath(relativePath);
             var fileName = Path.GetFileName(sourcePath);
             var destPath = Path.Combine(Constants.FolderPaths.ScriptAssembliesFolder, fileName);

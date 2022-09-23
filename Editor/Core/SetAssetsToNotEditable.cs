@@ -23,7 +23,7 @@ namespace RoR2EditorKit.Core
 
         private static bool IsRoR2EKInPackages()
         {
-            string iconPath = AssetDatabase.GetAssetPath(Constants.Icon);
+            string iconPath = Constants.AssetGUIDS.GetPath(Constants.AssetGUIDS.iconGUID);
             return iconPath.StartsWith(Constants.PackageFolderPath);
         }
 
@@ -31,7 +31,7 @@ namespace RoR2EditorKit.Core
         {
 
             AssetDatabase.SaveAssets();
-            var iconPath = AssetDatabase.GetAssetPath(Constants.Icon);
+            var iconPath = Constants.AssetGUIDS.GetPath(Constants.AssetGUIDS.iconGUID);
             var assetsFolder = Path.GetDirectoryName(iconPath);
             var folderAsset = AssetDatabase.LoadAssetAtPath<Object>(assetsFolder);
 

@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using RoR2EditorKit.Utilities;
+using System.Threading.Tasks;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.Core.EditorWindows
@@ -26,6 +28,8 @@ namespace RoR2EditorKit.Core.EditorWindows
 
         protected virtual string WizardTitleTooltip { get; }
 
+        protected virtual bool RequiresTokenPrefix => false;
+
         private IMGUIContainer warning;
 
         protected override void CreateGUI()
@@ -38,6 +42,21 @@ namespace RoR2EditorKit.Core.EditorWindows
 
             //Copies the inheriting class's template to wizardElement.
             GetTemplateInstance(GetType().Name, WizardElementContainer, ValidateUXMLPath);
+
+            if(RequiresTokenPrefix)
+            {
+                Label label = new Label();
+                label.name = "tokenPrefixNotice";
+                label.text = "Note: A Token prefix is required for this wizard to run.";
+                label.tooltip = "You can set the token prefix on the ror2editorkit settings window.";
+
+                var fontStyle = label.style.unityFontStyleAndWeight;
+                fontStyle.value = FontStyle.Bold;
+                label.style.unityFontStyleAndWeight = fontStyle;
+
+                WizardElementContainer.Add(label);
+                label.BringToFront();
+            }
         }
 
         private void SetupDefaultElements()
@@ -57,12 +76,24 @@ namespace RoR2EditorKit.Core.EditorWindows
 
         private async void RunWizardInternal()
         {
+            bool shouldRun = true;
             if(warning != null)
             {
                 FooterContainer.Remove(warning);
             }
-            if(await RunWizard())
+            
+            if(RequiresTokenPrefix)
             {
+                if(Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
+                {
+                    Debug.LogError("Cannot run wizard as there is no Token Prefix specified.");
+                    shouldRun = false;
+                }
+            }
+
+            if(shouldRun && await RunWizard())
+            {
+                Cleanup();
                 Close();
                 return;
             }
@@ -70,11 +101,15 @@ namespace RoR2EditorKit.Core.EditorWindows
             warning = new IMGUIContainer(() => EditorGUILayout.HelpBox("Failed to run wizard, check console for errors.", MessageType.Error));
             FooterContainer.Add(warning);
         }
-
         /// <summary>
         /// Implement your wizard's job and what it does here
         /// </summary>
         /// <returns>True if the wizard managed to run without issues, false if an issue has been encountered.</returns>
         protected abstract Task<bool> RunWizard();
+
+        /// <summary>
+        /// Implement your wizard's cleanup procecss here.
+        /// </summary>
+        protected virtual void Cleanup() { }
     }
 }

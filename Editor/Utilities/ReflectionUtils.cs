@@ -26,5 +26,19 @@ namespace RoR2EditorKit.Utilities
 
             return false;
         }
+
+        public static Type[] GetTypesSafe(this Assembly assembly)
+        {
+            Type[] types = null;
+            try
+            {
+                types = assembly.GetTypes();
+            }
+            catch(ReflectionTypeLoadException re)
+            {
+                types = re.Types.Where(t => t != null).ToArray();
+            }
+            return types;
+        }
     }
 }

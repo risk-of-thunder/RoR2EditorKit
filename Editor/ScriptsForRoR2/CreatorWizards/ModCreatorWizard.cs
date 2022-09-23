@@ -129,7 +129,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         {
             var directory = IOUtils.GetCurrentDirectory();
             string mainClassPath = Path.Combine(directory, $"{modName}Main.cs");
-            string mainClassTemplate = Constants.MainClassTemplate.text;
+            string mainClassTemplate = Constants.AssetGUIDS.QuickLoad<TextAsset>(Constants.AssetGUIDS.mainClassTemplateGUID).text;
 
             using(var fs = File.CreateText(mainClassPath))
             {

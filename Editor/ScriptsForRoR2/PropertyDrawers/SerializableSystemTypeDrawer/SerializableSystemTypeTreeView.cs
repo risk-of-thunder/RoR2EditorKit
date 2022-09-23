@@ -67,18 +67,22 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
                 attachPoint = RootItem.AddItem(assemblyName, false, true, new SystemTypeTreeInfo(assemblyName));
                 AddHandlerEvents(attachPoint);
             }
-
-            var namespaces = type.Namespace.Split('.');
-            foreach (var ns in namespaces)
+            var typeNamespace = type.Namespace;
+            
+            if(typeNamespace != null)
             {
-                var next = attachPoint.FindItemByName(ns);
-                if (next == null)
+                var namespaces = typeNamespace.Split('.');
+                foreach (var ns in namespaces)
                 {
-                    attachPoint = attachPoint.AddItem(ns, false, false, new SystemTypeTreeInfo(ns));
-                    AddHandlerEvents(attachPoint);
+                    var next = attachPoint.FindItemByName(ns);
+                    if (next == null)
+                    {
+                        attachPoint = attachPoint.AddItem(ns, false, false, new SystemTypeTreeInfo(ns));
+                        AddHandlerEvents(attachPoint);
+                    }
+                    else
+                        attachPoint = next;
                 }
-                else
-                    attachPoint = next;
             }
             var t = attachPoint.AddItem(type.Name, true, false, new SystemTypeTreeInfo(type));
             AddHandlerEvents(t);

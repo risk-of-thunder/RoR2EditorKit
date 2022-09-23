@@ -146,32 +146,78 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
             private Type GetRequiredBaseType()
             {
                 Type typeOfObject = serializedObject.targetObject.GetType();
-
-
-                var field = typeOfObject.GetFields()
-                                         .Where(fieldInfo => fieldInfo.GetCustomAttributes(typeof(HG.SerializableSystemType.RequiredBaseTypeAttribute), true) != null)
-                                         .Where(fieldInfo => fieldInfo.Name == parentProperty.name)
-                                         .FirstOrDefault();
+                Type[] assemblyTypes = AppDomain.CurrentDomain
+                    .GetAssemblies()
+                    .SelectMany(asm => RoR2EditorKit.Utilities.ReflectionUtils.GetTypesSafe(asm))
+                    .ToArray();
 
                 Type requiredBaseType = null;
-                if (field != null)
-                {
-                    HG.SerializableSystemType.RequiredBaseTypeAttribute attribute = (HG.SerializableSystemType.RequiredBaseTypeAttribute)field.GetCustomAttributes(typeof(HG.SerializableSystemType.RequiredBaseTypeAttribute), true).First();
-                    if (attribute != null)
-                    {
-                        requiredBaseType = attribute.type;
-                    }
-                }
 
-                //If the lookup fails, look for it using this different method.
-                if (requiredBaseType == null)
+                requiredBaseType = GetBaseTypeFromFieldInfo(typeOfObject);
+                if (requiredBaseType != null)
+                    return requiredBaseType;
+
+                requiredBaseType = GetBaseTypeFromStructFieldInfo();
+                if (requiredBaseType != null)
+                    return requiredBaseType;
+
+                requiredBaseType = GetBaseTypeFromArrayFieldInfo(typeOfObject);
+                if (requiredBaseType != null)
+                    return requiredBaseType;
+
+                throw new Exception("Could not find required base type.");
+            }
+
+
+            private Type GetBaseTypeFromFieldInfo(Type typeOfObject)
+            {
+                try
                 {
+                    var field = typeOfObject.GetFields()
+                                             .Where(fieldInfo => fieldInfo.GetCustomAttributes(typeof(HG.SerializableSystemType.RequiredBaseTypeAttribute), true) != null)
+                                             .Where(fieldInfo => fieldInfo.Name == parentProperty.name)
+                                             .FirstOrDefault();
+
+                    Type requiredBaseType = null;
+                    if (field != null)
+                    {
+                        HG.SerializableSystemType.RequiredBaseTypeAttribute attribute = (HG.SerializableSystemType.RequiredBaseTypeAttribute)field.GetCustomAttributes(typeof(HG.SerializableSystemType.RequiredBaseTypeAttribute), true).First();
+                        if (attribute != null)
+                        {
+                            requiredBaseType = attribute.type;
+                        }
+                    }
+
+                    return requiredBaseType;
+                }
+                catch(Exception e)
+                {
+                    Debug.LogWarning($"Could not find base type from field info, resorting to other methods... \n\n\n{e}");
+                    return null;
+                }
+            }
+
+            private Type GetBaseTypeFromStructFieldInfo()
+            {
+                try
+                {
+                    Type requiredBaseType = null;
+
                     var path = parentProperty.propertyPath;
                     path = path.Substring(0, path.LastIndexOf("."));
                     var pProp = serializedObject.FindProperty(path);
                     var parentType = AppDomain.CurrentDomain.GetAssemblies().SelectMany(asm => asm.GetTypes()).FirstOrDefault(t => t.Name == pProp.type);
 
                     var fieldInfo = parentType.GetField(parentProperty.name);
+
+                    if (fieldInfo == null)
+                    {
+                        path = path.Substring(0, path.LastIndexOf("."));
+                        pProp = serializedObject.FindProperty(path);
+                        parentType = AppDomain.CurrentDomain.GetAssemblies().SelectMany(asm => asm.GetTypes()).FirstOrDefault(t => t.Name == pProp.type);
+
+                        fieldInfo = parentType.GetField(parentProperty.name);
+                    }
                     var requiredBaseTypeAttribute = fieldInfo.GetCustomAttributes(typeof(HG.SerializableSystemType.RequiredBaseTypeAttribute), true).FirstOrDefault();
 
                     if (fieldInfo != null)
@@ -185,13 +231,59 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
                             }
                         }
                     }
+
+                    return requiredBaseType;
+                }
+                catch(Exception e)
+                {
+                    Debug.LogWarning($"Could not find base type from struct field info, resorting to other methods... \n\n\n{e}");
+                    return null;
+                }
+            }
+
+            private Type GetBaseTypeFromArrayFieldInfo(Type typeOfObject)
+            {
+                var path = parentProperty.propertyPath;
+                if(!path.Contains("Array.data["))
+                {
+                    return null;
+                }
+                //parent property is an array, find it.
+                string modifiedPath = path;
+                SerializedProperty arrayProp = parentProperty.serializedObject.FindProperty(modifiedPath);
+                int tries = 0;
+                while(!arrayProp.isArray)
+                {
+                    modifiedPath = path.Substring(0, path.LastIndexOf("."));
+                    arrayProp = parentProperty.serializedObject.FindProperty(modifiedPath);
+                    tries++;
+
+                    if(tries > 10)
+                    {
+                        Debug.LogWarning("Took over ten tries to attempt to find the base type from array field info, breaking.");
+                        break;
+                    }
+                }
+
+                string fieldName = modifiedPath.Substring(0, modifiedPath.LastIndexOf("."));
+
+                var field = typeOfObject.GetFields()
+                                             .Where(fieldInfo => fieldInfo.GetCustomAttributes(typeof(HG.SerializableSystemType.RequiredBaseTypeAttribute), true) != null)
+                                             .Where(fieldInfo => fieldInfo.Name == fieldName)
+                                             .FirstOrDefault();
+
+                Type requiredBaseType = null;
+                if (field != null)
+                {
+                    HG.SerializableSystemType.RequiredBaseTypeAttribute attribute = (HG.SerializableSystemType.RequiredBaseTypeAttribute)field.GetCustomAttributes(typeof(HG.SerializableSystemType.RequiredBaseTypeAttribute), true).First();
+                    if (attribute != null)
+                    {
+                        requiredBaseType = attribute.type;
+                    }
                 }
 
                 return requiredBaseType;
             }
         }
-
     }
-
-
 }
