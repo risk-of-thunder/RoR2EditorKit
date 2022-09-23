@@ -42,22 +42,6 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
             window.Focus();
         }
 
-        protected override void OnWindowOpened()
-        {
-            base.OnWindowOpened();
-/*            
-            extraEntityStateMachinesField = WizardElementContainer.Q<PropertyField>("extraEntityStateMachines");
-            extraEntityStateMachinesField.RegisterCallback<ChangeEvent<int>>(evt => EnsureValidAmount(evt, ref extraEntityStateMachines));
-
-            extraGenericSkillsField = WizardElementContainer.Q<PropertyField>("extraGenericSkills");
-            extraGenericSkillsField.RegisterCallback<ChangeEvent<int>>(evt => EnsureValidAmount(evt, ref extraGenericSkills));*/
-        }
-
-        private void EnsureValidAmount(ChangeEvent<int> evt, ref int amount)
-        {
-            amount = evt.newValue < 0 ? 0 : evt.newValue;
-        }
-
         protected override async Task<bool> RunWizard()
         {
             if(characterName.IsNullOrEmptyOrWhitespace())
@@ -132,17 +116,16 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
             {
                 try
                 {
-                    try
+                    Component newComponent = mdlInstance.AddComponent(component.GetType());
+                    foreach(FieldInfo f in component.GetType().GetFields())
                     {
-                        Component newComponent = mdlInstance.AddComponent(component.GetType());
-                        foreach(FieldInfo f in component.GetType().GetFields())
-                        {
-                            f.SetValue(newComponent, f.GetValue(component));
-                        }
+                        f.SetValue(newComponent, f.GetValue(component));
                     }
-                    catch { }
                 }
-                catch { }
+                catch(Exception e)
+                {
+                    Debug.LogError($"Failed to copy component {component.GetType().Name} \n\n{e}");
+                }
             }
             mdlInstance.name = $"mdl{characterName}";
             DestroyImmediate(templateMdl);
@@ -153,8 +136,9 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         {
             var path = IOUtils.GetCurrentDirectory();
             var destPath = IOUtils.FormatPathForUnity(Path.Combine(path, $"{characterName}Body.prefab"));
-            PrefabUtility.SaveAsPrefabAsset(copiedBody, destPath);
-            AssetDatabase.ImportAsset(destPath);
+            var projectRelative = FileUtil.GetProjectRelativePath(destPath);
+            PrefabUtility.SaveAsPrefabAsset(copiedBody, projectRelative);
+            AssetDatabase.ImportAsset(projectRelative);
             return Task.CompletedTask;
         }
     }

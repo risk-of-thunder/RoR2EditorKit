@@ -1,0 +1,20 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:VisualElement name="Container" class="genericHolder">
+        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ScriptableObjectInspector.uss" />
+        <ui:Label text="Label" name="scriptType" class="genericHolderHeader scriptType" />
+        <ui:VisualElement name="InspectorDataContainer">
+            <uie:PropertyField name="bodyPrefab" binding-path="bodyPrefab" />
+            <uie:PropertyField name="displayPrefab" binding-path="displayPrefab" />
+            <uie:PropertyField name="unlockableDef" binding-path="unlockableDef" />
+            <uie:PropertyField name="primaryColor" binding-path="primaryColor" />
+            <uie:PropertyField name="desiredSortPosition" binding-path="desiredSortPosition" />
+            <uie:PropertyField name="hidden" binding-path="hidden" />
+            <ui:Foldout text="Tokens" name="TokenContainer" class="genericHolderFoldout">
+                <uie:PropertyField name="displayNameToken" binding-path="displayNameToken" />
+                <uie:PropertyField name="descriptionToken" binding-path="descriptionToken" />
+                <uie:PropertyField name="outroFlavorToken" binding-path="outroFlavorToken" />
+                <uie:PropertyField name="mainEndingEscapeFailureFlavor" binding-path="mainEndingEscapeFailureFlavorToken" />
+            </ui:Foldout>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

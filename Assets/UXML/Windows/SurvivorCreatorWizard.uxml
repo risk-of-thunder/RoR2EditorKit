@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <uie:PropertyField name="characterBody" tooltip="The Characterbody for this survivor, used in the creation of the SurvivorDef and the survivor&apos;s Display prefab.  If you dont have a CharacterBody prefab, you can create one with the Character Body Creator Wizard." binding-path="characterBody" />
+    <uie:PropertyField name="sortPosition" binding-path="sortPosition" tooltip="How this survivor will be sorted in the survivor selection window, lower values means it comes first (Commando = 0)" />
+</ui:UXML>
