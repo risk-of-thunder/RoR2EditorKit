@@ -10,30 +10,30 @@ GameObject:
   m_Component:
   - component: {fileID: 4736490976508953}
   - component: {fileID: 1115676568654940431}
-  - component: {fileID: 114867600566018714}
-  - component: {fileID: 114913101774812205}
   - component: {fileID: 114132193845705032}
-  - component: {fileID: 114906812257193381}
   - component: {fileID: 114587136089654368}
+  - component: {fileID: 114509115025441227}
   - component: {fileID: 114209604289230284}
-  - component: {fileID: 114999915253497287}
   - component: {fileID: 114694542855400404}
   - component: {fileID: 114867863264420549}
+  - component: {fileID: 114754525242762668}
   - component: {fileID: 114527265832758295}
   - component: {fileID: 114170230698971737}
   - component: {fileID: 114095300287875699}
   - component: {fileID: 114969262927349142}
-  - component: {fileID: 114754525242762668}
+  - component: {fileID: 114117785022760401}
   - component: {fileID: 114358708267381721}
+  - component: {fileID: 114867600566018714}
+  - component: {fileID: 114913101774812205}
+  - component: {fileID: 114906812257193381}
+  - component: {fileID: 114999915253497287}
   - component: {fileID: 114741608973015110}
   - component: {fileID: 114802859464456921}
   - component: {fileID: 114883286156679623}
   - component: {fileID: 114662063242952874}
   - component: {fileID: 114379522941556962}
-  - component: {fileID: 114509115025441227}
   - component: {fileID: 114508650733657164}
   - component: {fileID: 114913058623837409}
-  - component: {fileID: 114117785022760401}
   - component: {fileID: 54854460974271916}
   - component: {fileID: 136063655891024778}
   - component: {fileID: 114457655416913891}
@@ -95,44 +95,6 @@ MonoBehaviour:
     i15: 0
   m_ServerOnly: 0
   m_LocalPlayerAuthority: 1
---- !u!114 &114867600566018714
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000361625675071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1530905962, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  walkSpeedPenaltyCoefficient: 1
-  characterDirection: {fileID: 0}
-  muteWalkMotion: 0
-  mass: 100
-  airControl: 0.25
-  disableAirControlUntilCollision: 0
-  generateParametersOnAwake: 1
-  _gravityParameters:
-    environmentalAntiGravityGranterCount: 0
-    antiGravityNeutralizerCount: 0
-    channeledAntiGravityGranterCount: 0
-  _flightParameters:
-    channeledFlightGranterCount: 0
---- !u!114 &114913101774812205
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000361625675071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1549848242, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveVector: {x: 0, y: 0, z: 0}
 --- !u!114 &114132193845705032
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -214,23 +176,6 @@ MonoBehaviour:
   skinIndex: 0
   customKillTotalStatName: 
   overrideCoreTransform: {fileID: 0}
---- !u!114 &114906812257193381
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000361625675071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1067940895, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cameraParams: {fileID: 0}
-  cameraPivotTransform: {fileID: 0}
-  fovOverride: 0
-  recoil: {x: 0, y: 0}
-  dontRaycastToPivot: 0
 --- !u!114 &114587136089654368
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -253,6 +198,22 @@ MonoBehaviour:
   normalizeToFloor: 0
   normalSmoothdampTime: 0.1
   normalMaxAngleDelta: 90
+--- !u!114 &114509115025441227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000361625675071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1918207524, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stateMachines:
+  - {fileID: 114209604289230284}
+  - {fileID: 114694542855400404}
+  - {fileID: 114867863264420549}
 --- !u!114 &114209604289230284
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -267,30 +228,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   customName: Body
   initialStateType:
-    _typeName: 
+    _typeName: EntityStates.Idle, RoR2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   mainStateType:
-    _typeName: EntityStates.GenericCharacterMain, RoR2, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
---- !u!114 &114999915253497287
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000361625675071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1077198318, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveVector: {x: 0, y: 0, z: 0}
-  targetTransform: {fileID: 4066011276010550}
-  overrideAnimatorForwardTransform: {fileID: 0}
-  rootMotionAccumulator: {fileID: 0}
-  modelAnimator: {fileID: 0}
-  driveFromRootRotation: 0
-  turnSpeed: 720
-  turnSoundName: 
+    _typeName: EntityStates.Idle, RoR2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
 --- !u!114 &114694542855400404
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -325,70 +265,6 @@ MonoBehaviour:
     _typeName: 
   mainStateType:
     _typeName: 
---- !u!114 &114527265832758295
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000361625675071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 298587437, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _skillFamily: {fileID: 0}
-  skillName: FirePistol
-  hideInCharacterSelect: 0
-  hasExecutedSuccessfully: 0
---- !u!114 &114170230698971737
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000361625675071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 298587437, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _skillFamily: {fileID: 0}
-  skillName: FireFMJ
-  hideInCharacterSelect: 0
-  hasExecutedSuccessfully: 0
---- !u!114 &114095300287875699
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000361625675071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 298587437, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _skillFamily: {fileID: 0}
-  skillName: Roll
-  hideInCharacterSelect: 0
-  hasExecutedSuccessfully: 0
---- !u!114 &114969262927349142
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000361625675071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 298587437, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _skillFamily: {fileID: 0}
-  skillName: Barrage
-  hideInCharacterSelect: 0
-  hasExecutedSuccessfully: 0
 --- !u!114 &114754525242762668
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -415,6 +291,91 @@ MonoBehaviour:
   secondaryBonusStockOverrideSkill: {fileID: 0}
   utilityBonusStockOverrideSkill: {fileID: 0}
   specialBonusStockOverrideSkill: {fileID: 0}
+--- !u!114 &114527265832758295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000361625675071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 298587437, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _skillFamily: {fileID: 0}
+  skillName: 
+  hideInCharacterSelect: 0
+  hasExecutedSuccessfully: 0
+--- !u!114 &114170230698971737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000361625675071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 298587437, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _skillFamily: {fileID: 0}
+  skillName: 
+  hideInCharacterSelect: 0
+  hasExecutedSuccessfully: 0
+--- !u!114 &114095300287875699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000361625675071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 298587437, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _skillFamily: {fileID: 0}
+  skillName: 
+  hideInCharacterSelect: 0
+  hasExecutedSuccessfully: 0
+--- !u!114 &114969262927349142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000361625675071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 298587437, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _skillFamily: {fileID: 0}
+  skillName: 
+  hideInCharacterSelect: 0
+  hasExecutedSuccessfully: 0
+--- !u!114 &114117785022760401
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000361625675071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 952828898, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  deathSound: Play_ui_player_death
+  barkSound: 
+  openSound: 
+  landingSound: Play_char_land
+  fallDamageSound: Play_char_land_fall_damage
+  aliveLoopStart: 
+  aliveLoopStop: 
+  sprintLoopStart: 
+  sprintLoopStop: 
 --- !u!114 &114358708267381721
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -429,6 +390,81 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hideAllyCardDisplay: 0
   _teamIndex: -1
+--- !u!114 &114867600566018714
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000361625675071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1530905962, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  walkSpeedPenaltyCoefficient: 1
+  characterDirection: {fileID: 0}
+  muteWalkMotion: 0
+  mass: 100
+  airControl: 0.25
+  disableAirControlUntilCollision: 0
+  generateParametersOnAwake: 1
+  _gravityParameters:
+    environmentalAntiGravityGranterCount: 0
+    antiGravityNeutralizerCount: 0
+    channeledAntiGravityGranterCount: 0
+  _flightParameters:
+    channeledFlightGranterCount: 0
+--- !u!114 &114913101774812205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000361625675071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1549848242, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveVector: {x: 0, y: 0, z: 0}
+--- !u!114 &114906812257193381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000361625675071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1067940895, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraParams: {fileID: 0}
+  cameraPivotTransform: {fileID: 0}
+  fovOverride: 0
+  recoil: {x: 0, y: 0}
+  dontRaycastToPivot: 0
+--- !u!114 &114999915253497287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000361625675071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1077198318, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveVector: {x: 0, y: 0, z: 0}
+  targetTransform: {fileID: 4066011276010550}
+  overrideAnimatorForwardTransform: {fileID: 0}
+  rootMotionAccumulator: {fileID: 0}
+  modelAnimator: {fileID: 0}
+  driveFromRootRotation: 0
+  turnSpeed: 720
+  turnSoundName: 
 --- !u!114 &114741608973015110
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -509,22 +545,6 @@ MonoBehaviour:
   interpolationFactor: 3
   debugDuplicatePositions: 0
   debugSnapshotReceived: 0
---- !u!114 &114509115025441227
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000361625675071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1918207524, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  stateMachines:
-  - {fileID: 114209604289230284}
-  - {fileID: 114694542855400404}
-  - {fileID: 114867863264420549}
 --- !u!114 &114508650733657164
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -555,27 +575,6 @@ MonoBehaviour:
   m_Script: {fileID: 1144835783, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &114117785022760401
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000361625675071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 952828898, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  deathSound: Play_ui_player_death
-  barkSound: 
-  openSound: 
-  landingSound: Play_char_land
-  fallDamageSound: Play_char_land_fall_damage
-  aliveLoopStart: 
-  aliveLoopStop: 
-  sprintLoopStart: 
-  sprintLoopStop: 
 --- !u!54 &54854460974271916
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -898,9 +897,7 @@ MonoBehaviour:
   m_Script: {fileID: 1533710874, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skins:
-  - {fileID: 0}
-  - {fileID: 0}
+  skins: []
 --- !u!114 &114321550685883533
 MonoBehaviour:
   m_ObjectHideFlags: 0

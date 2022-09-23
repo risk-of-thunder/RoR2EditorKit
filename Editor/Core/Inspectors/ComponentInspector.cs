@@ -1,4 +1,5 @@
 ﻿using System;
+using ThunderKit.Core.UIElements;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -15,9 +16,15 @@ namespace RoR2EditorKit.Core.Inspectors
         {
             base.OnEnable();
             container = new IMGUIContainer(DisplayToggle);
+            OnRootElementsCleared += AddComponentInspectorBase;
             OnVisualTreeCopy += AddToggle;
         }
 
+        private void AddComponentInspectorBase()
+        {
+            var ve = TemplateHelpers.GetTemplateInstance("ComponentInspectorBase", DrawInspectorElement, (str) => str.Contains(RoR2EditorKit.Common.Constants.PackageFolderPath));
+            ve.SendToBack();
+        }
         private void AddToggle()
         {
             if (!InspectorEnabled)
@@ -28,8 +35,7 @@ namespace RoR2EditorKit.Core.Inspectors
             {
                 try
                 {
-                    var componentBase = DrawInspectorElement.Q<VisualElement>("ComponentInspectorBase");
-                    var container = componentBase.Q<VisualElement>("ComponentToggleContainer");
+                    var container = DrawInspectorElement.Q<VisualElement>("ComponentToggleContainer");
                     var toggle = container.Q<Toggle>("InspectorToggle");
                     toggle.value = InspectorEnabled;
                     toggle.RegisterValueChangedCallback(cb => InspectorEnabled = cb.newValue);

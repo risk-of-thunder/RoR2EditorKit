@@ -87,7 +87,6 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
             serializedObject.ApplyModifiedProperties();
         }
 
-
         public class PickerCreator
         {
             public SerializedProperty entityStateReference;

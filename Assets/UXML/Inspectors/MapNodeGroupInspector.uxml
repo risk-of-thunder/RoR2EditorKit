@@ -1,8 +1,4 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:Template name="ComponentInspectorBase" src="/Packages/riskofthunder-ror2editorkit/Assets/UXML/ComponentInspectorBase.uxml" />
-    <ui:Instance template="ComponentInspectorBase" name="ComponentInspectorBase">
-        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ComponentInspector.uss" />
-    </ui:Instance>
     <ui:VisualElement name="InspectorDataContainer" class="genericHolder">
         <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ComponentInspector.uss" />
         <uie:PropertyField name="nodeGraph" binding-path="nodeGraph" />
@@ -11,6 +7,7 @@
         <uie:PropertyField binding-path="debugHullDef" name="debugHullDef" />
         <uie:PropertyField binding-path="graphType" name="graphType" />
         <ui:VisualElement name="NodePlacerContainers" class="genericHolder">
+            <uie:ObjectField label="Parent Game Object" name="parentGameObject" tooltip="If Specified, the newely created nodes will be instantiated as children of this transform, otherwise it&apos;ll be instantiated as a child of the game object that has this map node group." />
             <ui:TextField picking-mode="Ignore" label="Gate Name" value="filler text" name="gateName" />
             <ui:Toggle label="Use Painter" name="usePainter" />
             <uie:FloatField label="Painter Size" value="0" name="painterSize" />

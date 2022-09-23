@@ -5,6 +5,7 @@ using RoR2EditorKit.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -33,6 +34,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         private MethodInfo setIconMethod;
         private List<MapNode> cachedMapNodeList = new List<MapNode>();
         private float maxDistance = 0;
+        private Transform parentGameObject;
 
         protected override void OnEnable()
         {
@@ -55,6 +57,10 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 nodeFlagsField.label = "Flags";
                 nodeFlagsField.RegisterValueChangedCallback(evt => nodeFlags = (NodeFlags)evt.newValue);
                 nodePlacerContainers.Insert(1, nodeFlagsField);
+
+                ObjectField parentField = nodePlacerContainers.Q<ObjectField>("parentGameObject");
+                parentField.SetObjectType<Transform>();
+                parentField.RegisterValueChangedCallback((evt) => parentGameObject = evt.newValue as Transform);
             };
         }
         protected override void DrawInspectorGUI()
@@ -203,6 +209,9 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
                 foreach (var mapNode in cachedMapNodeList)
                 {
+                    if (!mapNode)
+                        continue;
+
                     Handles.color = Color.green;
 
                     Handles.CylinderHandleCap(controlID, mapNode.transform.position, Quaternion.Euler(90, 0, 0), 1, EventType.Repaint);
@@ -480,6 +489,12 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         private void AddNode(MapNodeGroup group, Vector3 pos)
         {
             GameObject node = group.AddNode(pos);
+
+            if(parentGameObject)
+            {
+                node.transform.parent = parentGameObject;
+            }
+
             MapNode mapNode = node.GetComponent<MapNode>();
             mapNode.gateName = gateName;
             mapNode.forbiddenHulls = forbiddenHulls;
