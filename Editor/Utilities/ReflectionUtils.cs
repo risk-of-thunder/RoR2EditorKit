@@ -38,7 +38,7 @@ namespace RoR2EditorKit.Utilities
             {
                 types = assembly.GetTypes();
             }
-            catch(ReflectionTypeLoadException re)
+            catch (ReflectionTypeLoadException re)
             {
                 types = re.Types.Where(t => t != null).ToArray();
             }

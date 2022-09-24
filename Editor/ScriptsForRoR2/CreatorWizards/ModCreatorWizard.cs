@@ -1,19 +1,17 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using RoR2EditorKit.Utilities;
+﻿using RoR2EditorKit.Common;
 using RoR2EditorKit.Core.EditorWindows;
-using UnityEditor;
-using RoR2EditorKit.Common;
+using RoR2EditorKit.Utilities;
 using System;
+using System.Collections.Generic;
 using System.IO;
-using ThunderKit.Core.Manifests.Datums;
-using System.Threading.Tasks;
 using System.Linq;
-using ThunderKit.Core;
+using System.Threading.Tasks;
 using ThunderKit.Core.Manifests;
-using UnityEditorInternal;
 using ThunderKit.Core.Manifests.Datum;
+using ThunderKit.Core.Manifests.Datums;
+using UnityEditor;
+using UnityEditorInternal;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.RoR2Related.EditorWindows
@@ -25,7 +23,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         public string humanReadableModName;
         public string modDescription;
 
-        protected override string WizardTitleTooltip => 
+        protected override string WizardTitleTooltip =>
 @"The ModCreatorWizard is a custom wizard that creates the following upon completion:
 1.- An AssemblyDef with references to most common ror2 modding assemblies
 2.- A very basic MainClass following a basic MonoBehaviour Singleton pattern
@@ -59,7 +57,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
             }
 
             assemblyList = AppDomain.CurrentDomain.GetAssemblies().Select(asm => asm.GetName().Name).ToList();
-            if(!assemblyList.Contains("BepInEx"))
+            if (!assemblyList.Contains("BepInEx"))
             {
                 Debug.LogError("Cannot build mod from wizard since BepInEx is not installed.");
                 return false;
@@ -131,12 +129,12 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
             string mainClassPath = Path.Combine(directory, $"{modName}Main.cs");
             string mainClassTemplate = Constants.AssetGUIDS.QuickLoad<TextAsset>(Constants.AssetGUIDS.mainClassTemplateGUID).text;
 
-            using(var fs = File.CreateText(mainClassPath))
+            using (var fs = File.CreateText(mainClassPath))
             {
                 string extraUsingClauses = string.Empty;
                 string attributes = string.Empty;
 
-                if(assemblyList.Contains("R2API"))
+                if (assemblyList.Contains("R2API"))
                 {
                     extraUsingClauses = "using R2API;\n" +
                         "using R2API.ScriptableObjects;\n" +

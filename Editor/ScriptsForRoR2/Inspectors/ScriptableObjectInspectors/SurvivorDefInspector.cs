@@ -1,12 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UIElements;
-using UnityEditor;
-using UnityEditor.UIElements;
+﻿using RoR2;
 using RoR2EditorKit.Core.Inspectors;
 using RoR2EditorKit.Utilities;
-using RoR2;
+using UnityEditor;
+using UnityEditor.UIElements;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
@@ -108,7 +106,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private void SetPrimaryColorToBodyColor(DropdownMenuAction dma) => TargetType.primaryColor = TargetType.bodyPrefab.GetComponent<CharacterBody>().bodyColor;
         private void SetBodyColorToPrimaryColor(DropdownMenuAction dma) => TargetType.bodyPrefab.GetComponent<CharacterBody>().bodyColor = TargetType.primaryColor;
-        
+
         private void SetTokens(DropdownMenuAction dma)
         {
             string tokenBase = $"{Settings.GetPrefixUppercase()}_{TargetType.cachedName.ToUpperInvariant()}_";

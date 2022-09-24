@@ -1,15 +1,9 @@
 ﻿using RoR2;
 using RoR2EditorKit.Common;
 using RoR2EditorKit.Core.EditorWindows;
-using RoR2EditorKit.Settings;
 using RoR2EditorKit.Utilities;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using ThunderKit.Core.Data;
 using UnityEditor;
 using UnityEngine;
 using Path = System.IO.Path;
@@ -21,7 +15,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         public string stageName;
         public int stageOrder;
 
-        protected override string WizardTitleTooltip => 
+        protected override string WizardTitleTooltip =>
 @"The StageCreatorWizard is a Custom Wizard that creates the following upon completion:
 1.- A basic Scene asset with the required components to be used as a Stage in a run
 2.- A SceneDef that points towards the  SceneAsset";
@@ -36,13 +30,13 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
 
         protected override async Task<bool> RunWizard()
         {
-            if(stageName.IsNullOrEmptyOrWhitespace())
+            if (stageName.IsNullOrEmptyOrWhitespace())
             {
                 Debug.LogError("stageName is null, empty or whitespace.");
                 return false;
             }
 
-            if(Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
+            if (Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
             {
                 Debug.LogError("tokenPrefix is null, empty or whitespace");
                 return false;
@@ -53,7 +47,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
                 await DuplicateSceneAsset();
                 await CreateSceneDef();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.LogError(e);
                 return false;

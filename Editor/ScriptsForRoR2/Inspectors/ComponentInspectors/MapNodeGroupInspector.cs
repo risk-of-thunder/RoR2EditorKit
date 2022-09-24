@@ -5,7 +5,6 @@ using RoR2EditorKit.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -135,7 +134,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                     //Paint or add node
                     if (Event.current.keyCode == KeyCode.B)
                     {
-                        if(usePainter)
+                        if (usePainter)
                         {
                             Painter(maxDistance, zPainterOffset, cachedMapNodeList);
                         }
@@ -146,7 +145,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                         Event.current.Use();
                     }
                     //Add node on cam pos
-                    if(Event.current.keyCode == KeyCode.N)
+                    if (Event.current.keyCode == KeyCode.N)
                     {
                         AddNode(TargetType, Camera.current.transform.position);
                         Event.current.Use();
@@ -194,7 +193,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
                     Handles.CylinderHandleCap(controlID, currentHitInfo, Quaternion.Euler(90, 0, 0), 1, EventType.Repaint);
 
-                    if(usePainter)
+                    if (usePainter)
                     {
                         if (currentPainterSize <= 0)
                         {
@@ -219,7 +218,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                     Handles.color = Color.magenta;
                     foreach (var link in mapNode.links)
                     {
-                        if(link.nodeB)
+                        if (link.nodeB)
                             Handles.DrawLine(mapNode.transform.position, link.nodeB.transform.position);
                     }
                 }
@@ -490,7 +489,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         {
             GameObject node = group.AddNode(pos);
 
-            if(parentGameObject)
+            if (parentGameObject)
             {
                 node.transform.parent = parentGameObject;
             }

@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.UIElements;
-using UnityEditor;
-using UnityEditor.UIElements;
-using RoR2;
+﻿using RoR2;
+using RoR2EditorKit.Common;
 using RoR2EditorKit.Core.EditorWindows;
 using RoR2EditorKit.Utilities;
-using System.IO;
-using UObject = UnityEngine.Object;
+using System;
+using System.Threading.Tasks;
+using UnityEditor;
+using UnityEngine;
 using Path = System.IO.Path;
-using RoR2EditorKit.Common;
 
 namespace RoR2EditorKit.RoR2Related.EditorWindows
 {
@@ -43,18 +36,18 @@ If you dont have a CharacterBody for this wizard, use the CharacterBodyWizard to
 
         protected override async Task<bool> RunWizard()
         {
-            if(Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
+            if (Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
             {
                 Debug.LogError("TokenPRefix is null, empty or whitespace");
                 return false;
             }
-            if(characterBody == null)
+            if (characterBody == null)
             {
                 Debug.LogError("No CharacterBody supplied.");
                 return false;
             }
 
-            if(!characterBody.GetComponentInChildren<CharacterModel>())
+            if (!characterBody.GetComponentInChildren<CharacterModel>())
             {
                 Debug.LogError("The provided CharacterBody does not have a CharacterModel component in its hierarchy");
                 return false;
@@ -69,7 +62,7 @@ If you dont have a CharacterBody for this wizard, use the CharacterBodyWizard to
                 await MakeDisplayModelIntoPrefab();
                 await CreateSurvivorDef();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.LogError(e);
                 return false;
@@ -94,7 +87,7 @@ If you dont have a CharacterBody for this wizard, use the CharacterBodyWizard to
         private Task CleanModelDisplayOfUnecesaryComponents()
         {
             Component[] components = instantiatedModel.GetComponents<MonoBehaviour>();
-            foreach(Component component in components)
+            foreach (Component component in components)
             {
                 var componentName = component.GetType().Name;
                 if (componentName == "Transform" || componentName == "CharacterModel" || componentName == "Animator")

@@ -36,7 +36,7 @@ namespace RoR2EditorKit.Utilities
         public static string GetCurrentDirectory()
         {
             var activeObjectPath = Path.GetFullPath(AssetDatabase.GetAssetPath(Selection.activeObject));
-            if(File.Exists(activeObjectPath))
+            if (File.Exists(activeObjectPath))
             {
                 activeObjectPath = Path.GetDirectoryName(activeObjectPath);
             }

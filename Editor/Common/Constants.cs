@@ -1,6 +1,6 @@
-﻿using UnityEditor;
+﻿using System.IO;
+using UnityEditor;
 using UnityEngine;
-using System.IO;
 
 namespace RoR2EditorKit.Common
 {

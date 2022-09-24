@@ -52,7 +52,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         Type EntityStateType
         {
             get
-            { 
+            {
                 return _entityStateType;
             }
             set

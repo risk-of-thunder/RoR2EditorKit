@@ -9,34 +9,39 @@
             Class filled with constants to use for asset creation or attributes
             </summary>
         </member>
-        <member name="P:RoR2EditorKit.Common.Constants.NullMaterial">
+        <member name="T:RoR2EditorKit.Common.Constants.AssetGUIDS">
             <summary>
-            Loads the RoR2EditorKit null material
+            A collection of GUIDS that represent common assets in the ror2editorkit assets folder
             </summary>
         </member>
-        <member name="P:RoR2EditorKit.Common.Constants.NullMesh">
+        <member name="M:RoR2EditorKit.Common.Constants.AssetGUIDS.QuickLoad``1(System.String)">
             <summary>
-            Loads the RoR2EditorKit null mesh
+            Loads an asset of type <typeparamref name="T"/> by using the <paramref name="guid"/> provided
+            </summary>
+            <typeparam name="T">The type of asset to load</typeparam>
+            <param name="guid">The guid to use</param>
+            <returns>The loaded Asset</returns>
+        </member>
+        <member name="M:RoR2EditorKit.Common.Constants.AssetGUIDS.GetPath(System.String)">
+            <summary>
+            Transforms <paramref name="guid"/> into its asset path.
+            </summary>
+            <param name="guid">The asset's guid</param>
+            <returns>The Asset's path</returns>
+        </member>
+        <member name="T:RoR2EditorKit.Common.Constants.FolderPaths">
+            <summary>
+            Used to quickly get into folders from a unity project.
             </summary>
         </member>
-        <member name="P:RoR2EditorKit.Common.Constants.NullSprite">
+        <member name="T:RoR2EditorKit.Common.DrawerLocator">
             <summary>
-            Loads the RoR2EditorKit null sprite
+            used to locate the drawer in the project so it can reference textures
             </summary>
         </member>
-        <member name="P:RoR2EditorKit.Common.Constants.NullPrefab">
+        <member name="T:RoR2EditorKit.Common.TreeListControl">
             <summary>
-            Loads the RoR2EditorKit null prefab
-            </summary>
-        </member>
-        <member name="P:RoR2EditorKit.Common.Constants.Icon">
-            <summary>
-            Loads the RoR2EditorKit icon
-            </summary>
-        </member>
-        <member name="P:RoR2EditorKit.Common.Constants.XMLDoc">
-            <summary>
-            Loads the XMLDoc of RoR2EditorKit
+            Used in tree lists
             </summary>
         </member>
         <member name="F:RoR2EditorKit.Common.TreeListControl.HoverItem">
@@ -114,6 +119,11 @@
         <member name="M:RoR2EditorKit.Common.TreeListControl.DisplayTreeView(RoR2EditorKit.Common.TreeListControl.DisplayTypes)">
             <summary>
                 Called from OnGUI or EditorWindow.OnGUI
+            </summary>
+        </member>
+        <member name="T:RoR2EditorKit.Common.TreeListItem">
+            <summary>
+            Represents a Tree List Item
             </summary>
         </member>
         <member name="F:RoR2EditorKit.Common.TreeListItem.m_hoverTime">
@@ -387,22 +397,22 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="F:RoR2EditorKit.Core.Inspectors.ExtendedInspector`1.OnRootElementsCleared">
+        <member name="E:RoR2EditorKit.Core.Inspectors.ExtendedInspector`1.OnRootElementsCleared">
             <summary>
             Invoked when the RootVisualElement, DrawInspectorElement and IMGUIContainerElement are cleared;
             </summary>
         </member>
-        <member name="F:RoR2EditorKit.Core.Inspectors.ExtendedInspector`1.OnVisualTreeCopy">
+        <member name="E:RoR2EditorKit.Core.Inspectors.ExtendedInspector`1.OnVisualTreeCopy">
             <summary>
             Invoked when the VisualTree assigned to this inspector has been copied to the "DrawInspectorElement"
             </summary>
         </member>
-        <member name="F:RoR2EditorKit.Core.Inspectors.ExtendedInspector`1.OnIMGUIContainerElementAdded">
+        <member name="E:RoR2EditorKit.Core.Inspectors.ExtendedInspector`1.OnIMGUIContainerElementAdded">
             <summary>
             Invoked right after "IMGUIContainerElement" is added to the "RootVisualElement"
             </summary>
         </member>
-        <member name="F:RoR2EditorKit.Core.Inspectors.ExtendedInspector`1.OnDrawInspectorElementAdded">
+        <member name="E:RoR2EditorKit.Core.Inspectors.ExtendedInspector`1.OnDrawInspectorElementAdded">
             <summary>
             Invoked right after the "DrawInspectorElement" is added to the "RootVisualElement"
             </summary>
@@ -562,12 +572,22 @@
             The message in the tooltip for the messageBox, can be null
             </summary>
         </member>
+        <member name="F:RoR2EditorKit.Core.Inspectors.PrefixData.helpBoxMessage">
+            <summary>
+            The message in the Help Box, can be null.
+            </summary>
+        </member>
         <member name="F:RoR2EditorKit.Core.Inspectors.PrefixData.contextMenuAction">
             <summary>
             The context menu action for the helpBox
             </summary>
         </member>
-        <member name="M:RoR2EditorKit.Core.Inspectors.PrefixData.#ctor(System.Action,System.String)">
+        <member name="F:RoR2EditorKit.Core.Inspectors.PrefixData.nameValidatorFunc">
+            <summary>
+            A function that detemines if the object is following naming conventions
+            </summary>
+        </member>
+        <member name="M:RoR2EditorKit.Core.Inspectors.PrefixData.#ctor(System.Action,System.Func{System.Boolean},System.String,System.String)">
             <summary>
             PrefixData constructor
             </summary>
@@ -777,6 +797,47 @@
             Pipeline for staging a LanguageFolderTree
             <para>Requires manifest datum of type LanguageFolderTree</para>
             <para>Is a manifest processor</para>
+            </summary>
+        </member>
+        <member name="T:RoR2EditorKit.Core.EditorWindows.CreatorWizardWindow">
+            <summary>
+            A variation of the ExtendedEditorWindow, a CreatorWizardWindow can be used for create complex assets and jobs that are executed asynchronously.
+            </summary>
+        </member>
+        <member name="P:RoR2EditorKit.Core.EditorWindows.CreatorWizardWindow.HeaderContainer">
+            <summary>
+            The Header of the Window, contains the name of the wizard by default.
+            </summary>
+        </member>
+        <member name="P:RoR2EditorKit.Core.EditorWindows.CreatorWizardWindow.WizardElementContainer">
+            <summary>
+            The middle container of the window, contains the wizard's specific fields.
+            </summary>
+        </member>
+        <member name="P:RoR2EditorKit.Core.EditorWindows.CreatorWizardWindow.FooterContainer">
+            <summary>
+            The footer of the Window, contains the buttons for executing the wizard.
+            </summary>
+        </member>
+        <member name="P:RoR2EditorKit.Core.EditorWindows.CreatorWizardWindow.WizardTitleTooltip">
+            <summary>
+            If supplied, the Wizard's header title will display this string as a tooltip.
+            </summary>
+        </member>
+        <member name="P:RoR2EditorKit.Core.EditorWindows.CreatorWizardWindow.RequiresTokenPrefix">
+            <summary>
+            If set to true, a notice saying that a token prefix is required will be appended at the bottom of the WizardElementContainer
+            </summary>
+        </member>
+        <member name="M:RoR2EditorKit.Core.EditorWindows.CreatorWizardWindow.RunWizard">
+            <summary>
+            Implement your wizard's job and what it does here
+            </summary>
+            <returns>True if the wizard managed to run without issues, false if an issue has been encountered.</returns>
+        </member>
+        <member name="M:RoR2EditorKit.Core.EditorWindows.CreatorWizardWindow.Cleanup">
+            <summary>
+            Implement your wizard's cleanup procecss here.
             </summary>
         </member>
         <member name="T:RoR2EditorKit.Core.EditorWindows.ExtendedEditorWindow">
@@ -1013,6 +1074,13 @@
             <param name="visualElement">The element to change the display style</param>
             <param name="displayStyle">new display style value</param>
         </member>
+        <member name="M:RoR2EditorKit.Utilities.ExtensionUtils.SetDisplay(UnityEngine.UIElements.VisualElement,System.Boolean)">
+            <summary>
+            Quickly sets the display of a visual elementt
+            </summary>
+            <param name="visualElement">The element to change the display style</param>
+            <param name="display">True if its displayed, false if its hidden</param>
+        </member>
         <member name="M:RoR2EditorKit.Utilities.ExtensionUtils.GetRootObject(UnityEngine.GameObject)">
             <summary>
             Retrieves the root GameObject, aka the first object in the hierarchy of a prefab
@@ -1030,6 +1098,20 @@
             If the directory specified in <paramref name="directoryPath"/> does not exist, it creates it.
             </summary>
             <param name="directoryPath">The directory path to ensure its existence</param>
+        </member>
+        <member name="M:RoR2EditorKit.Utilities.IOUtils.FormatPathForUnity(System.String)">
+            <summary>
+            Formats <paramref name="path"/> so its valid for unity's systems.
+            Replaces \ with /
+            </summary>
+            <param name="path">The path to modified</param>
+            <returns>The formatted path</returns>
+        </member>
+        <member name="M:RoR2EditorKit.Utilities.IOUtils.GetCurrentDirectory">
+            <summary>
+            Returns the current directory from the active object.
+            </summary>
+            <returns>The active object'sdirectory</returns>
         </member>
         <member name="T:RoR2EditorKit.Utilities.MarkdownUtils">
             <summary>
@@ -1058,6 +1140,12 @@
             <param name="assembly"></param>
             <param name="assemblyTypes"></param>
             <returns>true if a ReflectionTypeLoadException was caught</returns>
+        </member>
+        <member name="M:RoR2EditorKit.Utilities.ReflectionUtils.GetTypesSafe(System.Reflection.Assembly)">
+            <summary>
+            Gets all the types from an assembly safely by getting the types from a ReflectionTypeLoadException if one is thrown
+            </summary>
+            <returns>The types of the assembly</returns>
         </member>
         <member name="T:RoR2EditorKit.Utilities.ScriptableObjectUtils">
             <summary>

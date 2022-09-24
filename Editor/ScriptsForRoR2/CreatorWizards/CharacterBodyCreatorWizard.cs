@@ -1,26 +1,21 @@
-﻿using RoR2EditorKit.Core.EditorWindows;
-using RoR2EditorKit.Utilities;
-using RoR2EditorKit.Common;
+﻿using HG;
 using RoR2;
-using UnityEngine;
-using UnityEngine.UIElements;
-using UnityEditor;
-using UnityEditor.UIElements;
-using System.Threading.Tasks;
+using RoR2EditorKit.Common;
+using RoR2EditorKit.Core.EditorWindows;
+using RoR2EditorKit.Utilities;
 using System;
-using System.IO;
-using Path = System.IO.Path;
-using System.Reflection;
 using System.Collections.Generic;
-using HG;
+using System.Reflection;
+using System.Threading.Tasks;
+using UnityEditor;
+using UnityEngine;
+using Path = System.IO.Path;
 
 namespace RoR2EditorKit.RoR2Related.EditorWindows
 {
     public sealed class CharacterBodyCreatorWizard : CreatorWizardWindow
     {
         public string characterName;
-        /*public int extraEntityStateMachines;
-        public int extraGenericSkills;*/
         [SerializableSystemType.RequiredBaseType(typeof(MonoBehaviour))]
         public List<SerializableSystemType> extraComponents = new List<SerializableSystemType>();
         public GameObject modelFBX;
@@ -32,8 +27,6 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         protected override bool RequiresTokenPrefix => true;
 
         private GameObject copiedBody;
-        /*private PropertyField extraEntityStateMachinesField;
-        private PropertyField extraGenericSkillsField;*/
 
         [MenuItem(Constants.RoR2EditorKitScriptableRoot + "Wizards/CharacterBody", priority = ThunderKit.Common.Constants.ThunderKitMenuPriority)]
         private static void OpenWindow()
@@ -44,7 +37,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
 
         protected override async Task<bool> RunWizard()
         {
-            if(characterName.IsNullOrEmptyOrWhitespace())
+            if (characterName.IsNullOrEmptyOrWhitespace())
             {
                 Debug.LogError("characterName is null, empty or whitespace!");
                 return false;
@@ -58,7 +51,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
                 await SetupModelGameObject();
                 await MakeIntoPrefabAsset();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.LogError(e);
                 return false;
@@ -91,14 +84,14 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
 
         private Task AddExtraComponents()
         {
-            foreach(SerializableSystemType type in extraComponents)
+            foreach (SerializableSystemType type in extraComponents)
             {
                 try
                 {
                     Type t = (Type)type;
                     copiedBody.AddComponent(t);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Debug.LogError(e);
                 }
@@ -117,12 +110,12 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
                 try
                 {
                     Component newComponent = mdlInstance.AddComponent(component.GetType());
-                    foreach(FieldInfo f in component.GetType().GetFields())
+                    foreach (FieldInfo f in component.GetType().GetFields())
                     {
                         f.SetValue(newComponent, f.GetValue(component));
                     }
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Debug.LogError($"Failed to copy component {component.GetType().Name} \n\n{e}");
                 }

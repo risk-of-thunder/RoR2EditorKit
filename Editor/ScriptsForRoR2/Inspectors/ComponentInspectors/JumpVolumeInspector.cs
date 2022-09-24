@@ -1,12 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UIElements;
+﻿using RoR2;
+using RoR2EditorKit.Core.Inspectors;
+using RoR2EditorKit.Utilities;
 using UnityEditor;
 using UnityEditor.UIElements;
-using RoR2EditorKit.Utilities;
-using RoR2EditorKit.Core.Inspectors;
-using RoR2;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
@@ -56,9 +54,9 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private void AutoCalculateJumpVelocity(DropdownMenuAction dma = null)
         {
-            if(autoCalculateJumpVelocity.value)
+            if (autoCalculateJumpVelocity.value)
             {
-                if(!TargetType.targetElevationTransform)
+                if (!TargetType.targetElevationTransform)
                 {
                     Debug.LogError("Cannot calculate jump velocity since there is no Transform assigned to Target Elevation Transform.");
                     return;

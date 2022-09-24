@@ -190,7 +190,7 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
 
                     return requiredBaseType;
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Debug.LogWarning($"Could not find base type from field info, resorting to other methods... \n\n\n{e}");
                     return null;
@@ -234,7 +234,7 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
 
                     return requiredBaseType;
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Debug.LogWarning($"Could not find base type from struct field info, resorting to other methods... \n\n\n{e}");
                     return null;
@@ -244,7 +244,7 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
             private Type GetBaseTypeFromArrayFieldInfo(Type typeOfObject)
             {
                 var path = parentProperty.propertyPath;
-                if(!path.Contains("Array.data["))
+                if (!path.Contains("Array.data["))
                 {
                     return null;
                 }
@@ -252,13 +252,13 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
                 string modifiedPath = path;
                 SerializedProperty arrayProp = parentProperty.serializedObject.FindProperty(modifiedPath);
                 int tries = 0;
-                while(!arrayProp.isArray)
+                while (!arrayProp.isArray)
                 {
                     modifiedPath = path.Substring(0, path.LastIndexOf("."));
                     arrayProp = parentProperty.serializedObject.FindProperty(modifiedPath);
                     tries++;
 
-                    if(tries > 10)
+                    if (tries > 10)
                     {
                         Debug.LogWarning("Took over ten tries to attempt to find the base type from array field info, breaking.");
                         break;

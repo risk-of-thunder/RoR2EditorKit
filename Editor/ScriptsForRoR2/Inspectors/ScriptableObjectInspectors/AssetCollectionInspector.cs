@@ -8,7 +8,7 @@ using UnityEngine.UIElements;
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
     [CustomEditor(typeof(AssetCollection))]
-    public class AssetCollectionInspector : ScriptableObjectInspector<AssetCollection>
+    public sealed class AssetCollectionInspector : ScriptableObjectInspector<AssetCollection>
     {
         VisualElement inspectorDataContainer;
         ListViewHelper helper;

@@ -49,7 +49,7 @@ namespace RoR2EditorKit.Core.EditorWindows
             //Copies the inheriting class's template to wizardElement.
             GetTemplateInstance(GetType().Name, WizardElementContainer, ValidateUXMLPath);
 
-            if(RequiresTokenPrefix)
+            if (RequiresTokenPrefix)
             {
                 Label label = new Label();
                 label.name = "tokenPrefixNotice";
@@ -83,21 +83,21 @@ namespace RoR2EditorKit.Core.EditorWindows
         private async void RunWizardInternal()
         {
             bool shouldRun = true;
-            if(warning != null)
+            if (warning != null)
             {
                 FooterContainer.Remove(warning);
             }
-            
-            if(RequiresTokenPrefix)
+
+            if (RequiresTokenPrefix)
             {
-                if(Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
+                if (Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
                 {
                     Debug.LogError("Cannot run wizard as there is no Token Prefix specified.");
                     shouldRun = false;
                 }
             }
 
-            if(shouldRun && await RunWizard())
+            if (shouldRun && await RunWizard())
             {
                 Cleanup();
                 Close();

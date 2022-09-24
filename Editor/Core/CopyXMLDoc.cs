@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using RoR2EditorKit.Common;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
-using System.IO;
-using RoR2EditorKit.Common;
 
 namespace Packages.riskofthunder_ror2editorkit.Editor.Core
 {
@@ -15,7 +10,7 @@ namespace Packages.riskofthunder_ror2editorkit.Editor.Core
     {
         static CopyXMLDoc()
         {
-            if(ShouldCopy())
+            if (ShouldCopy())
             {
                 Debug.Log($"Copying over the ROR2EK XML Doc");
                 DoCopy();

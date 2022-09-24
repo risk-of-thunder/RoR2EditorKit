@@ -68,8 +68,8 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
                 AddHandlerEvents(attachPoint);
             }
             var typeNamespace = type.Namespace;
-            
-            if(typeNamespace != null)
+
+            if (typeNamespace != null)
             {
                 var namespaces = typeNamespace.Split('.');
                 foreach (var ns in namespaces)

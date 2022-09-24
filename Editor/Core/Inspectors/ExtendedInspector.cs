@@ -261,7 +261,7 @@ namespace RoR2EditorKit.Core.Inspectors
 
             try
             {
-                if(HasVisualTreeAsset)
+                if (HasVisualTreeAsset)
                     GetTemplateInstance(GetType().Name, DrawInspectorElement, ValidateUXMLPath);
             }
             catch (Exception ex)
@@ -329,7 +329,7 @@ namespace RoR2EditorKit.Core.Inspectors
 
             IMGUIContainer container = new IMGUIContainer(() =>
             {
-                if(prefixData.helpBoxMessage.IsNullOrEmptyOrWhitespace())
+                if (prefixData.helpBoxMessage.IsNullOrEmptyOrWhitespace())
                     EditorGUILayout.HelpBox($"This {typeof(T).Name}'s name should start with \"{objectNameConvention.Prefix}\" so it follows naming conventions", MessageType.Info);
                 else
                     EditorGUILayout.HelpBox(prefixData.helpBoxMessage, MessageType.Info);
