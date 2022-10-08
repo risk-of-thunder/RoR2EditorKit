@@ -45,24 +45,24 @@ A more detailed Contribution guideline can be found [here](https://github.com/ri
 		*  Can now specify both a custom help box message and custom name validation function
 	* Component Inspectors now always have the fancy enable toggle visual element.
 	
-	* RoR2EditorScripts changes:
-		* Added ModCreator wizard.
-			* Creates an Asmdef, manifest, assetbundle folder and main class for a mod
-		* Added StageCreator wizard
-			* Creates a template stage and scenedef
-		* Added CharacterBodyCreator Wizard
-			* Creates a valid CharacterBody by supplying minimal data and the FBX game object for the model.
-		* Added a SurvivorCreator Wizard
-			* Creates a SurvivorDef and DisplayPrefab, the DisplayPrefab is taken directly from the specified CharacterBody's model.
-		* Added MapNodeGroup inspector
-			* MapNodeGroup inspector allows for easy placement of nodes and utilities (Thanks Anreol & IDeath)
-		* EntityStateConfiguration no longer renames the asset file without consent if naming conventions are enabled.
-		* Added JumpVolume Inspector
-			* Automatically calculates the JumpVelocity using the Time variable and the TargetElevationTransform variable.
-		* Added SurvivorDef Inspector
-		* SerializableSystemType changes
-			* SerializableSystemType can now obtain the required type if the field is an Array.
-			* SerializableSystemType no longer fails to populate if a Type does not have an enclosing namespace.
+* RoR2EditorScripts changes:
+	* Added ModCreator wizard.
+		* Creates an Asmdef, manifest, assetbundle folder and main class for a mod
+	* Added StageCreator wizard
+		* Creates a template stage and scenedef
+	* Added CharacterBodyCreator Wizard
+		* Creates a valid CharacterBody by supplying minimal data and the FBX game object for the model.
+	* Added a SurvivorCreator Wizard
+		* Creates a SurvivorDef and DisplayPrefab, the DisplayPrefab is taken directly from the specified CharacterBody's model.
+	* Added MapNodeGroup inspector
+		* MapNodeGroup inspector allows for easy placement of nodes and utilities (Thanks Anreol & IDeath)
+	* EntityStateConfiguration no longer renames the asset file without consent if naming conventions are enabled.
+	* Added JumpVolume Inspector
+		* Automatically calculates the JumpVelocity using the Time variable and the TargetElevationTransform variable.
+	* Added SurvivorDef Inspector
+	* SerializableSystemType changes
+		* SerializableSystemType can now obtain the required type if the field is an Array.
+		* SerializableSystemType no longer fails to populate if a Type does not have an enclosing namespace.
 
 
 

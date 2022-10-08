@@ -21,6 +21,9 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
 2.- A SceneDef that points towards the  SceneAsset";
         protected override bool RequiresTokenPrefix => true;
 
+        private string upper;
+        private string lower;
+
         [MenuItem(Constants.RoR2EditorKitScriptableRoot + "Wizards/Stage", priority = ThunderKit.Common.Constants.ThunderKitMenuPriority)]
         private static void OpenWindow()
         {
@@ -44,6 +47,8 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
 
             try
             {
+                upper = Settings.GetPrefixUppercase();
+                lower = Settings.GetPrefixLowercase();
                 await DuplicateSceneAsset();
                 await CreateSceneDef();
             }
@@ -59,7 +64,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         {
             var path = IOUtils.GetCurrentDirectory();
             var sceneAsset = Constants.AssetGUIDS.QuickLoad<SceneAsset>(Constants.AssetGUIDS.stageTemplateGUID);
-            var destPath = IOUtils.FormatPathForUnity(Path.Combine(path, $"{stageName}.unity"));
+            var destPath = IOUtils.FormatPathForUnity(Path.Combine(path, $"{lower}_{stageName}.unity"));
             var sceneAssetPath = AssetDatabase.GetAssetPath(sceneAsset);
             AssetDatabase.CopyAsset(sceneAssetPath, FileUtil.GetProjectRelativePath(destPath));
             return Task.CompletedTask;
@@ -73,11 +78,11 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
             sceneDef.sceneType = SceneType.Stage;
             sceneDef.stageOrder = stageOrder;
 
-            var tokenBase = $"{Settings.GetPrefixUppercase()}_MAP_{stageName.ToUpperInvariant()}_";
+            var tokenBase = $"{upper}_MAP_{stageName.ToUpperInvariant()}_";
             sceneDef.nameToken = $"{tokenBase}NAME";
             sceneDef.subtitleToken = $"{tokenBase}SUBTITLE";
 
-            sceneDef.portalSelectionMessageString = $"{Settings.GetPrefixUppercase()}_BAZAAR_SEER_{stageName.ToUpperInvariant()}";
+            sceneDef.portalSelectionMessageString = $"{upper}_BAZAAR_SEER_{stageName.ToUpperInvariant()}";
 
             sceneDef.shouldIncludeInLogbook = true;
             sceneDef.loreToken = $"{tokenBase}LORE";
@@ -87,7 +92,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
             var directory = IOUtils.GetCurrentDirectory();
             var projectRelativePath = FileUtil.GetProjectRelativePath(IOUtils.FormatPathForUnity(directory));
 
-            AssetDatabase.CreateAsset(sceneDef, $"{projectRelativePath}/{stageName}.asset");
+            AssetDatabase.CreateAsset(sceneDef, $"{projectRelativePath}/{lower}_{stageName}.asset");
             return Task.CompletedTask;
         }
     }
