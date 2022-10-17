@@ -41,7 +41,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
                 if (genericSkill)
                 {
-                    skillToPropField.Add(genericSkill, propField);
+                    skillToPropField[genericSkill] = propField;
                     propField.label = genericSkill.skillName;
                     propField.tooltip = $"Type: \"{genericSkill.GetType().Name}\"" +
                         $"\n\nSkill Family: \"{genericSkill.skillFamily}\"" +
