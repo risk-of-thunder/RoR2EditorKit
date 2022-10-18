@@ -10,7 +10,7 @@
             <uie:PropertyField name="passiveBuffDef" binding-path="passiveBuffDef" tooltip="If assigned, this BuffDef is applied to the body when this equipment is held. If the buffDef has an associated Elitedef, the Elitedef&apos;s EquipmentDef needs to point to this EquipmenttDef!" />
             <uie:PropertyField name="dropOnDeathChance" binding-path="dropOnDeathChance" tooltip="The chance that this equipment is dropped on death" focusable="true" />
             <uie:PropertyField name="canDrop" binding-path="canDrop" tooltip="Whether this equipment can be dropped from Barrels or Pods" />
-            <uie:PropertyField name="randomlyTriggered" binding-path="randomlyTriggered" tooltip="Wether this equipment can be triggered by Bottled Chaos&apos; effectt" />
+            <uie:PropertyField name="randomlyTriggered" binding-path="canBeRandomlyTriggered" tooltip="Wether this equipment can be triggered by Bottled Chaos&apos; effectt" />
             <uie:PropertyField name="enigmaCompatible" binding-path="enigmaCompatible" tooltip="Wether this equipment is compatible with Artifact of Enigma" />
             <uie:PropertyField name="isLunar" tooltip="Wether this equipment is a Lunar equipment" binding-path="isLunar" />
             <uie:PropertyField name="isBoss" binding-path="isBoss" tooltip="Wether this equipment is dropped from a boss" />
