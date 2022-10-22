@@ -33,8 +33,8 @@ namespace RoR2EditorKit.Core
 
         public void SetShader(Shader shader)
         {
-            shaderName = shader.name;
-            shaderGUID = AssetDatabaseUtils.GetGUIDFromAsset(shader);
+            shaderName = !shader ? string.Empty : shader.name;
+            shaderGUID = !shader ? string.Empty : AssetDatabaseUtils.GetGUIDFromAsset(shader);
         }
     }
 }
