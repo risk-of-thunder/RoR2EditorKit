@@ -137,6 +137,28 @@ namespace RoR2EditorKit.Core.Inspectors
             return null;
         }
 
+        public static MaterialProperty DrawProperty(string name, string tooltip)
+        {
+            MaterialProperty prop = GetMaterialProperty(Instance.targets, name);
+            return DrawProperty(name, new GUIContent(prop.name, tooltip));
+        }
+        /// <summary>
+        /// Draws a Material Property in the inspector, using the shader's property UI
+        /// </summary>
+        /// <param name="name">The name of the property to draw</param>
+        /// <param name="guiContent">Override the property's label and tooltip</param>
+        /// <returns>The Drawn Property, If no material editor instance exists, it returns null</returns>
+        public static MaterialProperty DrawProperty(string name, GUIContent guiContent)
+        {
+            if(Instance)
+            {
+                MaterialProperty prop = GetMaterialProperty(Instance.targets, name);
+                Instance.ShaderProperty(prop, guiContent);
+                return prop;
+            }
+            return null;
+        }
+
         /// <summary>
         /// Grabs a MaterialProperty from the inspected material
         /// </summary>

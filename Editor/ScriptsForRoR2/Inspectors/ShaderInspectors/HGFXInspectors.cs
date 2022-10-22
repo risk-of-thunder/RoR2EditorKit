@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEditor;
+using UnityEngine;
 using static RoR2EditorKit.Core.Inspectors.ExtendedMaterialInspector;
 using BlendMode = UnityEngine.Rendering.BlendMode;
 
@@ -18,6 +19,8 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         {
             DrawBlendEnumProperty(GetProperty("_SrcBlend"));
             DrawBlendEnumProperty(GetProperty("_DstBlend"));
+            var prop = GetProperty("_InternalSimpleBlendMode");
+            DrawBlendEnumProperty(GetProperty("_InternalSimpleBlendMode"), new GUIContent(prop.displayName, "If the BlendOp command is used, the blending operation is set to that value. Otherwise, the blending operation defaults to Add."));
             DrawProperty("_TintColor");
             DrawProperty("_DisableRemapOn");
             DrawProperty("_MainTex");
@@ -48,10 +51,13 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             DrawProperty("_OffsetAmount");
         }
 
-        private static void DrawBlendEnumProperty(MaterialProperty prop)
+        private static void DrawBlendEnumProperty(MaterialProperty prop, GUIContent guiContent = null)
         {
-            float value = prop.floatValue;
-            prop.floatValue = Convert.ToSingle(EditorGUILayout.EnumPopup(prop.displayName, (BlendMode)prop.floatValue));
+            if(guiContent == null)
+            {
+                guiContent = new GUIContent(prop.displayName);
+            }
+            prop.floatValue = Convert.ToSingle(EditorGUILayout.EnumPopup(guiContent, (BlendMode)prop.floatValue));
         }
     }
 }
