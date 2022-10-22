@@ -104,5 +104,17 @@ namespace RoR2EditorKit.Utilities
         {
             AssetDatabase.RenameAsset(AssetDatabase.GetAssetPath(obj), obj.name);
         }
+
+        public static T LoadAssetFromGUID<T>(string guid) where T : Object
+        {
+            var path = AssetDatabase.GUIDToAssetPath(guid);
+            return path.IsNullOrEmptyOrWhitespace() ? null : AssetDatabase.LoadAssetAtPath<T>(guid);
+        }
+
+        public static string GetGUIDFromAsset(Object obj)
+        {
+            var path = AssetDatabase.GetAssetPath(obj);
+            return path.IsNullOrEmptyOrWhitespace() ? string.Empty : AssetDatabase.AssetPathToGUID(path);
+        }
     }
 }

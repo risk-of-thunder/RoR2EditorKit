@@ -5,7 +5,7 @@ using UnityEngine;
 namespace RoR2EditorKit.Core.PropertyDrawers
 {
     [CustomPropertyDrawer(typeof(EditorInspectorSettings.InspectorSetting))]
-    public sealed class InspectorSettingPropertyDrawer : PropertyDrawer
+    public sealed class InspectorSettingDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {

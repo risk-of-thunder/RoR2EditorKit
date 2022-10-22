@@ -1,4 +1,5 @@
-﻿using RoR2EditorKit.Core.Inspectors;
+﻿using RoR2EditorKit.Core;
+using RoR2EditorKit.Core.Inspectors;
 using System;
 using System.Collections.Generic;
 using ThunderKit.Core.Data;
@@ -9,6 +10,7 @@ using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.Settings
 {
+
     /// <summary>
     /// The RoR2EK Material Editor Settings
     /// </summary>
@@ -27,13 +29,7 @@ namespace RoR2EditorKit.Settings
             /// <summary>
             /// The shader that belongs to this pair
             /// </summary>
-            public Shader shader;
-
-            /// <summary>
-            /// The type that added this ShaderStringPair
-            /// </summary>
-            [HideInInspector]
-            public string typeReference;
+            public SerializableShaderWrapper shader;
         }
 
         private SerializedObject materialEditorSettingsSO;
@@ -43,7 +39,7 @@ namespace RoR2EditorKit.Settings
         /// </summary>
         public bool EnableMaterialEditor = true;
 
-        [SerializeField, HideInInspector] private string myString;
+        [SerializeField] private string myString = "Lol";
         /// <summary>
         /// The Shader String Pairs of the Material Editor Setting
         /// </summary>
@@ -72,8 +68,7 @@ namespace RoR2EditorKit.Settings
                 ShaderStringPair shaderStringPair = new ShaderStringPair
                 {
                     shader = null,
-                    shaderName = shaderName,
-                    typeReference = callingType.FullName
+                    shaderName = shaderName
                 };
 
                 shaderStringPairs.Add(shaderStringPair);

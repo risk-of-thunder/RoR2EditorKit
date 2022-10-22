@@ -59,8 +59,12 @@ namespace RoR2EditorKit.Core.Inspectors
         public override void OnEnable()
         {
             base.OnEnable();
-            material = target as Material;
-            chosenActionForMaterial = GetActionForMaterial();
+
+            if(MaterialEditorEnabled)
+            {
+                material = target as Material;
+                chosenActionForMaterial = GetActionForMaterial();
+            }
         }
 
         /// <summary>
@@ -70,15 +74,20 @@ namespace RoR2EditorKit.Core.Inspectors
         protected override void OnShaderChanged()
         {
             base.OnShaderChanged();
-            material = target as Material;
-            chosenActionForMaterial = GetActionForMaterial();
+
+            if (MaterialEditorEnabled)
+            {
+                material = target as Material;
+                chosenActionForMaterial = GetActionForMaterial();
+            }
         }
 
         private Action GetActionForMaterial()
         {
             foreach (var shaderStringPair in Settings.MaterialEditorSettings.shaderStringPairs)
             {
-                if (shaderNameToAction.ContainsKey(shaderStringPair.shaderName) && material.shader == shaderStringPair.shader)
+                var shaderStringPairShader = shaderStringPair.shader.LoadShader();
+                if (shaderNameToAction.ContainsKey(shaderStringPair.shaderName) && material.shader == shaderStringPairShader)
                 {
                     return shaderNameToAction[shaderStringPair.shaderName];
                 }
@@ -89,7 +98,7 @@ namespace RoR2EditorKit.Core.Inspectors
         public override void OnInspectorGUI()
         {
             Instance = this as MaterialEditor;
-            if (chosenActionForMaterial != null)
+            if (MaterialEditorEnabled && chosenActionForMaterial != null)
             {
                 chosenActionForMaterial.Invoke();
                 serializedObject.ApplyModifiedProperties();

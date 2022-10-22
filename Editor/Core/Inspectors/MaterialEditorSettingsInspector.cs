@@ -1,4 +1,5 @@
 ﻿using RoR2EditorKit.Settings;
+using RoR2EditorKit.Utilities;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
@@ -16,16 +17,19 @@ namespace RoR2EditorKit.Core.Inspectors
 
         internal static VisualElement StaticInspectorGUI(SerializedObject serializedObject, bool forSettingsWindow = false)
         {
-            VisualElement container = new VisualElement();
+            VisualElement mainContainer = new VisualElement();
+            VisualElement shaderContainer = new VisualElement();
 
-            var propertyField = new PropertyField(serializedObject.FindProperty(nameof(MaterialEditorSettings.EnableMaterialEditor)));
+            var enabledProp = serializedObject.FindProperty(nameof(MaterialEditorSettings.EnableMaterialEditor));
+            var propertyField = new PropertyField(enabledProp);
+            propertyField.RegisterCallback<ChangeEvent<bool>>((evt) => shaderContainer.SetDisplay(evt.newValue));
             if (forSettingsWindow)
+            {
                 propertyField.AddToClassList("thunderkit-field-input");
-
-            container.Add(propertyField);
+            }
+            mainContainer.Add(propertyField);
 
             SerializedProperty settings = serializedObject.FindProperty(nameof(MaterialEditorSettings.shaderStringPairs));
-
             foreach (SerializedProperty prop in settings)
             {
                 var propField = new PropertyField(prop);
@@ -33,16 +37,17 @@ namespace RoR2EditorKit.Core.Inspectors
                 if (forSettingsWindow)
                     propField.AddToClassList("thunderkit-field-input");
 
-                container.Add(propField);
+                shaderContainer.Add(propField);
             }
 
+            mainContainer.Add(shaderContainer);
             if (forSettingsWindow)
             {
-                container.AddToClassList("thunderkit-field");
-                container.style.flexDirection = FlexDirection.Column;
+                mainContainer.AddToClassList("thunderkit-field");
+                mainContainer.style.flexDirection = FlexDirection.Column;
             }
 
-            return container;
+            return mainContainer;
         }
     }
 }
