@@ -31,6 +31,7 @@ namespace RoR2EditorKit.Core.PropertyDrawers
                 shaderNameProp.stringValue = shaderObj == null ? string.Empty : ((Shader)shaderObj).name;
                 shaderGUIDProp.stringValue = shaderObj == null ? string.Empty : AssetDatabaseUtils.GetGUIDFromAsset(shaderObj);
             }
+            EditorGUI.EndProperty();
         }
 
     }

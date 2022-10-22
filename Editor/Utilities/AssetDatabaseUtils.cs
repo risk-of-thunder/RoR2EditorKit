@@ -108,7 +108,7 @@ namespace RoR2EditorKit.Utilities
         public static T LoadAssetFromGUID<T>(string guid) where T : Object
         {
             var path = AssetDatabase.GUIDToAssetPath(guid);
-            return path.IsNullOrEmptyOrWhitespace() ? null : AssetDatabase.LoadAssetAtPath<T>(guid);
+            return path.IsNullOrEmptyOrWhitespace() ? null : AssetDatabase.LoadAssetAtPath<T>(path);
         }
 
         public static string GetGUIDFromAsset(Object obj)
