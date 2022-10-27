@@ -32,6 +32,22 @@ A more detailed Contribution guideline can be found [here](https://github.com/ri
 
 (Old changelogs can be found [here](https://github.com/risk-of-thunder/RoR2EditorKit/blob/main/OldChangelogs.md))
 
+### '3.3.1'
+
+* Core Changes:
+	* Added SerializableShaderWrapper
+		* Serializes shaders by serializing their shader.name and their GUID's
+	* The material editor now works properly by using the SerializableShaderWrapper
+	* Added new utilities to the AssetDatabase utils class
+	* Added AssetRipper's Shader asset post processors.
+		* This in turn should fix unity destroying YAML shader assets.
+
+* RoR2EditorScripts changes:
+	* Stage Creator wizard now prefixes the scene's name with the token prefix
+	* Fixed an issue where having mutliple inspectors would break the Skill Locator inspector.
+	* Fixed an issue where the CanBeRandomlyTriggered bool for EquipmentDefs wouldnt show
+	* Exposed HGCloudRemap's Internal Simple Blend Mode property
+
 ### '3.3.0'
 
 * Core Changes:
@@ -106,82 +122,3 @@ A more detailed Contribution guideline can be found [here](https://github.com/ri
 
 * RoR2EditorScripts changes:
 	* Added an AssetCollectionInspector
-
-### '3.1.0'
-
-* Core Changes:
-	* Added Missing XML Documentation
-	* Added "HasDoneFirstDrawing" property to ExtendedInspector
-	* Added "ListViewHelper" class
-	* PropertyValidator now works on PropertyFields, as well as any VisualElement that implements "INotifyValueChanged"
-	* Made the returning value of the PropertyValidator's Functions nullable (Returning null skips the container drawing process)
-	* Removed UtilityMethods from ExtendedEditorWindow
-	* Improved the look of the MaterialEditorSettings and EditorInspectorSettings inspectors & settings window
-
-* RoR2EditorScripts changes:
-	* Redid the following inspectors to use VisualElements:
-		* ChildLocator
-		* EntityStateConfiguration
-		* ObjectScaleCurve
-	* Readded Tooltip and Labeling from NetworkStateMachine feature
-	* Added SerializableContentPack inspector
-
-
-### '3.0.2'
-
-* RoR2EditorScripts changes:
-	* Made assembly Editor Only
-
-### '3.0.1'
-
-* Core Changes:
-	* Fixed ScriptalbeObjectInspector drawing multiple InspectorEnabled toggles (3 inspectors = 3 toggles)
-	* Added ReflectionUtils class
-
-* RoR2EditorScripts changes:
-	* Changed the method that the EntityStateDrawer and SerializableSystemTypeDrawer uses for getting the current Types in the AppDomain
-
-### '3.0.0'
-
-* General Changes:
-	* Transformed the main repository from a __Project Repository__ to a __Package Repository__ (This change alone justifies the major version change)
-
-* Core Changes:
-	* Improvements to the Exnteded Inspector:
-		* Reworked the naming convention system into the IObjectNameConvention interface
-		* Made HasVisualTreeAsset virtual
-		* Removed "Find" and "FindAndBind" methods
-		* Added AddSimpleContextMenu, simplified version for creating context menus for VisualElements
-		* Added PropertyValidator class, used for validating PropertyFields. Evaluate the states of the property fields and append helpBoxes for end users
-	* Removed most USS files, added ComponentInspector.uss and ScriptableObjectInspector.uss
-	* Added a ComponentInspectorBase.UXML
-	* Added the following Extensions and Utilities:
-		- KeyValuePair deconstructor from R2API
-		- UpdateAndApply extension for ScriptableObject
-		- QContainer for Foldout Elements
-		- GetRootObject for GameObjects
-		- Added AddressableUtils
-
-* RoR2EditorScripts changes:
-	* Updated the aspect of the following inspectors:
-		- ItemDef
-		- EquipmentDef
-		- EliteDef
-		- BuffDef
-		- SkillLocator
-		- NetworkStateMachine
-		- CharacterBody
-	* Added HurtBoxGroup inspector (Auto population of array)
-	* Added CharacterModel inspector (Auto population of renderers and lights)
-	* Standarized the naming conventions of certain scriptableObjects to be truly in line with Hopoo's naming conventions
-	* Most buttons in various inspectors are now replaced by ContextMenus
-	* Removed Tooltip and Labeling from NetworkStateMachine for now
-	* Token Setting actions now take into consideration objects with Whitespaces by removing them
-	* EliteDef cannow set the health and damage boost coefficient to pre SOTV tiers (T1Honor, T1 & T2)
-	* CharacterBody's baseVision field can now be set to infinity
-	* BaseStats can now be set to common vanilla body stats:
-		* Commando
-		* Lemurian
-		* Golem
-		* BeetleQueen
-		* Mithrix

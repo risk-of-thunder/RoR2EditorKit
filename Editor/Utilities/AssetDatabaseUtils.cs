@@ -105,12 +105,23 @@ namespace RoR2EditorKit.Utilities
             AssetDatabase.RenameAsset(AssetDatabase.GetAssetPath(obj), obj.name);
         }
 
+        /// <summary>
+        /// Loads an asset of type T by using it's internal GUID
+        /// </summary>
+        /// <typeparam name="T">The type of asset to load</typeparam>
+        /// <param name="guid">The guid of the asset</param>
+        /// <returns>The loaded object, null if the object does not exist in the asset database</returns>
         public static T LoadAssetFromGUID<T>(string guid) where T : Object
         {
             var path = AssetDatabase.GUIDToAssetPath(guid);
             return path.IsNullOrEmptyOrWhitespace() ? null : AssetDatabase.LoadAssetAtPath<T>(path);
         }
 
+        /// <summary>
+        /// Retrieves the GUID of an asset
+        /// </summary>
+        /// <param name="obj">The asset to get the guid from</param>
+        /// <returns>The GUID of the asset, if the asset does not exist in the database, it returns an empty string</returns>
         public static string GetGUIDFromAsset(Object obj)
         {
             var path = AssetDatabase.GetAssetPath(obj);

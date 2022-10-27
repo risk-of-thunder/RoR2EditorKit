@@ -22,6 +22,10 @@ namespace RoR2EditorKit.Core
         [SerializeField] private string shaderName;
         [SerializeField] private string shaderGUID;
 
+        /// <summary>
+        /// Loads the shader that was serialized from this SerializableShaderWrapper
+        /// </summary>
+        /// <returns>The serialized shader</returns>
         public Shader LoadShader()
         {
             Shader shader = Shader.Find(shaderName);
@@ -31,6 +35,10 @@ namespace RoR2EditorKit.Core
             return shader;
         }
 
+        /// <summary>
+        /// Sets the shader that this SerializableShaderWrapper will serialize
+        /// </summary>
+        /// <param name="shader">The shader to serialize</param>
         public void SetShader(Shader shader)
         {
             shaderName = !shader ? string.Empty : shader.name;
