@@ -1,0 +1,20 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:VisualElement name="Header" class="genericHolder">
+        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/CreatorWizard.uss" />
+        <ui:Label text="Stage Scale Helper" name="title" class="scriptType genericHolderHeader" />
+    </ui:VisualElement>
+    <ui:VisualElement name="Center" class="genericHolder">
+        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/CreatorWizard.uss" />
+        <ui:Label text="Steps:" name="stepsLabel" />
+        <ui:VisualElement name="stepsContainer" class="genericHolderFoldout">
+            <ui:Label text="1.- Create a cube in your scene view&#10;2.- Scale the cube so it covers your entire stage&apos;s play area.&#10;3.- Hit the Calculate button" name="steps" style="flex-wrap: nowrap; white-space: normal;" />
+        </ui:VisualElement>
+        <uie:PropertyField name="cubeField" binding-path="cube" label="Cube" tooltip="The cube that&apos;ll be used for calculating the stage&apos;s scale" />
+        <ui:Button text="Calculate" />
+    </ui:VisualElement>
+    <ui:VisualElement name="Footer" class="genericHolder">
+        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/CreatorWizard.uss" />
+        <ui:Label text="Your Stage is Roughly..." class="genericHolderHeader" />
+        <ui:VisualElement name="Results" />
+    </ui:VisualElement>
+</ui:UXML>
