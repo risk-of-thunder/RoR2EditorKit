@@ -16,374 +16,214 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
     [CustomEditor(typeof(EntityStateConfiguration))]
     public sealed class EntityStateConfigurationInspector : ScriptableObjectInspector<EntityStateConfiguration>, IObjectNameConvention
     {
-        #region Static methods and fields
-        //For cases where the fieldInfo's type is not a unity object, we want to make specific visual elements and later serialize them as strings.
-        private delegate VisualElement VisualElementCreationHandler(FieldInfo fieldInfo, object value);
-        //Serialized fields can either be objects or strings, for cases where theyre not objects, we dont want to display a string field, instead we want to display a custom element.
-        private static readonly Dictionary<Type, VisualElementCreationHandler> drawers = new Dictionary<Type, VisualElementCreationHandler>
+        public string Prefix => entityStateType == null ? string.Empty : entityStateType.FullName;
+
+        public bool UsesTokenForPrefix => false;
+
+        private delegate object FieldDrawHandler(GUIContent labelTooltip, object value);
+        private static readonly Dictionary<Type, FieldDrawHandler> typeDrawers = new Dictionary<Type, FieldDrawHandler>
         {
-            [typeof(bool)] = (fld, vl) => CreateField<bool>(fld, vl, typeof(Toggle)),
-            [typeof(long)] = (fld, vl) => CreateField<long>(fld, vl, typeof(LongField)),
-            [typeof(int)] = (fld, vl) => CreateField<int>(fld, vl, typeof(IntegerField)),
-            [typeof(float)] = (fld, vl) => CreateField<float>(fld, vl, typeof(FloatField)),
-            [typeof(double)] = (fld, vl) => CreateField<double>(fld, vl, typeof(DoubleField)),
-            //[typeof(string)] = (fld, vl) => CreateField<string>(fld, vl, typeof(TextField)),
-            [typeof(Vector2)] = (fld, vl) => CreateField<Vector2>(fld, vl, typeof(Vector2Field)),
-            [typeof(Vector3)] = (fld, vl) => CreateField<Vector3>(fld, vl, typeof(Vector3Field)),
-            [typeof(Color)] = (fld, vl) => CreateField<Color>(fld, vl, typeof(ColorField)),
-            [typeof(Color32)] = (fld, vl) => CreateField<Color32>(fld, vl, typeof(ColorField)),
-            [typeof(AnimationCurve)] = (fld, vl) => CreateField<AnimationCurve>(fld, vl, typeof(CurveField)),
+            [typeof(bool)] = (labelTooltip, value) => EditorGUILayout.Toggle(labelTooltip, (bool)value),
+            [typeof(long)] = (labelTooltip, value) => EditorGUILayout.LongField(labelTooltip, (long)value),
+            [typeof(int)] = (labelTooltip, value) => EditorGUILayout.IntField(labelTooltip, (int)value),
+            [typeof(float)] = (labelTooltip, value) => EditorGUILayout.FloatField(labelTooltip, (float)value),
+            [typeof(double)] = (labelTooltip, value) => EditorGUILayout.DoubleField(labelTooltip, (double)value),
+            [typeof(string)] = (labelTooltip, value) => EditorGUILayout.TextField(labelTooltip, (string)value),
+            [typeof(Vector2)] = (labelTooltip, value) => EditorGUILayout.Vector2Field(labelTooltip, (Vector2)value),
+            [typeof(Vector3)] = (labelTooltip, value) => EditorGUILayout.Vector3Field(labelTooltip, (Vector3)value),
+            [typeof(Color)] = (labelTooltip, value) => EditorGUILayout.ColorField(labelTooltip, (Color)value),
+            [typeof(Color32)] = (labelTooltip, value) => (Color32)EditorGUILayout.ColorField(labelTooltip, (Color32)value),
+            [typeof(AnimationCurve)] = (labelTooltip, value) => EditorGUILayout.CurveField(labelTooltip, (AnimationCurve)value ?? new AnimationCurve()),
         };
-        //This creates a visualElement from the given information, its basically ready for attatching to a container, except that it needs to be manually bound 
-        private static VisualElement CreateField<T>(FieldInfo info, object value, Type elementType)
-        {
-            var element = (BaseField<T>)Activator.CreateInstance(elementType);
-            element.name = $"{info.Name}_Property";
-            element.label = ObjectNames.NicifyVariableName(info.Name);
-            element.value = (T)value;
-            return element;
-        }
-        //Sometimes an object needs a special creator, this does that
+
         private static readonly Dictionary<Type, Func<object>> specialDefaultValueCreators = new Dictionary<Type, Func<object>>
         {
             [typeof(AnimationCurve)] = () => new AnimationCurve(),
         };
-        #endregion
-        Type EntityStateType
-        {
-            get
-            {
-                return _entityStateType;
-            }
-            set
-            {
-                if (_entityStateType != value)
-                {
-                    _entityStateType = value;
-                    OnEntityStateTypeSet();
-                }
-            }
-        }
 
-        public string Prefix => EntityStateType == null ? string.Empty : EntityStateType.FullName;
+        private Type entityStateType;
+        private readonly List<FieldInfo> serializableStaticFields = new List<FieldInfo>();
+        private readonly List<FieldInfo> serializableInstanceFields = new List<FieldInfo>();
 
-        public bool UsesTokenForPrefix => false;
-
-        Type _entityStateType = null;
-
-        #region fields
-        SerializedProperty collectionProp;
-        SerializedProperty serializedFieldsProp;
-
-        VisualElement inspectorDataContainer;
-        VisualElement instanceFieldsContainer;
-        VisualElement staticFieldsContainer;
-        VisualElement unrecognizedFieldsContainer;
-
-        List<FieldInfo> staticSerializableFields = new List<FieldInfo>();
-        List<FieldInfo> instanceSerializableFields = new List<FieldInfo>();
-        List<KeyValuePair<SerializedProperty, int>> unrecognizedFields = new List<KeyValuePair<SerializedProperty, int>>();
-        #endregion
-        protected override void OnEnable()
-        {
-            base.OnEnable();
-            collectionProp = serializedObject.FindProperty(nameof(EntityStateConfiguration.serializedFieldsCollection));
-            serializedFieldsProp = collectionProp.FindPropertyRelative(nameof(SerializedFieldCollection.serializedFields));
-
-            OnVisualTreeCopy += () =>
-            {
-                var container = DrawInspectorElement.Q<VisualElement>("Container");
-                inspectorDataContainer = container.Q<VisualElement>("InspectorDataContainer");
-                instanceFieldsContainer = inspectorDataContainer.Q<VisualElement>("InstanceFieldsContainer");
-                staticFieldsContainer = inspectorDataContainer.Q<VisualElement>("StaticFieldsContainer");
-                unrecognizedFieldsContainer = inspectorDataContainer.Q<VisualElement>("UnrecognizedFieldsContainer");
-            };
-        }
         protected override void DrawInspectorGUI()
         {
-            AddSimpleContextMenu(unrecognizedFieldsContainer, new ContextMenuData(
-                $"Clear Unrecognized Fields",
-                (act) =>
-                {
-                    foreach (var fieldRow in unrecognizedFields.OrderByDescending(el => el.Value))
-                    {
-                        serializedFieldsProp.DeleteArrayElementAtIndex(fieldRow.Value);
-                    }
-                    unrecognizedFields.Clear();
-                    ClearContainer(unrecognizedFieldsContainer);
-                    unrecognizedFieldsContainer.style.display = DisplayStyle.None;
-                    serializedObject.ApplyModifiedProperties();
-                }));
-
-            var assemblyQualifiedName = inspectorDataContainer.Q<Label>("assemblyQualifiedName");
-            assemblyQualifiedName.RegisterValueChangedCallback(OnAssemblyQualifiedNameChange);
-            OnAssemblyQualifiedNameChange();
+            DrawInspectorElement.Clear();
+            DrawInspectorElement.Add(new IMGUIContainer(IMGUI));
         }
-
-        private void OnAssemblyQualifiedNameChange(ChangeEvent<string> evt = null)
+        private void IMGUI()
         {
-            EntityStateType = evt != null ? Type.GetType(evt.newValue) : (Type)TargetType.targetType;
-        }
-        private void OnEntityStateTypeSet()
-        {
-            PopulateSerializableFields();
-            FindUnrecognizedFields();
-            Debug.Log($"Found a total of {instanceSerializableFields.Count} serializable instance fields" +
-    $"\nFound a total of {staticSerializableFields.Count} serializable static fields" +
-    $"\nFound a total of {unrecognizedFields.Count} unrecognized fields");
-            SetContainerFlex();
-            serializedObject.ApplyModifiedProperties();
-        }
+            var collectionProperty = serializedObject.FindProperty(nameof(EntityStateConfiguration.serializedFieldsCollection));
+            var systemTypeProp = serializedObject.FindProperty(nameof(EntityStateConfiguration.targetType));
+            var assemblyQuallifiedName = systemTypeProp.FindPropertyRelative("assemblyQualifiedName").stringValue;
 
-        private void PopulateSerializableFields()
-        {
-            staticSerializableFields.Clear();
-            ClearContainer(staticFieldsContainer);
+            EditorGUILayout.PropertyField(systemTypeProp);
 
-            instanceSerializableFields.Clear();
-            ClearContainer(instanceFieldsContainer);
+            if (entityStateType?.AssemblyQualifiedName != assemblyQuallifiedName)
+            {
+                entityStateType = Type.GetType(assemblyQuallifiedName);
+                PopulateSerializableFields();
+            }
 
-            if (EntityStateType == null)
+            if (entityStateType == null)
             {
                 return;
             }
 
-            var allFieldsInType = EntityStateType.GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-            var filteredFields = allFieldsInType.Where(fieldInfo =>
+            var serializedFields = collectionProperty.FindPropertyRelative(nameof(SerializedFieldCollection.serializedFields));
+
+            DrawFields(serializableStaticFields, "Static fields", "There is no static fields");
+            DrawFields(serializableInstanceFields, "Instance fields", "There is no instance fields");
+
+            var unrecognizedFields = new List<KeyValuePair<SerializedProperty, int>>();
+            for (var i = 0; i < serializedFields.arraySize; i++)
             {
-                bool canSerialize = SerializedValue.CanSerializeField(fieldInfo);
-                bool shouldSerialize = !fieldInfo.IsStatic || (fieldInfo.DeclaringType == EntityStateType);
-                bool doesNotHaveAttribute = fieldInfo.GetCustomAttribute<HideInInspector>() == null;
-                return canSerialize && shouldSerialize && doesNotHaveAttribute;
-            });
-
-            staticSerializableFields.AddRange(filteredFields.Where(fieldInfo => fieldInfo.IsStatic));
-            instanceSerializableFields.AddRange(filteredFields.Where(fieldInfo => !fieldInfo.IsStatic));
-        }
-
-        private void FindUnrecognizedFields()
-        {
-            unrecognizedFields.Clear();
-            ClearContainer(unrecognizedFieldsContainer);
-
-            for (var i = 0; i < serializedFieldsProp.arraySize; i++)
-            {
-                var property = serializedFieldsProp.GetArrayElementAtIndex(i);
-                var name = property.FindPropertyRelative(nameof(SerializedField.fieldName)).stringValue;
-                if (!(staticSerializableFields.Any(el => el.Name == name) || instanceSerializableFields.Any(el => el.Name == name)))
+                var field = serializedFields.GetArrayElementAtIndex(i);
+                var name = field.FindPropertyRelative(nameof(SerializedField.fieldName)).stringValue;
+                if (!(serializableStaticFields.Any(el => el.Name == name) || serializableInstanceFields.Any(el => el.Name == name)))
                 {
-                    unrecognizedFields.Add(new KeyValuePair<SerializedProperty, int>(property, i));
+                    unrecognizedFields.Add(new KeyValuePair<SerializedProperty, int>(field, i));
                 }
             }
-        }
-        private void SetContainerFlex()
-        {
-            staticFieldsContainer.style.display = staticSerializableFields.Count > 0 ? DisplayStyle.Flex : DisplayStyle.None;
-            instanceFieldsContainer.style.display = instanceSerializableFields.Count > 0 ? DisplayStyle.Flex : DisplayStyle.None;
-            unrecognizedFieldsContainer.style.display = unrecognizedFields.Count > 0 ? DisplayStyle.Flex : DisplayStyle.None;
 
-            if (staticFieldsContainer.style.display == DisplayStyle.Flex)
+            if (unrecognizedFields.Count > 0)
             {
-                //This ensures that the serializable static fields exists as serialized properties.
-                EnsureFieldsExist(staticSerializableFields);
-                DisplayFields(staticFieldsContainer, staticSerializableFields);
-            }
-
-            if (instanceFieldsContainer.style.display == DisplayStyle.Flex)
-            {
-                //This ensures that the serializable instance fields exists as serialized properties
-                EnsureFieldsExist(instanceSerializableFields);
-                DisplayFields(instanceFieldsContainer, instanceSerializableFields);
-            }
-
-            //Unrecognized fields already exist, no need to ensure their existence.
-            if (unrecognizedFieldsContainer.style.display == DisplayStyle.Flex)
-            {
-                DisplayUnrecognizedFields(unrecognizedFieldsContainer, unrecognizedFields);
-            }
-        }
-
-        private void DisplayUnrecognizedFields(VisualElement container, List<KeyValuePair<SerializedProperty, int>> unrecognizedFields)
-        {
-            foreach (var propertyRow in unrecognizedFields)
-            {
-                var name = propertyRow.Key.FindPropertyRelative(nameof(SerializedField.fieldName)).stringValue;
-                var property = propertyRow.Key.FindPropertyRelative(nameof(SerializedField.fieldValue));
-
-                var propertyField = new PropertyField(property, ObjectNames.NicifyVariableName(name));
-                propertyField.name = $"{name}_Property";
-                container.Add(propertyField);
-                if (HasDoneFirstDrawing)
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField("Unrecognized fields", EditorStyles.boldLabel);
+                if (GUILayout.Button("Clear unrecognized fields"))
                 {
-                    propertyField.Bind(serializedObject);
-                }
-            }
-        }
-        private void EnsureFieldsExist(List<FieldInfo> fields)
-        {
-            foreach (FieldInfo fieldInfo in fields)
-            {
-                //If the field already exists, then it means the field either already has a value, or has already been initialized.
-                bool fieldAlreadyExists = false;
-                for (int i = 0; i < serializedFieldsProp.arraySize; i++)
-                {
-                    var prop = serializedFieldsProp.GetArrayElementAtIndex(i);
-
-                    if (prop.FindPropertyRelative(nameof(SerializedField.fieldName)).stringValue == fieldInfo.Name)
+                    foreach (var fieldRow in unrecognizedFields.OrderByDescending(el => el.Value))
                     {
-                        fieldAlreadyExists = true;
-                        break;
+                        serializedFields.DeleteArrayElementAtIndex(fieldRow.Value);
                     }
+                    unrecognizedFields.Clear();
                 }
-                //Already exists? go to the next field.
-                if (fieldAlreadyExists)
-                    continue;
-                //Otherwise, make new serialized property and initialize.
-                serializedFieldsProp.arraySize++;
-                var serializedFieldProp = serializedFieldsProp.GetArrayElementAtIndex(serializedFieldsProp.arraySize - 1);
-                var fieldNameProp = serializedFieldProp.FindPropertyRelative(nameof(SerializedField.fieldName));
-                fieldNameProp.stringValue = fieldInfo.Name;
 
-                var fieldValueProp = serializedFieldProp.FindPropertyRelative(nameof(SerializedField.fieldValue));
-                var serializedValue = new SerializedValue();
-
-                if (specialDefaultValueCreators.TryGetValue(fieldInfo.FieldType, out var creator))
+                EditorGUI.indentLevel++;
+                foreach (var fieldRow in unrecognizedFields)
                 {
-                    serializedValue.SetValue(fieldInfo, creator());
+                    DrawUnrecognizedField(fieldRow.Key);
                 }
-                else
-                {
-                    serializedValue.SetValue(fieldInfo, fieldInfo.FieldType.IsValueType ? Activator.CreateInstance(fieldInfo.FieldType) : (object)null);
-                }
-
-                fieldValueProp.FindPropertyRelative(nameof(SerializedValue.stringValue)).stringValue = serializedValue.stringValue;
-                fieldValueProp.FindPropertyRelative(nameof(SerializedValue.objectValue)).objectReferenceValue = null;
+                EditorGUI.indentLevel--;
             }
-        }
-        private void DisplayFields(VisualElement container, List<FieldInfo> fieldInfos)
-        {
-            foreach (FieldInfo fieldInfo in fieldInfos)
+
+            serializedObject.ApplyModifiedPropertiesWithoutUndo();
+
+            void DrawFields(List<FieldInfo> fields, string groupLabel, string emptyLabel)
             {
-                //If by any chance theres already a field in the container that has this name, dont add another one.
-                if (container.Children().Any(child => child.name == $"{fieldInfo.Name}_Property"))
-                    continue;
-
-                SerializedProperty propertyForInfo = FindSerializedFieldProperty(fieldInfo.Name);
-                VisualElement elementForProperty = GetVisualElementFromProperty(propertyForInfo, fieldInfo);
-                container.Add(elementForProperty);
-            }
-        }
-
-        private SerializedProperty FindSerializedFieldProperty(string fieldName)
-        {
-            for (int i = 0; i < serializedFieldsProp.arraySize; i++)
-            {
-                SerializedProperty prop = serializedFieldsProp.GetArrayElementAtIndex(i);
-                if (prop.FindPropertyRelative("fieldName").stringValue == fieldName)
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField(groupLabel, EditorStyles.boldLabel);
+                if (fields.Count == 0)
                 {
-                    return prop;
+                    EditorGUILayout.LabelField(emptyLabel);
                 }
+                EditorGUI.indentLevel++;
+                foreach (var fieldInfo in fields)
+                {
+                    DrawField(fieldInfo, GetOrCreateField(serializedFields, fieldInfo));
+                }
+                EditorGUI.indentLevel--;
             }
-            return null;
         }
 
-        private VisualElement GetVisualElementFromProperty(SerializedProperty property, FieldInfo fieldInfo)
+        private void DrawUnrecognizedField(SerializedProperty field)
         {
-            var tooltip = FindTooltip(fieldInfo);
-            var serializedValueProp = property.FindPropertyRelative(nameof(SerializedField.fieldValue));
-            //If the type of the field is a unity object, just use an Object Field and set the binding path directly.
+            var name = field.FindPropertyRelative(nameof(SerializedField.fieldName)).stringValue;
+            var valueProperty = field.FindPropertyRelative(nameof(SerializedField.fieldValue));
+            EditorGUILayout.PropertyField(valueProperty, new GUIContent(ObjectNames.NicifyVariableName(name)), true);
+        }
+
+        private void DrawField(FieldInfo fieldInfo, SerializedProperty field)
+        {
+            var tooltipAttribute = fieldInfo.GetCustomAttribute<TooltipAttribute>();
+            var guiContent = new GUIContent(ObjectNames.NicifyVariableName(fieldInfo.Name), tooltipAttribute != null ? tooltipAttribute.tooltip : null);
+
+            var serializedValueProperty = field.FindPropertyRelative(nameof(SerializedField.fieldValue));
             if (typeof(UnityEngine.Object).IsAssignableFrom(fieldInfo.FieldType))
             {
-                var objectValue = serializedValueProp.FindPropertyRelative(nameof(SerializedValue.objectValue));
-                var objectField = new ObjectField();
-                objectField.objectType = fieldInfo.FieldType;
-                objectField.bindingPath = objectValue.propertyPath;
-                objectField.name = $"{fieldInfo.Name}_Property";
-                objectField.label = ObjectNames.NicifyVariableName(fieldInfo.Name);
-                objectField.tooltip = tooltip;
-                return objectField;
-            }
-            //Same applies for types that are string
-            else if (fieldInfo.FieldType == typeof(string))
-            {
-                var stringValue = serializedValueProp.FindPropertyRelative(nameof(SerializedValue.stringValue));
-                var textField = new TextField();
-                textField.bindingPath = stringValue.propertyPath;
-                textField.name = $"{fieldInfo.Name}_Property";
-                textField.label = ObjectNames.NicifyVariableName(fieldInfo.Name);
-                textField.tooltip = tooltip;
-                return textField;
+                var objectValue = serializedValueProperty.FindPropertyRelative(nameof(SerializedValue.objectValue));
+                EditorGUILayout.ObjectField(objectValue, fieldInfo.FieldType, guiContent);
             }
             else
             {
-                //Otherwise, create a new element via the dictionary
-                var stringValue = serializedValueProp.FindPropertyRelative(nameof(SerializedValue.stringValue));
+                var stringValue = serializedValueProperty.FindPropertyRelative(nameof(SerializedValue.stringValue));
                 var serializedValue = new SerializedValue
                 {
                     stringValue = string.IsNullOrWhiteSpace(stringValue.stringValue) ? null : stringValue.stringValue
                 };
 
-                if (drawers.TryGetValue(fieldInfo.FieldType, out var elementCreator))
+                if (typeDrawers.TryGetValue(fieldInfo.FieldType, out var drawer))
                 {
-                    var value = serializedValue.GetValue(fieldInfo);
-                    var element = elementCreator(fieldInfo, value);
-                    element.tooltip = tooltip;
+                    EditorGUI.BeginChangeCheck();
+                    var newValue = drawer(guiContent, serializedValue.GetValue(fieldInfo));
 
-                    //With the element created, we need to manually register value changes.
-                    switch (value)
+                    if (EditorGUI.EndChangeCheck())
                     {
-                        case bool _: SetupCallback<bool>(element); break;
-                        case long _: SetupCallback<long>(element); break;
-                        case int _: SetupCallback<int>(element); break;
-                        case float _: SetupCallback<float>(element); break;
-                        case double _: SetupCallback<double>(element); break;
-                        case Vector2 _: SetupCallback<Vector2>(element); break;
-                        case Vector3 _: SetupCallback<Vector3>(element); break;
-                        case Color _: SetupCallback<Color>(element); break;
-                        case Color32 _: SetupCallback<Color32>(element); break;
-                        case AnimationCurve _: SetupCallback<AnimationCurve>(element); break;
-                        default: Debug.LogWarning($"Could not setup callback for element {element} that's tied to field {fieldInfo.Name}"); break;
+                        serializedValue.SetValue(fieldInfo, newValue);
+                        stringValue.stringValue = serializedValue.stringValue;
                     }
-                    return element;
+                }
+                else
+                {
+                    DrawUnrecognizedField(field);
                 }
             }
-            //If the element is not in the dictionary, just make a property field
-            var propertyField = new PropertyField(property, ObjectNames.NicifyVariableName(fieldInfo.Name));
-            propertyField.name = $"{fieldInfo.Name}_Property";
-            propertyField.tooltip = tooltip;
-            return propertyField;
         }
 
-        private string FindTooltip(FieldInfo fieldInfo)
+        private SerializedProperty GetOrCreateField(SerializedProperty collectionProperty, FieldInfo fieldInfo)
         {
-            TooltipAttribute attribute = fieldInfo.GetCustomAttribute<TooltipAttribute>();
-            return attribute != null ? attribute.tooltip : null;
-        }
-
-        private void SetupCallback<T>(VisualElement element)
-        {
-            BaseField<T> baseField = (BaseField<T>)element;
-            baseField.RegisterValueChangedCallback(OnValueChanged);
-
-            void OnValueChanged(ChangeEvent<T> evt)
+            for (var i = 0; i < collectionProperty.arraySize; i++)
             {
-                BaseField<T> target = (BaseField<T>)evt.target;
-                string fieldName = target.name.Replace("_Property", "");
-                FieldInfo fieldInfo = EntityStateType.GetField(fieldName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-
-                ref SerializedField field = ref TargetType.serializedFieldsCollection.GetOrCreateField(fieldName);
-                ref SerializedValue value = ref field.fieldValue;
-                value.SetValue(fieldInfo, evt.newValue);
-                serializedObject.Update();
-                serializedObject.ApplyModifiedProperties();
+                var field = collectionProperty.GetArrayElementAtIndex(i);
+                if (field.FindPropertyRelative(nameof(SerializedField.fieldName)).stringValue == fieldInfo.Name)
+                {
+                    return field;
+                }
             }
+            collectionProperty.arraySize++;
+
+            var serializedField = collectionProperty.GetArrayElementAtIndex(collectionProperty.arraySize - 1);
+            var fieldNameProperty = serializedField.FindPropertyRelative(nameof(SerializedField.fieldName));
+            fieldNameProperty.stringValue = fieldInfo.Name;
+
+            var fieldValueProperty = serializedField.FindPropertyRelative(nameof(SerializedField.fieldValue));
+            var serializedValue = new SerializedValue();
+            if (specialDefaultValueCreators.TryGetValue(fieldInfo.FieldType, out var creator))
+            {
+                serializedValue.SetValue(fieldInfo, creator());
+            }
+            else
+            {
+                serializedValue.SetValue(fieldInfo, fieldInfo.FieldType.IsValueType ? Activator.CreateInstance(fieldInfo.FieldType) : (object)null);
+            }
+
+            fieldValueProperty.FindPropertyRelative(nameof(SerializedValue.stringValue)).stringValue = serializedValue.stringValue;
+            fieldValueProperty.FindPropertyRelative(nameof(SerializedValue.objectValue)).objectReferenceValue = null;
+
+            return serializedField;
         }
 
-        private void ClearContainer(VisualElement element)
+        private void PopulateSerializableFields()
         {
-            var label = element.Q<Label>();
-            element.hierarchy.Clear();
-            element.Add(label);
+            serializableStaticFields.Clear();
+            serializableInstanceFields.Clear();
+
+            if (entityStateType == null)
+            {
+                return;
+            }
+
+            var allFieldsInType = entityStateType.GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            var filteredFields = allFieldsInType.Where(fieldInfo =>
+            {
+                bool canSerialize = SerializedValue.CanSerializeField(fieldInfo);
+                bool shouldSerialize = !fieldInfo.IsStatic || (fieldInfo.DeclaringType == entityStateType);
+                bool doesNotHaveAttribute = fieldInfo.GetCustomAttribute<HideInInspector>() == null;
+                bool notConstant = !fieldInfo.IsLiteral;
+                return canSerialize && shouldSerialize && doesNotHaveAttribute && notConstant;
+            });
+
+            serializableStaticFields.AddRange(filteredFields.Where(fieldInfo => fieldInfo.IsStatic));
+            serializableInstanceFields.AddRange(filteredFields.Where(fieldInfo => !fieldInfo.IsStatic));
         }
 
         public PrefixData GetPrefixData()
