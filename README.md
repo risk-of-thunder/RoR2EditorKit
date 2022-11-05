@@ -32,6 +32,15 @@ A more detailed Contribution guideline can be found [here](https://github.com/ri
 
 (Old changelogs can be found [here](https://github.com/risk-of-thunder/RoR2EditorKit/blob/main/OldChangelogs.md))
 
+### '3.4.0'
+
+* RoR2EditorScripts Changes:
+	* Added a Scaling Tool window, used to roughly see how big something is compared to ror2 bodies and stages.
+	* Changed the EntityStateConfiguration inspector to use the old IMGUI version instead of visual elements.
+		* All improvements made are also in the IMGUI inspector.
+		* EntityStateConfiguration inspector no longer tries to serialize fields marked as constant
+	* Added a Gizmo for visualizing the scale of a HitBox
+
 ### '3.3.1'
 
 * Core Changes:
