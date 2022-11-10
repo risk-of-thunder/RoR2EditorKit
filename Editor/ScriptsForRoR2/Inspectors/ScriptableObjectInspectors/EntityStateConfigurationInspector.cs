@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -20,26 +21,28 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         public bool UsesTokenForPrefix => false;
 
-        private delegate object FieldDrawHandler(GUIContent labelTooltip, object value);
+        private delegate object FieldDrawHandler(GUIContent labelTooltip, object value, FieldInfo field);
         private static readonly Dictionary<Type, FieldDrawHandler> typeDrawers = new Dictionary<Type, FieldDrawHandler>
         {
-            [typeof(bool)] = (labelTooltip, value) => EditorGUILayout.Toggle(labelTooltip, (bool)value),
-            [typeof(long)] = (labelTooltip, value) => EditorGUILayout.LongField(labelTooltip, (long)value),
-            [typeof(int)] = (labelTooltip, value) => EditorGUILayout.IntField(labelTooltip, (int)value),
-            [typeof(float)] = (labelTooltip, value) => EditorGUILayout.FloatField(labelTooltip, (float)value),
-            [typeof(double)] = (labelTooltip, value) => EditorGUILayout.DoubleField(labelTooltip, (double)value),
-            [typeof(string)] = (labelTooltip, value) => EditorGUILayout.TextField(labelTooltip, (string)value),
-            [typeof(Vector2)] = (labelTooltip, value) => EditorGUILayout.Vector2Field(labelTooltip, (Vector2)value),
-            [typeof(Vector3)] = (labelTooltip, value) => EditorGUILayout.Vector3Field(labelTooltip, (Vector3)value),
-            [typeof(Color)] = (labelTooltip, value) => EditorGUILayout.ColorField(labelTooltip, (Color)value),
-            [typeof(Color32)] = (labelTooltip, value) => (Color32)EditorGUILayout.ColorField(labelTooltip, (Color32)value),
-            [typeof(AnimationCurve)] = (labelTooltip, value) => EditorGUILayout.CurveField(labelTooltip, (AnimationCurve)value ?? new AnimationCurve()),
+            [typeof(bool)] = (labelTooltip, value, field) => EditorGUILayout.Toggle(labelTooltip, (bool)value),
+            [typeof(long)] = (labelTooltip, value, field) => EditorGUILayout.LongField(labelTooltip, (long)value),
+            [typeof(int)] = (labelTooltip, value, field) => TryDrawEnumField(labelTooltip, (int)value, field) ?? EditorGUILayout.IntField(labelTooltip, (int)value),
+            [typeof(float)] = (labelTooltip, value, field) => EditorGUILayout.FloatField(labelTooltip, (float)value),
+            [typeof(double)] = (labelTooltip, value, field) => EditorGUILayout.DoubleField(labelTooltip, (double)value),
+            [typeof(string)] = (labelTooltip, value, field) => EditorGUILayout.TextField(labelTooltip, (string)value),
+            [typeof(Vector2)] = (labelTooltip, value, field) => EditorGUILayout.Vector2Field(labelTooltip, (Vector2)value),
+            [typeof(Vector3)] = (labelTooltip, value, field) => EditorGUILayout.Vector3Field(labelTooltip, (Vector3)value),
+            [typeof(Color)] = (labelTooltip, value, field) => EditorGUILayout.ColorField(labelTooltip, (Color)value),
+            [typeof(Color32)] = (labelTooltip, value, field) => (Color32)EditorGUILayout.ColorField(labelTooltip, (Color32)value),
+            [typeof(AnimationCurve)] = (labelTooltip, value, field) => EditorGUILayout.CurveField(labelTooltip, (AnimationCurve)value ?? new AnimationCurve()),
         };
 
         private static readonly Dictionary<Type, Func<object>> specialDefaultValueCreators = new Dictionary<Type, Func<object>>
         {
             [typeof(AnimationCurve)] = () => new AnimationCurve(),
         };
+
+        private static readonly ConditionalWeakTable<FieldInfo, Type> enumFieldsCache = new ConditionalWeakTable<FieldInfo, Type>();
 
         private Type entityStateType;
         private readonly List<FieldInfo> serializableStaticFields = new List<FieldInfo>();
@@ -154,7 +157,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 if (typeDrawers.TryGetValue(fieldInfo.FieldType, out var drawer))
                 {
                     EditorGUI.BeginChangeCheck();
-                    var newValue = drawer(guiContent, serializedValue.GetValue(fieldInfo));
+                    var newValue = drawer(guiContent, serializedValue.GetValue(fieldInfo), fieldInfo);
 
                     if (EditorGUI.EndChangeCheck())
                     {
@@ -249,6 +252,28 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 return serializedObject.targetObject.name.Equals(type.FullName);
             else
                 return true;
+        }
+
+        private static int? TryDrawEnumField(GUIContent labelTooltip, int value, FieldInfo field)
+        {
+            if (!enumFieldsCache.TryGetValue(field, out var enumType))
+            {
+                var enumMask = field.GetCustomAttribute<EnumMaskAttribute>();
+                enumType = enumMask?.enumType;
+                if (!enumType?.IsEnum ?? true)
+                {
+                    enumFieldsCache.Add(field, null);
+                    return null;
+                }
+
+                enumFieldsCache.Add(field, enumType);
+            }
+            else if (enumType == null)
+            {
+                return null;
+            }
+
+            return Convert.ToInt32(EditorGUILayout.EnumFlagsField(labelTooltip, (Enum)Enum.ToObject(enumType, value)));
         }
     }
 }
