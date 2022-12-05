@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 114509115025441227}
   - component: {fileID: 114209604289230284}
   - component: {fileID: 114694542855400404}
-  - component: {fileID: 114867863264420549}
   - component: {fileID: 114754525242762668}
   - component: {fileID: 114527265832758295}
   - component: {fileID: 114170230698971737}
@@ -213,7 +212,7 @@ MonoBehaviour:
   stateMachines:
   - {fileID: 114209604289230284}
   - {fileID: 114694542855400404}
-  - {fileID: 114867863264420549}
+  - {fileID: 0}
 --- !u!114 &114209604289230284
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -228,9 +227,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   customName: Body
   initialStateType:
-    _typeName: EntityStates.Idle, RoR2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    _typeName: EntityStates.SpawnTeleporterState, RoR2, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
   mainStateType:
-    _typeName: EntityStates.Idle, RoR2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    _typeName: EntityStates.GenericCharacterMain, RoR2, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
 --- !u!114 &114694542855400404
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -248,23 +249,6 @@ MonoBehaviour:
     _typeName: 
   mainStateType:
     _typeName: EntityStates.Idle, RoR2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
---- !u!114 &114867863264420549
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000361625675071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1297580292, guid: 951ce57ad999ac1f040a4dceb5f8b763, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  customName: Slide
-  initialStateType:
-    _typeName: 
-  mainStateType:
-    _typeName: 
 --- !u!114 &114754525242762668
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -527,7 +511,7 @@ MonoBehaviour:
     _typeName: 
   idleStateMachine:
   - {fileID: 114694542855400404}
-  - {fileID: 114867863264420549}
+  - {fileID: 0}
 --- !u!114 &114379522941556962
 MonoBehaviour:
   m_ObjectHideFlags: 0

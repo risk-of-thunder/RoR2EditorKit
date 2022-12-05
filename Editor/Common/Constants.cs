@@ -32,7 +32,10 @@ namespace RoR2EditorKit.Common
             public const string xmlDocGUID = "c78bcabe3d7e88545a1fbf97410ae546";
             public const string mainClassTemplateGUID = "7eb4c9a0028b715499bc7919670b7098";
             public const string stageTemplateGUID = "cadab9e52b34ebe45bad66b94b3b1cff";
-            public const string characterBodyTemplateGUID = "8cf61750955a3054c9153177612aa73f";
+            public const string groundedCharacterBodyTemplateGUID = "8cf61750955a3054c9153177612aa73f";
+            public const string flyingCharacterBodyTemplateGUID = "1cfcc30cbe06ba04690bb7482452a310";
+            public const string stationaryCharacterBodyTemplateGUID = "d19f25f365e24f843b17beab8edab99a";
+            public const string bossCharacterBodyTemplateGUID = "f2d1c9974df5abb47b8f3f538d28ad11";
             /// <summary>
             /// Loads an asset of type <typeparamref name="T"/> by using the <paramref name="guid"/> provided
             /// </summary>
