@@ -20,6 +20,24 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         public List<SerializableSystemType> extraComponents = new List<SerializableSystemType>();
         public GameObject modelFBX;
 
+        public enum TemplateOptions
+        {
+            Grounded,
+            Flying,
+            Stationary,
+            Boss
+        }
+
+        private Dictionary<TemplateOptions, string> TemplateIndex = new Dictionary<TemplateOptions, string>
+        {
+            {TemplateOptions.Grounded, Constants.AssetGUIDS.groundedCharacterBodyTemplateGUID },
+            {TemplateOptions.Flying, Constants.AssetGUIDS.flyingCharacterBodyTemplateGUID},
+            {TemplateOptions.Stationary, Constants.AssetGUIDS.stationaryCharacterBodyTemplateGUID },
+            {TemplateOptions.Boss, Constants.AssetGUIDS.bossCharacterBodyTemplateGUID }
+        };
+
+        public TemplateOptions bodyType;
+
         protected override string WizardTitleTooltip =>
 @"The CharacterBodyCreatorWizard is a custom wizard that creates the following upon completion:
 1.- A Prefab of a CharacterBody with filled tokens, necesary components, a minimum of 3 EntityStatemachines and a minimum of 4 Generic Skills, alongside the instantiated model.
@@ -65,7 +83,8 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         }
         private Task InstantiateAndUnpackPrefab()
         {
-            var prefab = Constants.AssetGUIDS.QuickLoad<GameObject>(Constants.AssetGUIDS.characterBodyTemplateGUID);
+            string templateToLoad = TemplateIndex[bodyType];
+            var prefab = Constants.AssetGUIDS.QuickLoad<GameObject>(templateToLoad);
             copiedBody = Instantiate(prefab, Vector3.zero, Quaternion.identity);
             return Task.CompletedTask;
         }
