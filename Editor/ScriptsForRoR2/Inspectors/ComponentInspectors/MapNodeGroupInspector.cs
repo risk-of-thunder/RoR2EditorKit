@@ -23,6 +23,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         private HullMask forbiddenHulls = HullMask.None;
         private NodeFlags nodeFlags = NodeFlags.None;
         private string gateName = String.Empty;
+        private bool drawAll = false;
         private bool usePainter = false;
         private float currentPainterSize = 0;
 
@@ -81,6 +82,11 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             });
             painterSize.SetDisplay(false);
 
+            var toggle0 = nodePlacerContainers.Q<Toggle>("drawAll");
+            toggle0.RegisterValueChangedCallback(evt =>
+            {
+                drawAll = evt.newValue;
+            });
             var toggle = nodePlacerContainers.Q<Toggle>("usePainter");
             toggle.RegisterValueChangedCallback(evt =>
             {
@@ -96,8 +102,14 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             container.Q<Button>("updateTeleporterMasks").clicked += UpdateTeleporterMasks;
             container.Q<Button>("bakeNodeGraph").clicked += BakeNodeGraph;
 
+            container = nodePlacerContainers.Q<VisualElement>("ButtonContainer5");
+            container.Q<Button>("updateHullMasks").clicked += UpdateHullMask;
+
             container = nodePlacerContainers.Q<VisualElement>("ButtonContainer3");
             container.Q<Button>("removeNodeExcess").clicked += RemoveNodeExcess;
+            container = nodePlacerContainers.Q<VisualElement>("ButtonContainer4");
+            container.Q<Button>("makeAirNodes").clicked += MakeAirNodes;
+            container.Q<Button>("makeGroundNodes").clicked += MakeGroundNodes;
         }
 
         private void SetupValidator()
@@ -145,11 +157,11 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                         Event.current.Use();
                     }
                     //Add node on cam pos
-                    if (Event.current.keyCode == KeyCode.N)
+                    /*if (Event.current.keyCode == KeyCode.N)
                     {
                         AddNode(TargetType, Camera.current.transform.position);
                         Event.current.Use();
-                    }
+                    }*/
                     //Delete nearest
                     if (Event.current.keyCode == KeyCode.M)
                     {
@@ -160,6 +172,11 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
                 Vector2 guiPosition = Event.current.mousePosition;
                 Ray ray = HandleUtility.GUIPointToWorldRay(guiPosition);
+
+                var length = cachedMapNodeList.Count;
+                var currentNodeList = cachedMapNodeList;
+                var rotation = Quaternion.Euler(90, 0, 0);
+
                 if (Physics.Raycast(ray, out var hitInfo, 99999999999f, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
                 {
                     currentHitInfo = TargetType.graphType == MapNodeGroup.GraphType.Air ? hitInfo.point + offsetUpVector : hitInfo.point;
@@ -205,15 +222,31 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                         }
                     }
                 }
-
-                foreach (var mapNode in cachedMapNodeList)
+                for (int i = 0; i < length; i++)
                 {
-                    if (!mapNode)
+                    var mapNode = currentNodeList[i];
+                    if (!mapNode || (!drawAll && (mapNode.transform.position - ray.origin).sqrMagnitude > 22500))
+                    {
                         continue;
+                    }
 
-                    Handles.color = Color.green;
+                    if ((this.nodeFlags == NodeFlags.None || (mapNode.flags & this.nodeFlags) != NodeFlags.None) && (this.forbiddenHulls == HullMask.None || (mapNode.forbiddenHulls & this.forbiddenHulls) == this.forbiddenHulls))
+                    {
+                        if (mapNode.links.Count <= 0)
+                        {
+                            Handles.color = Color.yellow;
+                        }
+                        else
+                        {
+                            Handles.color = Color.green;
+                        }
+                    }
+                    else
+                    {
+                        Handles.color = Color.red;
+                    }
 
-                    Handles.CylinderHandleCap(controlID, mapNode.transform.position, Quaternion.Euler(90, 0, 0), 1, EventType.Repaint);
+                    Handles.CylinderHandleCap(controlID, mapNode.transform.position, rotation, 1, EventType.Repaint);
 
                     Handles.color = Color.magenta;
                     foreach (var link in mapNode.links)
@@ -242,7 +275,26 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private void ClearNodes()
         {
-            TargetType.Clear();
+            if (EditorUtility.DisplayDialog("WARNING: Clear All Nodes", "Clicking this button will delete EVERY node. Are you sure you want to do this?", "Yes, Im sure", "No, Take me back"))
+            {
+                TargetType.Clear();
+            }
+        }
+
+        private void UpdateHullMask()
+        {
+            foreach (MapNode node in cachedMapNodeList)
+            {
+                node.forbiddenHulls = HullMask.None;
+                for (int i = 0; i < (int)HullClassification.Count; i++)
+                {
+                    HullDef hullClass = HullDef.Find((HullClassification)i);
+                    if (Physics.OverlapSphere(node.gameObject.transform.position + (Vector3.up * ((hullClass.radius * 0.7f) + 0.25f)), hullClass.radius * 0.7f, LayerIndex.world.mask | LayerIndex.defaultLayer.mask | LayerIndex.fakeActor.mask).Length != 0)
+                    {
+                        node.forbiddenHulls |= ((HullMask)(1 << (int)i));
+                    }
+                }
+            }
         }
 
         private void UpdateNoCeilingMasks()
@@ -324,6 +376,38 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             AssetDatabase.SaveAssets();
         }
 
+        private void MakeAirNodes()
+        {
+            foreach (MapNode node in cachedMapNodeList)
+            {
+                RaycastHit hit;
+                if (Physics.Raycast(node.transform.position, Vector3.up, out hit, offsetUpVector.magnitude, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                {
+                    node.transform.position += (hit.point - node.transform.position) / 2;
+                }
+                else
+                {
+                    node.transform.position += offsetUpVector;
+                }
+            }
+        }
+
+        private void MakeGroundNodes()
+        {
+            foreach (MapNode node in cachedMapNodeList)
+            {
+                RaycastHit hit;
+                if (Physics.Raycast(node.transform.position, Vector3.down, out hit, offsetUpVector.magnitude * 2, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                {
+                    node.transform.position = hit.point;
+                }
+                else
+                {
+                    node.transform.position -= offsetUpVector;
+                }
+            }
+        }
+
         private void Painter(float currentMaxDistance, float zPainterOffset, List<MapNode> cachedMapNodeList)
         {
             for (float x = currentHitInfo.x - currentPainterSize, zCount = 0; x <= currentHitInfo.x; x += currentMaxDistance - 4, zCount++)
@@ -347,7 +431,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                         if (!Physics.Linecast(currentHitInfo, future1, out _, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
                         {
                             bool canPlace = true;
-                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future1, Vector3.down, out RaycastHit raycastHit, 9, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future1, Vector3.down, out RaycastHit raycastHit, 30, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
                             {
                                 foreach (MapNode node in cachedMapNodeList)
                                 {
@@ -362,7 +446,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                                     AddNode(TargetType, raycastHit.point);
                                 }
                             }
-                            else
+                            /*else
                             {
                                 foreach (MapNode node in cachedMapNodeList)
                                 {
@@ -376,12 +460,12 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                                 {
                                     AddNode(TargetType, future1);
                                 }
-                            }
+                            }*/
                         }
                         if (!Physics.Linecast(currentHitInfo, future2, out _, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
                         {
                             bool canPlace = true;
-                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future2, Vector3.down, out RaycastHit raycastHitto, 9, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future2, Vector3.down, out RaycastHit raycastHitto, 30, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
                             {
                                 foreach (MapNode node in cachedMapNodeList)
                                 {
@@ -396,7 +480,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                                     AddNode(TargetType, raycastHitto.point);
                                 }
                             }
-                            else
+                            /*else
                             {
                                 foreach (MapNode node in cachedMapNodeList)
                                 {
@@ -410,12 +494,12 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                                 {
                                     AddNode(TargetType, future2);
                                 }
-                            }
+                            }*/
                         }
                         if (!Physics.Linecast(currentHitInfo, future3, out _, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
                         {
                             bool canPlace = true;
-                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future3, Vector3.down, out RaycastHit raycastHittoto, 9, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future3, Vector3.down, out RaycastHit raycastHittoto, 30, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
                             {
                                 foreach (MapNode node in cachedMapNodeList)
                                 {
@@ -430,7 +514,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                                     AddNode(TargetType, raycastHittoto.point);
                                 }
                             }
-                            else
+                            /*else
                             {
                                 foreach (MapNode node in cachedMapNodeList)
                                 {
@@ -444,12 +528,12 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                                 {
                                     AddNode(TargetType, future3);
                                 }
-                            }
+                            }*/
                         }
                         if (!Physics.Linecast(currentHitInfo, future4, out _, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
                         {
                             bool canPlace = true;
-                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future4, Vector3.down, out RaycastHit raycastHittototo, 9, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future4, Vector3.down, out RaycastHit raycastHittototo, 30, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
                             {
                                 foreach (MapNode node in cachedMapNodeList)
                                 {
@@ -464,7 +548,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                                     AddNode(TargetType, raycastHittototo.point);
                                 }
                             }
-                            else
+                            /*else
                             {
                                 foreach (MapNode node in cachedMapNodeList)
                                 {
@@ -478,7 +562,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                                 {
                                     AddNode(TargetType, future4);
                                 }
-                            }
+                            }*/
                         }
                     }
                 }
