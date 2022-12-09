@@ -48,7 +48,7 @@ namespace RoR2EditorKit.Core.Inspectors
             if (MaterialEditorEnabled)
             {
                 material = target as Material;
-                chosenActionForMaterial = GetActionForMaterial();
+                TryGetActionForMaterial(out chosenActionForMaterial);
             }
         }
 
@@ -63,7 +63,7 @@ namespace RoR2EditorKit.Core.Inspectors
             if(MaterialEditorEnabled)
             {
                 material = target as Material;
-                chosenActionForMaterial = GetActionForMaterial();
+                TryGetActionForMaterial(out chosenActionForMaterial);
             }
         }
 
@@ -78,21 +78,32 @@ namespace RoR2EditorKit.Core.Inspectors
             if (MaterialEditorEnabled)
             {
                 material = target as Material;
-                chosenActionForMaterial = GetActionForMaterial();
+                TryGetActionForMaterial(out chosenActionForMaterial);
             }
         }
 
-        private Action GetActionForMaterial()
+        private bool TryGetActionForMaterial(out Action action)
         {
-            foreach (var shaderStringPair in Settings.MaterialEditorSettings.shaderStringPairs)
+            try
             {
-                var shaderStringPairShader = shaderStringPair.shader.LoadShader();
-                if (shaderNameToAction.ContainsKey(shaderStringPair.shaderName) && material.shader == shaderStringPairShader)
+                foreach (var shaderStringPair in Settings.MaterialEditorSettings.shaderStringPairs)
                 {
-                    return shaderNameToAction[shaderStringPair.shaderName];
+                    var shaderStringPairShader = shaderStringPair.shader.LoadShader();
+                    if (shaderNameToAction.ContainsKey(shaderStringPair.shaderName) && material.shader == shaderStringPairShader)
+                    {
+                        action = shaderNameToAction[shaderStringPair.shaderName];
+                        return true;
+                    }
                 }
+                action = null;
+                return false;
             }
-            return null;
+            catch(Exception e)
+            {
+                Debug.LogError(e);
+                action = null;
+                return false;
+            }
         }
 
         public override void OnInspectorGUI()
