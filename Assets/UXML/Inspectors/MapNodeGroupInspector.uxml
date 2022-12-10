@@ -20,11 +20,9 @@
                 <ui:Button text="Update Teleporter Masks" name="updateTeleporterMasks" class="fiftyPercentButton" />
                 <ui:Button text="Bake Node Graph" name="bakeNodeGraph" class="fiftyPercentButton" />
             </ui:VisualElement>
-            <ui:VisualElement name="ButtonContainer5" style="flex-direction: row;">
+            <ui:VisualElement name="ButtonContainer3" style="flex-direction: row;">
                 <ui:Button text="Update Hull Masks" name="updateHullMasks" class="fiftyPercentButton" />
-            </ui:VisualElement>
-            <ui:VisualElement name="ButtonContainer3">
-                <ui:Button text="Remove Node Excess" name="removeNodeExcess" />
+                <ui:Button text="Remove Node Excess" name="removeNodeExcess" class="fiftyPercentButton" />
             </ui:VisualElement>
             <ui:VisualElement name="ButtonContainer4" style="flex-direction: row;">
                 <ui:Button text="Make Air Nodes" name="makeAirNodes" class="fiftyPercentButton" />

@@ -102,11 +102,10 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             container.Q<Button>("updateTeleporterMasks").clicked += UpdateTeleporterMasks;
             container.Q<Button>("bakeNodeGraph").clicked += BakeNodeGraph;
 
-            container = nodePlacerContainers.Q<VisualElement>("ButtonContainer5");
-            container.Q<Button>("updateHullMasks").clicked += UpdateHullMask;
-
             container = nodePlacerContainers.Q<VisualElement>("ButtonContainer3");
+            container.Q<Button>("updateHullMasks").clicked += UpdateHullMask;
             container.Q<Button>("removeNodeExcess").clicked += RemoveNodeExcess;
+
             container = nodePlacerContainers.Q<VisualElement>("ButtonContainer4");
             container.Q<Button>("makeAirNodes").clicked += MakeAirNodes;
             container.Q<Button>("makeGroundNodes").clicked += MakeGroundNodes;
