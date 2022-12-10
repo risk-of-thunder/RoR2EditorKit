@@ -13,7 +13,7 @@ namespace RoR2EditorKit.Core.EditorWindows
         /// <summary>
         /// Direct access to the SerializedObject's targetObject as it's type
         /// </summary>
-        protected TObject TargetType { get; private set; }
+        protected TObject TargetType { get => SerializedObject?.targetObject as TObject; }
 
         /// <summary>
         /// Not supported for ObjectEditingEditorWindows, use <see cref="OpenEditorWindow{TEditorWindow}(Object, string)"/> instead
@@ -39,7 +39,6 @@ namespace RoR2EditorKit.Core.EditorWindows
 
             TEditorWindow window = GetWindow<TEditorWindow>(windowName == null ? ObjectNames.NicifyVariableName(typeof(TEditorWindow).Name) : windowName);
             window.SerializedObject = new SerializedObject(obj);
-            window.TargetType = window.SerializedObject.targetObject as TObject;
             window.OnWindowOpened();
             return window;
         }

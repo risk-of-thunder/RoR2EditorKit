@@ -9,6 +9,7 @@ using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.Settings
 {
+
     /// <summary>
     /// The RoR2EK Editor Inspector Settings
     /// </summary>
@@ -30,6 +31,7 @@ namespace RoR2EditorKit.Settings
             /// </summary>
             [HideInInspector]
             public string typeReference;
+
 
             /// <summary>
             /// Wether the inspector is enabled or not

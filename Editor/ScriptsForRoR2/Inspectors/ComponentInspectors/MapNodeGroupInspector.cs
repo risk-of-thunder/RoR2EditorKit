@@ -155,12 +155,6 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                         }
                         Event.current.Use();
                     }
-                    //Add node on cam pos
-                    /*if (Event.current.keyCode == KeyCode.N)
-                    {
-                        AddNode(TargetType, Camera.current.transform.position);
-                        Event.current.Use();
-                    }*/
                     //Delete nearest
                     if (Event.current.keyCode == KeyCode.M)
                     {
@@ -257,15 +251,18 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
                 Handles.BeginGUI();
 
-                EditorGUILayout.BeginVertical("box");
+                EditorGUILayout.BeginVertical("box", GUILayout.Width(400));
+                EditorGUILayout.BeginVertical("box", GUILayout.Width(400));
+                EditorGUILayout.BeginVertical("box", GUILayout.Width(400));
 
-                EditorGUILayout.LabelField($"Camera Position: {Camera.current.transform.position}");
+                EditorGUILayout.LabelField($"Camera Position: {Camera.current.transform.position}", EditorStyles.boldLabel);
                 var placerString = "Press B to ";
                 placerString += usePainter ? "paint nodes at current mouse position (raycast)" : "add map node at current mouse position (raycast)";
-                EditorGUILayout.LabelField(placerString);
-                EditorGUILayout.LabelField("Press N to add map node at current camera position");
-                EditorGUILayout.LabelField("Press M to remove the nearest map node at cursor position");
+                EditorGUILayout.LabelField(placerString, EditorStyles.boldLabel);
+                EditorGUILayout.LabelField("Press M to remove the nearest map node at cursor position", EditorStyles.boldLabel);
 
+                EditorGUILayout.EndVertical();
+                EditorGUILayout.EndVertical();
                 EditorGUILayout.EndVertical();
 
                 Handles.EndGUI();
