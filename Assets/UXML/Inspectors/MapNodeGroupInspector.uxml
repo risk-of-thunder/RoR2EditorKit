@@ -7,20 +7,26 @@
         <uie:PropertyField binding-path="debugHullDef" name="debugHullDef" />
         <uie:PropertyField binding-path="graphType" name="graphType" />
         <ui:VisualElement name="NodePlacerContainers" class="genericHolder">
+            <ui:Toggle label="Draw All Nodes" name="drawAll" />
             <uie:ObjectField label="Parent Game Object" name="parentGameObject" tooltip="If Specified, the newely created nodes will be instantiated as children of this transform, otherwise it&apos;ll be instantiated as a child of the game object that has this map node group." />
             <ui:TextField picking-mode="Ignore" label="Gate Name" value="filler text" name="gateName" />
             <ui:Toggle label="Use Painter" name="usePainter" />
             <uie:FloatField label="Painter Size" value="0" name="painterSize" />
             <ui:VisualElement name="ButtonContainer1" style="flex-direction: row;">
-                <ui:Button text="Clear Nodes" name="clearNodes" class="fiftyPercentButton" />
-                <ui:Button text="Update No Ceiling Masks" name="updateNoCeilingMasks" style="width: 50%; margin-left: 0; margin-right: 0; padding-left: 0;" />
+                <ui:Button text="Update No Ceiling Masks" name="updateNoCeilingMasks" class="fiftyPercentButton" />
+                <ui:Button text="Clear Nodes" name="clearNodes" style="width: 50%; margin-left: 0; margin-right: 0; padding-left: 0;" />
             </ui:VisualElement>
             <ui:VisualElement name="ButtonContainer2" style="flex-direction: row;">
                 <ui:Button text="Update Teleporter Masks" name="updateTeleporterMasks" class="fiftyPercentButton" />
                 <ui:Button text="Bake Node Graph" name="bakeNodeGraph" class="fiftyPercentButton" />
             </ui:VisualElement>
-            <ui:VisualElement name="ButtonContainer3">
-                <ui:Button text="Remove Node Excess" name="removeNodeExcess" />
+            <ui:VisualElement name="ButtonContainer3" style="flex-direction: row;">
+                <ui:Button text="Update Hull Masks" name="updateHullMasks" class="fiftyPercentButton" />
+                <ui:Button text="Remove Node Excess" name="removeNodeExcess" class="fiftyPercentButton" />
+            </ui:VisualElement>
+            <ui:VisualElement name="ButtonContainer4" style="flex-direction: row;">
+                <ui:Button text="Make Air Nodes" name="makeAirNodes" class="fiftyPercentButton" />
+                <ui:Button text="Make Ground Nodes" name="makeGroundNodes" class="fiftyPercentButton" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
