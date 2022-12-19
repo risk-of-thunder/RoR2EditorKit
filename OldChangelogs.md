@@ -1,3 +1,15 @@
+### '3.2.2'
+
+* Core Changes:
+	* XML documentation file now always appears when ROR2EK is installed via the UPM
+	* Extended editor window's opening methods now return the instance
+
+* RoR2EditorScripts changes:
+	* ESC asset name now updates to the target type when the enable naming conventions is on
+	* ESC now displays a tooltip for serializable fields if the FieldInfo had the Tooltip attribute
+	* Updated Skill Locator for new bonus stock override skills
+	* Characterbody's crosshair prefab now properly shows in the inspector
+
 ### '3.2.1'
 
 * Core Changes:
