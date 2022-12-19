@@ -32,6 +32,37 @@ A more detailed Contribution guideline can be found [here](https://github.com/ri
 
 (Old changelogs can be found [here](https://github.com/risk-of-thunder/RoR2EditorKit/blob/main/OldChangelogs.md))
 
+### '3.5.0'
+
+* Core Changes:
+	* ExtendedMaterialEditor now attempts to get the action for a material, if it doesnt find any, it'll use the default inspector.
+	* ObjectEditingWindow's TargetType is now just a getter, obtaining the target type directly from the SerializedObject.
+
+* RoR2EditorScripts changes:
+	* Made the EntityStateConfiguration inspector able to draw fields as enums, courtesy of KingEnderBrine
+		* This is done by using the field as an int, and marking it with the EnumMask attribute.
+	* Fixed a bug where the CharacterBody template would have unfitting entity states assigned.
+	* Added 3 new Template options to CharacterBody template, courtesy of HeyImNoop
+		* Grounded is now the original prefab template.
+		* Flying uses a Wisp as a template.
+		* Stationary uses an Alpha construct as a template
+		* Boss uses a StoneTitan as a template.
+	* Major improvements and fixes to the MapNodeGroup inspector.
+		* Painter should now work properly
+		* Added a button to update hull masks
+		* Added a button that shifts nodes upwards, for creating Air nodes from ground nodes.
+		* Added a button that shifts nodes downards, for creating ground nodes from Air nodes
+		* Increased visibility of the Scene GUI
+		* Removed "Add Node on Cam Pos" keybind
+	* Updated ModCreatorWizard window to support R2API's Split assemblies update.
+		* Now will scan for all assemblies in the AppDomain, and add all the R2API submodules it finds as dependencies.
+		* Automatically adds said dependencies to your Manifest, main class, and assembly definition.
+	* Added R2APIMigrationWizard
+		* Scans for all assemblies in the app domain to find the R2API submodules loaded in the editor.
+		* Used for migrating a mod that uses the old R2API system to the split assemblies system.
+		* Replaces the single BepInDependency attribute for multiple attributes, depending on the amount of assemblies it finds.
+		* Replaces the assemblyDefinition and Manifest's dependencies from the single dll to the multiple dll's, depending on the amount of assemblies and manifests it finds.
+
 ### '3.4.0'
 
 * RoR2EditorScripts Changes:
@@ -102,32 +133,3 @@ A more detailed Contribution guideline can be found [here](https://github.com/ri
 	* ESC now displays a tooltip for serializable fields if the FieldInfo had the Tooltip attribute
 	* Updated Skill Locator for new bonus stock override skills
 	* Characterbody's crosshair prefab now properly shows in the inspector
-
-### '3.2.1'
-
-* Core Changes:
-	* Cleaned up the code
-	* Added XML documentation file
-	* ListViewHelper now has a refresh method
-
-* RoR2EditorScripts changes:
-	* Cleaned up the code
-
-### '3.2.0'
-
-* Core Changes:
-	* Added "GetParentProperty" extension for SerializedProperty
-	* Added "SetDisplay" extension for VisualElements
-	* ListViewHelper's SerializedProperty can now be changed, allowing for dynamic use of a ListView
-	* ListViewHelper's created elements now have the name "elementN", a substring can be used to get the index of the serialized property
-	* Improved the ExtendedEditorWindow:
-		* Now works like pre 2.0.0 ExtendedEditorWindow
-		* Still uses VisualElements
-		* ExtendedEditorWindows can load their UI via TemplateHelpers
-		* Contains a SerializedObject that points to the instance of the ExtendedEditorWindow
-	* Added ObjectEditingEditorWindow
-		* ObjectEditingEditorWindow's main usage is for constructing more complex editing tools for objects
-		* ObjectEditingEditorWindow's SerializedObject points to the inspected/editing object
-
-* RoR2EditorScripts changes:
-	* Added an AssetCollectionInspector

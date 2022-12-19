@@ -1,3 +1,32 @@
+### '3.2.1'
+
+* Core Changes:
+	* Cleaned up the code
+	* Added XML documentation file
+	* ListViewHelper now has a refresh method
+
+* RoR2EditorScripts changes:
+	* Cleaned up the code
+
+### '3.2.0'
+
+* Core Changes:
+	* Added "GetParentProperty" extension for SerializedProperty
+	* Added "SetDisplay" extension for VisualElements
+	* ListViewHelper's SerializedProperty can now be changed, allowing for dynamic use of a ListView
+	* ListViewHelper's created elements now have the name "elementN", a substring can be used to get the index of the serialized property
+	* Improved the ExtendedEditorWindow:
+		* Now works like pre 2.0.0 ExtendedEditorWindow
+		* Still uses VisualElements
+		* ExtendedEditorWindows can load their UI via TemplateHelpers
+		* Contains a SerializedObject that points to the instance of the ExtendedEditorWindow
+	* Added ObjectEditingEditorWindow
+		* ObjectEditingEditorWindow's main usage is for constructing more complex editing tools for objects
+		* ObjectEditingEditorWindow's SerializedObject points to the inspected/editing object
+
+* RoR2EditorScripts changes:
+	* Added an AssetCollectionInspector
+
 ### '3.1.0'
 
 * Core Changes:
