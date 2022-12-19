@@ -123,7 +123,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
 
             if(r2apiToggle)
             {
-                var filteredNames = assemblyNames.Where(asm => asm.StartsWith("R2API")).Select(asm => $"{asm}.dll");
+                var filteredNames = assemblyNames.Where(asm => asm.StartsWith("R2API_")).Select(asm => $"{asm}.dll");
                 precompiledReferencecsList.AddRange(filteredNames);
             }
 
@@ -277,7 +277,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
             List<Manifest> manifests = AssetDatabaseUtils.FindAssetsByType<Manifest>().ToList();
             foreach(Manifest manifest in manifests)
             {
-                if(manifest.name == "BepInExPack" || manifest.name.StartsWith("R2API"))
+                if(manifest.name == "BepInExPack" || manifest.name.StartsWith("R2API_"))
                 {
                     dependencies.Add(manifest);
                 }

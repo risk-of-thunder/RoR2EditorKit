@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <uie:PropertyField name="mainClass" />
+    <uie:PropertyField name="assemblyDefinition" />
+    <uie:PropertyField name="modManifest" />
+    <ui:Label text="Note: R2API and Bepinex need to be installed for this wizard to work" name="notice" style="-unity-text-align: middle-center; white-space: normal; -unity-font-style: bold; font-size: 19px;" />
+</ui:UXML>
