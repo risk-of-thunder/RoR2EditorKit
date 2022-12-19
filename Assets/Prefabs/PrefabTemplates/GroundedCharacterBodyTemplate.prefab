@@ -38,7 +38,7 @@ GameObject:
   - component: {fileID: 114457655416913891}
   - component: {fileID: 114728008046866574}
   m_Layer: 0
-  m_Name: CharacterBodyTemplate
+  m_Name: GroundedCharacterBodyTemplate
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -212,7 +212,6 @@ MonoBehaviour:
   stateMachines:
   - {fileID: 114209604289230284}
   - {fileID: 114694542855400404}
-  - {fileID: 0}
 --- !u!114 &114209604289230284
 MonoBehaviour:
   m_ObjectHideFlags: 0
