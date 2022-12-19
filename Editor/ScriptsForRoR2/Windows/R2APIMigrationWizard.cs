@@ -108,7 +108,7 @@ Does the following things:
             {
                 if (TryGetModGUID(asm, out string guid))
                 {
-                    stringBuilder.Append($"[BepInDependency(\"{guid}\", BepInDependency.DependencyFlags.HardDependency)]\n");
+                    stringBuilder.Append($"[BepInDependency(\"{guid}\")]\n");
                 }
             }
 
