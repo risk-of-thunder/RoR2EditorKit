@@ -5,11 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using ThunderKit.Core.Manifests;
 using ThunderKit.Core.Manifests.Datum;
 using ThunderKit.Core.Manifests.Datums;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -22,7 +25,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         public string modName;
         public string humanReadableModName;
         public string modDescription;
-
+        public bool r2apiToggle;
         protected override string WizardTitleTooltip =>
 @"The ModCreatorWizard is a custom wizard that creates the following upon completion:
 1.- An AssemblyDef with references to most common ror2 modding assemblies
@@ -30,9 +33,11 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
 3.- A folder for your Assets for the AssetBundle
 4.- A ThunderKit Manifest for your mod.";
 
-        private List<string> assemblyList = new List<string>();
+        private List<Assembly> assemblyList = new List<Assembly>();
+        private List<string> assemblyNames = new List<string>();
         private UnityEngine.Object assetBundleFolder;
         private AssemblyDefinitionAsset assemblyDef;
+        private Type bepInDependencyType;
 
         [MenuItem(Constants.RoR2EditorKitScriptableRoot + "Wizards/Mod", priority = ThunderKit.Common.Constants.ThunderKitMenuPriority)]
         private static void OpenWindow()
@@ -44,8 +49,15 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         protected override void OnWindowOpened()
         {
             base.OnWindowOpened();
+
+            assemblyList = AppDomain.CurrentDomain.GetAssemblies().ToList();
+            assemblyNames = assemblyList.Select(asm => asm.GetName().Name).ToList();
+            bepInDependencyType = Type.GetType("BepInEx.BepInPlugin, BepInEx");
+
             var textField = WizardElementContainer.Q<TextField>("modDescription");
             modDescription = textField.text;
+            var r2apiToggleField = WizardElementContainer.Q<PropertyField>("r2apiToggle");
+            r2apiToggleField.SetDisplay(assemblyNames.Contains("R2API.Core"));
         }
 
         protected override async Task<bool> RunWizard()
@@ -56,8 +68,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
                 return false;
             }
 
-            assemblyList = AppDomain.CurrentDomain.GetAssemblies().Select(asm => asm.GetName().Name).ToList();
-            if (!assemblyList.Contains("BepInEx"))
+            if (!assemblyNames.Contains("BepInEx"))
             {
                 Debug.LogError("Cannot build mod from wizard since BepInEx is not installed.");
                 return false;
@@ -90,7 +101,8 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
                 "UnityEngine.UI"
             };
             def.overrideReferences = true;
-            def.precompiledReferences = new string[]
+            
+            var precompiledReferencecsList = new List<string>
             {
                 "BepInEx.dll",
                 "R2API.dll",
@@ -108,6 +120,14 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
                 "UnityEngine.UI.dll",
                 "Unity.Postprocessing.Runtime.dll"
             };
+
+            if(r2apiToggle)
+            {
+                var filteredNames = assemblyNames.Where(asm => asm.StartsWith("R2API")).Select(asm => $"{asm}.dll");
+                precompiledReferencecsList.AddRange(filteredNames);
+            }
+
+            def.precompiledReferences = precompiledReferencecsList.ToArray();
             def.autoReferenced = true;
 
             var directory = IOUtils.GetCurrentDirectory();
@@ -134,14 +154,14 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
                 string extraUsingClauses = string.Empty;
                 string attributes = string.Empty;
 
-                if (assemblyList.Contains("R2API"))
+                if (r2apiToggle)
                 {
                     extraUsingClauses = "using R2API;\n" +
                         "using R2API.ScriptableObjects;\n" +
                         "using R2API.Utils;\n" +
                         "using R2API.ContentManagement;";
 
-                    attributes = "[BepInDependency(\"com.bepis.r2api\", BepInDependency.DependencyFlags.HardDependency)]";
+                    attributes = GetR2APIAttributes();
                 }
 
                 await fs.WriteAsync(string.Format(mainClassTemplate, modName, humanReadableModName, authorName, extraUsingClauses, attributes));
@@ -151,6 +171,57 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
             AssetDatabase.ImportAsset(projectRelativePath, ImportAssetOptions.Default);
         }
 
+        private string GetR2APIAttributes()
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            Assembly[] r2apiAssemblies = assemblyList.Where(asm => asm.GetName().Name.StartsWith("R2API")).ToArray();
+
+            foreach (Assembly asm in r2apiAssemblies)
+            {
+                if(TryGetModGUID(asm, out string guid))
+                {
+                    stringBuilder.Append($"    [BepInDependency(\"{guid}\", BepInDependency.DependencyFlags.HardDependency)]\n");
+                }
+            }
+
+            return stringBuilder.ToString();
+        }
+
+        private bool TryGetModGUID(Assembly asm, out string guid)
+        {
+            Type mainClass = asm.GetTypesSafe().Where(t => t.GetCustomAttribute(bepInDependencyType) != null).FirstOrDefault();
+            if (mainClass == null)
+            {
+                guid = null;
+                return false;
+            }
+
+            Attribute bepInPluginAttribute = mainClass.GetCustomAttribute(bepInDependencyType);
+            if(bepInPluginAttribute == null)
+            {
+                guid = null;
+                return false;
+            }
+
+            Type attributeType = bepInPluginAttribute.GetType();
+
+            PropertyInfo propInfo = attributeType.GetProperty("GUID", BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
+            if(propInfo == null)
+            {
+                guid = null;
+                return false;
+            }
+
+            MethodInfo method = propInfo.GetMethod;
+            if(method == null)
+            {
+                guid = null;
+                return false;
+            }
+
+            guid = (string)method.Invoke(bepInPluginAttribute, null);
+            return true;
+        }
         private Task CreateAssetbundleFolder()
         {
             var directory = IOUtils.GetCurrentDirectory();
@@ -175,6 +246,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
             identity.Name = modName;
             identity.Description = modDescription;
             identity.Version = "1.0.0";
+            identity.Dependencies = GetManifestDependencies();
             newManifest.InsertElement(newManifest.Identity, 0);
 
             var bundleDatum = ScriptableObject.CreateInstance<AssetBundleDefinitions>();
@@ -197,6 +269,21 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
 
             newManifest.InsertElement(assemblyDatum, 2);
             return Task.CompletedTask;
+        }
+
+        private Manifest[] GetManifestDependencies()
+        {
+            List<Manifest> dependencies = new List<Manifest>();
+            List<Manifest> manifests = AssetDatabaseUtils.FindAssetsByType<Manifest>().ToList();
+            foreach(Manifest manifest in manifests)
+            {
+                if(manifest.name == "BepInExPack" || manifest.name.StartsWith("R2API"))
+                {
+                    dependencies.Add(manifest);
+                }
+            }
+
+            return dependencies.ToArray();
         }
     }
 }

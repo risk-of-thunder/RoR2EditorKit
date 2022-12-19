@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace {0}
 {{
-	{4}
+{4}
 	[BepInPlugin(GUID, MODNAME, VERSION)]
 	public class {0}Main : BaseUnityPlugin
 	{{
