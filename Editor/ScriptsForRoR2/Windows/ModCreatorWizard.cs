@@ -123,7 +123,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
 
             if(r2apiToggle)
             {
-                var filteredNames = assemblyNames.Where(asm => asm.StartsWith("R2API_")).Select(asm => $"{asm}.dll");
+                var filteredNames = assemblyNames.Where(asm => asm.StartsWith("R2API.")).Select(asm => $"{asm}.dll");
                 precompiledReferencecsList.AddRange(filteredNames);
             }
 
@@ -174,7 +174,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         private string GetR2APIAttributes()
         {
             StringBuilder stringBuilder = new StringBuilder();
-            Assembly[] r2apiAssemblies = assemblyList.Where(asm => asm.GetName().Name.StartsWith("R2API")).ToArray();
+            Assembly[] r2apiAssemblies = assemblyList.Where(asm => asm.GetName().Name.StartsWith("R2API.")).ToArray();
 
             foreach (Assembly asm in r2apiAssemblies)
             {

@@ -102,7 +102,7 @@ Does the following things:
         private string GetBepInDependencies()
         {
             StringBuilder stringBuilder = new StringBuilder();
-            Assembly[] r2apiAssemblies = assemblyList.Where(asm => asm.GetName().Name.StartsWith("R2API_")).ToArray();
+            Assembly[] r2apiAssemblies = assemblyList.Where(asm => asm.GetName().Name.StartsWith("R2API.")).ToArray();
 
             foreach (Assembly asm in r2apiAssemblies)
             {
@@ -167,7 +167,7 @@ Does the following things:
                 precompiledReferences.Remove("R2API.dll");
             }
 
-            var filteredNames = assemblyNames.Where(asm => asm.StartsWith("R2API_")).Select(asm => $"{asm}.dll");
+            var filteredNames = assemblyNames.Where(asm => asm.StartsWith("R2API.")).Select(asm => $"{asm}.dll");
             precompiledReferences.AddRange(filteredNames);
             def.precompiledReferences = precompiledReferences.ToArray();
 
