@@ -1,4 +1,34 @@
-### '3.2.2'
+### '3.3.0'
+
+* Core Changes:
+	* Improved material editor so it doesnt wipe itself
+	* Added wizard systems
+		* A wizard allows you to create complex jobs for your project.
+	* All the asset GUID contants are now under Constants.AssetGUIDS class.
+		* Added a QuickLoad and GetPath methods for AssetGUIDS class.
+	* Added FormatPathForUnity and GetCurrentDirectory to IOUtils.
+	* Extended inspector's object name conventions have been extended.
+		*  Can now specify both a custom help box message and custom name validation function
+	* Component Inspectors now always have the fancy enable toggle visual element.
+	
+* RoR2EditorScripts changes:
+	* Added ModCreator wizard.
+		* Creates an Asmdef, manifest, assetbundle folder and main class for a mod
+	* Added StageCreator wizard
+		* Creates a template stage and scenedef
+	* Added CharacterBodyCreator Wizard
+		* Creates a valid CharacterBody by supplying minimal data and the FBX game object for the model.
+	* Added a SurvivorCreator Wizard
+		* Creates a SurvivorDef and DisplayPrefab, the DisplayPrefab is taken directly from the specified CharacterBody's model.
+	* Added MapNodeGroup inspector
+		* MapNodeGroup inspector allows for easy placement of nodes and utilities (Thanks Anreol & IDeath)
+	* EntityStateConfiguration no longer renames the asset file without consent if naming conventions are enabled.
+	* Added JumpVolume Inspector
+		* Automatically calculates the JumpVelocity using the Time variable and the TargetElevationTransform variable.
+	* Added SurvivorDef Inspector
+	* SerializableSystemType changes
+		* SerializableSystemType can now obtain the required type if the field is an Array.
+		* SerializableSystemType no longer fails to populate if a Type does not have an enclosing namespace.### '3.2.2'
 
 * Core Changes:
 	* XML documentation file now always appears when ROR2EK is installed via the UPM
