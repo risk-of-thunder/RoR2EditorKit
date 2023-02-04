@@ -6,17 +6,18 @@ using UnityEngine;
 namespace RoR2EditorKit.Core.PropertyDrawers
 {
     [CustomPropertyDrawer(typeof(MaterialEditorSettings.ShaderStringPair))]
-    public sealed class ShaderStringPairDrawer : PropertyDrawer
+    public sealed class ShaderStringPairDrawer : IMGUIPropertyDrawer<MaterialEditorSettings.ShaderStringPair>
     {
         Object shaderObj = null;
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+
+        protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var shaderRefProp = property.FindPropertyRelative("shader");
             var shaderNameProp = shaderRefProp.FindPropertyRelative("shaderName");
             var shaderGUIDProp = shaderRefProp.FindPropertyRelative("shaderGUID");
 
             shaderObj = Shader.Find(shaderNameProp.stringValue);
-            if(!shaderObj)
+            if (!shaderObj)
             {
                 shaderObj = AssetDatabaseUtils.LoadAssetFromGUID<Object>(shaderGUIDProp.stringValue);
             }
@@ -24,7 +25,7 @@ namespace RoR2EditorKit.Core.PropertyDrawers
             EditorGUI.BeginProperty(position, label, property);
             EditorGUI.BeginChangeCheck();
             shaderObj = EditorGUI.ObjectField(position, ObjectNames.NicifyVariableName(property.FindPropertyRelative("shaderName").stringValue), shaderObj, typeof(Shader), false);
-            if(EditorGUI.EndChangeCheck())
+            if (EditorGUI.EndChangeCheck())
             {
 
                 shaderNameProp.stringValue = shaderObj == null ? string.Empty : ((Shader)shaderObj).name;

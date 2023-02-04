@@ -43,9 +43,20 @@ namespace RoR2EditorKit.Core.Inspectors
     /// </summary>
     public interface IObjectNameConvention
     {
+        /// <summary>
+        /// The prefix thats used for the object being inspected
+        /// </summary>
         string Prefix { get; }
+        /// <summary>
+        /// Wether the prefix for this object uses the Token stored in <see cref="RoR2EditorKit.Settings.RoR2EditorKitSettings.TokenPrefix"/>
+        /// </summary>
         bool UsesTokenForPrefix { get; }
 
+
+        /// <summary>
+        /// Method that creates the prefix data for this inspector
+        /// </summary>
+        /// <returns><inheritdoc cref="PrefixData"/></returns>
         PrefixData GetPrefixData();
 
     }

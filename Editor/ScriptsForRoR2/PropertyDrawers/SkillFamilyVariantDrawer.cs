@@ -1,5 +1,6 @@
 ﻿using RoR2;
 using RoR2.Skills;
+using RoR2EditorKit.Core.PropertyDrawers;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -8,40 +9,37 @@ using UnityEngine.UIElements;
 namespace RoR2EditorKit.RoR2Related.PropertyDrawers
 {
     [CustomPropertyDrawer(typeof(SkillFamily.Variant))]
-    public sealed class SkillFamilyVariantDrawer : PropertyDrawer
+    public sealed class SkillFamilyVariantDrawer : IMGUIPropertyDrawer<SkillFamily.Variant>
     {
-        PropertyField skillDefField;
-        PropertyField unlockableDefField;
-        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        SerializedProperty skillDefProp;
+        GUIContent skillDefLabel;
+        SerializedProperty unlockableDefProp;
+        GUIContent unlockableDefLabel;
+
+        protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            var container = new VisualElement();
-            container.style.flexDirection = FlexDirection.Row;
-            container.name = "Container";
+            skillDefProp = property.FindPropertyRelative(nameof(SkillFamily.Variant.skillDef));
+            skillDefLabel = new GUIContent(skillDefProp.displayName, CreateTooltip<SkillDef>(skillDefProp.objectReferenceValue));
+            unlockableDefProp = property.FindPropertyRelative(nameof(SkillFamily.Variant.unlockableDef));
+            unlockableDefLabel = new GUIContent(unlockableDefProp.displayName, CreateTooltip<UnlockableDef>(unlockableDefProp.objectReferenceValue));
 
-            SerializedProperty skillDefProp = property.FindPropertyRelative("skillDef");
-            skillDefField = new PropertyField(skillDefProp);
-            skillDefField.name = skillDefProp.name;
-            skillDefField.tooltip = CreateTooltip<SkillDef>(skillDefProp.objectReferenceValue);
-            skillDefField.RegisterCallback<ChangeEvent<SkillDef>>(OnSkillSet);
-            container.Add(skillDefField);
+            EditorGUI.BeginProperty(position, label, property);
 
-            SerializedProperty unlockDefProp = property.FindPropertyRelative("unlockableDef");
-            unlockableDefField = new PropertyField(unlockDefProp);
-            unlockableDefField.name = unlockDefProp.name;
-            unlockableDefField.tooltip = CreateTooltip<UnlockableDef>(unlockDefProp.objectReferenceValue);
-            unlockableDefField.RegisterCallback<ChangeEvent<UnlockableDef>>(OnUnlockSet);
-            container.Add(unlockableDefField);
-            return container;
-        }
+            Rect skillDefRect = new Rect(
+                position.x,
+                position.y,
+                position.width / 2,
+                position.height);
+            EditorGUI.PropertyField(skillDefRect, skillDefProp, skillDefLabel);
 
-        private void OnSkillSet(ChangeEvent<SkillDef> evt)
-        {
-            skillDefField.tooltip = CreateTooltip<SkillDef>(evt.newValue);
-        }
+            Rect unlockableDefRect = new Rect(
+                skillDefRect.xMax,
+                skillDefRect.y,
+                skillDefRect.width,
+                skillDefRect.height);
+            EditorGUI.PropertyField(unlockableDefRect, unlockableDefProp, unlockableDefLabel);
 
-        private void OnUnlockSet(ChangeEvent<UnlockableDef> evt)
-        {
-            unlockableDefField.tooltip = CreateTooltip<UnlockableDef>(evt.newValue);
+            EditorGUI.EndProperty();
         }
 
         private string CreateTooltip<T>(Object obj) where T : Object

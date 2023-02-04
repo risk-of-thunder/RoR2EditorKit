@@ -4,13 +4,14 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
+using RoR2EditorKit.Core.PropertyDrawers;
 
 namespace RoR2EditorKit.RoR2Related.PropertyDrawers
 {
     [CustomPropertyDrawer(typeof(EnumMaskAttribute))]
-    public sealed class EnumMaskDrawer : PropertyDrawer
+    public sealed class EnumMaskDrawer : IMGUIPropertyDrawer<EnumMaskAttribute>
     {
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             Enum targetEnum = GetBaseProperty<Enum>(property);
             FieldInfo field = GetField(property);
@@ -30,7 +31,6 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
                 property.serializedObject.ApplyModifiedProperties();
                 property.serializedObject.UpdateIfRequiredOrScript();
             }
-
         }
 
         static T GetBaseProperty<T>(SerializedProperty prop)
@@ -61,5 +61,6 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
             }
             return field;
         }
+
     }
 }

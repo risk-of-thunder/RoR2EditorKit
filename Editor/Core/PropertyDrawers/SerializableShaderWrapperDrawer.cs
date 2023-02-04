@@ -9,10 +9,10 @@ using UnityEngine;
 namespace RoR2EditorKit.Core.PropertyDrawers
 {
     [CustomPropertyDrawer(typeof(SerializableShaderWrapper))]
-    public sealed class SerializableShaderWrapperDrawer : PropertyDrawer
+    public sealed class SerializableShaderWrapperDrawer : IMGUIPropertyDrawer<SerializableShaderWrapper>
     {
         Object shaderObj = null;
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var shaderNameProp = property.FindPropertyRelative("shaderName");
             var shaderGUIDProp = property.FindPropertyRelative("shaderGUID");
@@ -26,13 +26,12 @@ namespace RoR2EditorKit.Core.PropertyDrawers
             EditorGUI.BeginProperty(position, label, property);
             EditorGUI.BeginChangeCheck();
             shaderObj = EditorGUI.ObjectField(position, label, shaderObj, typeof(Shader), false);
-            if(EditorGUI.EndChangeCheck())
+            if (EditorGUI.EndChangeCheck())
             {
                 shaderNameProp.stringValue = shaderObj == null ? string.Empty : ((Shader)shaderObj).name;
                 shaderGUIDProp.stringValue = shaderObj == null ? string.Empty : AssetDatabaseUtils.GetGUIDFromAsset(shaderObj);
             }
             EditorGUI.EndProperty();
         }
-
     }
 }
