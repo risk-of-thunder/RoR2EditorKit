@@ -10,7 +10,7 @@ namespace RoR2EditorKit.VisualElements
 {
     public class ContextualMenuWrapper : VisualElement
     {
-        public override VisualElement contentContainer => contentContainer;
+        public override VisualElement contentContainer => _contentContainer;
         public VisualElement _contentContainer;
         public Texture2D ContextMenuIcon
         {
