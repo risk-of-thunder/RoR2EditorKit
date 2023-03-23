@@ -1,10 +1,10 @@
 ﻿using RoR2;
+using RoR2EditorKit.PropertyDrawers;
 using System;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
-using RoR2EditorKit.Core.PropertyDrawers;
 
 namespace RoR2EditorKit.RoR2Related.PropertyDrawers
 {

@@ -1,8 +1,6 @@
 ﻿using HG;
 using RoR2;
-using RoR2EditorKit.Common;
-using RoR2EditorKit.Core.EditorWindows;
-using RoR2EditorKit.Utilities;
+using RoR2EditorKit.EditorWindows;
 using System;
 using System.Collections.Generic;
 using System.Reflection;

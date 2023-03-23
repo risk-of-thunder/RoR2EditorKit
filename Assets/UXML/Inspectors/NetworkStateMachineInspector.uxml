@@ -1,7 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
     <ui:VisualElement name="InspectorDataContainer" class="genericHolder">
         <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ComponentInspector.uss" />
-        <uie:IntegerField label="Amount of State Machines" value="42" name="arraySize" />
-        <ui:ListView focusable="true" name="stateMachines" item-height="20" class="listView" />
+        <RoR2EditorKit.VisualElements.ExtendedListView name="extendedListView" list-view-item-height="20" />
     </ui:VisualElement>
 </ui:UXML>

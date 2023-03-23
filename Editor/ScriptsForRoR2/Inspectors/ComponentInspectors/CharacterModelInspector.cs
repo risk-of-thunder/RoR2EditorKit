@@ -1,6 +1,5 @@
 ﻿using RoR2;
-using RoR2EditorKit.Core.Inspectors;
-using RoR2EditorKit.Utilities;
+using RoR2EditorKit.Inspectors;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -25,14 +24,12 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         protected override void DrawInspectorGUI()
         {
             var baseRendererInfos = inspectorData.Q<PropertyField>("baseRendererInfos");
-            AddSimpleContextMenu(baseRendererInfos, new ContextMenuData(
+            baseRendererInfos.AddSimpleContextMenu(new ContextMenuData(
                 "Auto Populate",
                 AutoPopulateRenderers));
 
             var baseLightInfos = inspectorData.Q<PropertyField>("baseLightInfos");
-            AddSimpleContextMenu(baseLightInfos, new ContextMenuData(
-                "Auto Populate",
-                AutoPopulateLights));
+            baseLightInfos.AddSimpleContextMenu(new ContextMenuData("Auto Populate", AutoPopulateLights));
         }
 
         private void AutoPopulateRenderers(DropdownMenuAction act)
@@ -61,7 +58,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             }
 
             TargetType.baseRendererInfos = renderInfos.ToArray();
-            serializedObject.UpdateAndApply();
+            serializedObject.ApplyAndUpdate();
         }
 
         private void AutoPopulateLights(DropdownMenuAction act)

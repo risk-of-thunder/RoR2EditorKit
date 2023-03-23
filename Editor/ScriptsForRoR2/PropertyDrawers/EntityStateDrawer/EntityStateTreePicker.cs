@@ -1,5 +1,5 @@
 ﻿using EntityStates;
-using RoR2EditorKit.Common;
+using RoR2EditorKit.TreeDrawerCommon;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -121,18 +121,12 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
                 stateTreePicker.serializedObject = serializedObject;
 
                 stateTreePicker.treeView.AssignDefaults();
-                stateTreePicker.treeView.SetRootItem("Entity States");
+                stateTreePicker.treeView.SetRootItem("Entity Statess");
 
-                List<Type> types = new List<Type>();
-                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                foreach(Type t in TypeCacheRequester.GetTypesDerivedFrom<EntityState>(false))
                 {
-                    Utilities.ReflectionUtils.GetTypesSafe(assembly, out Type[] ts);
-                    types.AddRange(ts);
+                    stateTreePicker.treeView.PopulateItem(t);
                 }
-
-                types.Where(type => type.IsSubclassOf(typeof(EntityState)) && !type.IsAbstract)
-                    .ToList()
-                    .ForEach(type => stateTreePicker.treeView.PopulateItem(type));
             }
         }
 

@@ -1,6 +1,5 @@
 ﻿using RoR2;
-using RoR2EditorKit.Core.Inspectors;
-using RoR2EditorKit.Utilities;
+using RoR2EditorKit.Inspectors;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine.UIElements;
@@ -25,7 +24,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         protected override void DrawInspectorGUI()
         {
             var label = inspectorDataContainer.Q<Label>("hurtBoxesLabel");
-            AddSimpleContextMenu(label, new ContextMenuData(
+            label.AddSimpleContextMenu(new ContextMenuData(
                 "Auto Populate Hurtboxes",
                 AutoPopulateHurtboxes));
         }
@@ -41,7 +40,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             }
 
             TargetType.hurtBoxes = hurtBoxes.ToArray();
-            serializedObject.UpdateAndApply();
+            serializedObject.ApplyAndUpdate();
         }
     }
 }

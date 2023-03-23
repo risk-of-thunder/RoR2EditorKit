@@ -1,6 +1,5 @@
 ﻿using RoR2;
-using RoR2EditorKit.Core.Inspectors;
-using RoR2EditorKit.Utilities;
+using RoR2EditorKit.Inspectors;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -37,20 +36,15 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         protected override void DrawInspectorGUI()
         {
-            AddSimpleContextMenu(tokenContainer, new ContextMenuData(
+            tokenContainer.AddSimpleContextMenu(new ContextMenuData(
                 "Set Tokens",
                 SetTokens,
                 statusCheck =>
                 {
-                    if (Settings.TokenPrefix.IsNullOrEmptyOrWhitespace() || !TargetType.gameObject)
+                    if (Settings.tokenPrefix.IsNullOrEmptyOrWhitespace() || !TargetType.gameObject)
                         return DropdownMenuAction.Status.Disabled;
                     return DropdownMenuAction.Status.Normal;
                 }));
-
-            var baseVision = baseStatsContainer.QContainer<PropertyField>("bVisionDistance");
-            AddSimpleContextMenu(baseVision, new ContextMenuData(
-                "Set To Infinity",
-                x => TargetType.baseVisionDistance = float.PositiveInfinity));
 
             BuildContextMenu(baseStatsContainer);
         }
@@ -65,7 +59,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
             void Add(string name)
             {
-                AddSimpleContextMenu(baseStatsContainer, new ContextMenuData($"Set Base Stats To/{name}", SetBaseStats, check =>
+                baseStatsContainer.AddSimpleContextMenu(new ContextMenuData($"Set Base Stats To/{name}", SetBaseStats, check =>
                 {
                     return AddressablesUtils.AddressableCatalogExists ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.None;
                 }));

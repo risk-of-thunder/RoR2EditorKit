@@ -1,11 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using RoR2;
+using RoR2EditorKit.PropertyDrawers;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using RoR2;
-using UnityEngine;
 using UnityEditor;
-using RoR2EditorKit.Core.PropertyDrawers;
+using UnityEngine;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
@@ -14,14 +11,14 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
     {
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            if(property.propertyType != SerializedPropertyType.ObjectReference)
+            if (property.propertyType != SerializedPropertyType.ObjectReference)
             {
                 throw new System.NotSupportedException("TypeRestrictedReferenceAttribute should only be used on fields which type is or inherits from UnityEngine.Object");
             }
 
             EditorGUI.BeginProperty(position, label, property);
             Object obj = EditorGUI.ObjectField(position, property.objectReferenceValue, typeof(Object), true);
-            if(SerializedPropertyFieldValue.allowedTypes.Contains(obj.GetType()))
+            if (SerializedPropertyFieldValue.allowedTypes.Contains(obj.GetType()))
             {
                 property.objectReferenceValue = obj;
             }

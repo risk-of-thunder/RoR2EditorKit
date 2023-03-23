@@ -1,6 +1,4 @@
-﻿using RoR2EditorKit.Common;
-using RoR2EditorKit.Core.EditorWindows;
-using RoR2EditorKit.Utilities;
+﻿using RoR2EditorKit.EditorWindows;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -101,7 +99,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
                 "UnityEngine.UI"
             };
             def.overrideReferences = true;
-            
+
             var precompiledReferencecsList = new List<string>
             {
                 "BepInEx.dll",
@@ -121,7 +119,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
                 "Unity.Postprocessing.Runtime.dll"
             };
 
-            if(r2apiToggle)
+            if (r2apiToggle)
             {
                 var filteredNames = assemblyNames.Where(asm => asm.StartsWith("R2API.")).Select(asm => $"{asm}.dll");
                 precompiledReferencecsList.AddRange(filteredNames);
@@ -178,7 +176,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
 
             foreach (Assembly asm in r2apiAssemblies)
             {
-                if(TryGetModGUID(asm, out string guid))
+                if (TryGetModGUID(asm, out string guid))
                 {
                     stringBuilder.Append($"    [BepInDependency(\"{guid}\")]\n");
                 }
@@ -197,7 +195,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
             }
 
             Attribute bepInPluginAttribute = mainClass.GetCustomAttribute(bepInDependencyType);
-            if(bepInPluginAttribute == null)
+            if (bepInPluginAttribute == null)
             {
                 guid = null;
                 return false;
@@ -206,14 +204,14 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
             Type attributeType = bepInPluginAttribute.GetType();
 
             PropertyInfo propInfo = attributeType.GetProperty("GUID", BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
-            if(propInfo == null)
+            if (propInfo == null)
             {
                 guid = null;
                 return false;
             }
 
             MethodInfo method = propInfo.GetMethod;
-            if(method == null)
+            if (method == null)
             {
                 guid = null;
                 return false;
@@ -275,9 +273,9 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         {
             List<Manifest> dependencies = new List<Manifest>();
             List<Manifest> manifests = AssetDatabaseUtils.FindAssetsByType<Manifest>().ToList();
-            foreach(Manifest manifest in manifests)
+            foreach (Manifest manifest in manifests)
             {
-                if(manifest.name == "BepInExPack" || manifest.name.StartsWith("R2API_"))
+                if (manifest.name == "BepInExPack" || manifest.name.StartsWith("R2API_"))
                 {
                     dependencies.Add(manifest);
                 }

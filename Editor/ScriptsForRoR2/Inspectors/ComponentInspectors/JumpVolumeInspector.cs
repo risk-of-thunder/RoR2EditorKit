@@ -1,6 +1,5 @@
 ﻿using RoR2;
-using RoR2EditorKit.Core.Inspectors;
-using RoR2EditorKit.Utilities;
+using RoR2EditorKit.Inspectors;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -44,7 +43,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 }
             });
 
-            AddSimpleContextMenu(jumpVelocity, new ContextMenuData
+            jumpVelocity.AddSimpleContextMenu(new ContextMenuData
             {
                 actionStatusCheck = (dma) => TargetType.targetElevationTransform ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled,
                 menuName = "Calculate Jump Velocity",

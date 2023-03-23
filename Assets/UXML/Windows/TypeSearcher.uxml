@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:VisualElement name="Header" style="border-left-color: rgb(93, 93, 93); border-right-color: rgb(93, 93, 93); border-top-color: rgb(93, 93, 93); border-bottom-color: rgb(93, 93, 93); border-left-width: 5px; border-right-width: 5px; border-top-width: 5px; border-bottom-width: 5px;">
+        <ui:Label text="Type Explorer" name="typeExplorerLabel" style="-unity-text-align: middle-center; -unity-font-style: bold; font-size: 25px;" />
+        <uie:PropertyField name="typeName" binding-path="typeName" />
+        <uie:PropertyField name="allowAbstract" binding-path="allowAbstract" />
+    </ui:VisualElement>
+    <ui:VisualElement name="Center" style="border-left-color: rgb(93, 93, 93); border-right-color: rgb(93, 93, 93); border-top-color: rgb(93, 93, 93); border-bottom-color: rgb(93, 93, 93); border-left-width: 5px; border-right-width: 5px; border-top-width: 5px; border-bottom-width: 5px;">
+        <RoR2EditorKit.VisualElements.ExtendedListView list-view-height="12312" collection-resizable="true" binding-path="hdfghsd" visual-element-type="gdfshjgadfh" list-view-height-pixels="100" />
+    </ui:VisualElement>
+    <ui:VisualElement name="Footer" style="border-left-color: rgb(93, 93, 93); border-right-color: rgb(93, 93, 93); border-top-color: rgb(93, 93, 93); border-bottom-color: rgb(93, 93, 93); border-left-width: 5px; border-right-width: 5px; border-top-width: 5px; border-bottom-width: 5px;">
+        <ui:Button text="Filter Types" name="filterTypes" />
+    </ui:VisualElement>
+</ui:UXML>

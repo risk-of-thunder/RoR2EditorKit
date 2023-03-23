@@ -1,5 +1,5 @@
 ﻿using RoR2;
-using RoR2EditorKit.Core.Inspectors;
+using RoR2EditorKit.Inspectors;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;

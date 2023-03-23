@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEditor;
 using UnityEngine;
-using static RoR2EditorKit.Core.Inspectors.ExtendedMaterialInspector;
+using static RoR2EditorKit.Inspectors.ExtendedMaterialInspector;
 using BlendMode = UnityEngine.Rendering.BlendMode;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
@@ -53,7 +53,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private static void DrawBlendEnumProperty(MaterialProperty prop, GUIContent guiContent = null)
         {
-            if(guiContent == null)
+            if (guiContent == null)
             {
                 guiContent = new GUIContent(prop.displayName);
             }

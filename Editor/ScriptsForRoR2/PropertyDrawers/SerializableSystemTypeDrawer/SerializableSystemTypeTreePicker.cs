@@ -1,5 +1,4 @@
-﻿
-using RoR2EditorKit.Common;
+﻿using RoR2EditorKit.TreeDrawerCommon;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -128,44 +127,21 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
                 typeTreePicker.treeView.AssignDefaults();
                 typeTreePicker.treeView.SetRootItem(requiredBaseType != null ? $"Types subclassing {requiredBaseType}" : "Types");
 
-                List<Type> types = new List<Type>();
-                foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+                Type[] types = requiredBaseType == null ? TypeCacheRequester.GetAllTypes(true) : TypeCacheRequester.GetTypesDerivedFrom(requiredBaseType, true);
+
+                foreach(Type t in types)
                 {
-                    Utilities.ReflectionUtils.GetTypesSafe(assembly, out Type[] ts);
-                    types.AddRange(ts);
+                    typeTreePicker.treeView.PopulateItem(t);
                 }
-
-                var finalTypes = types.Where((t) => !t.IsAbstract);
-
-                if (requiredBaseType != null)
-                    finalTypes = finalTypes.Where(t => t.IsSubclassOf(requiredBaseType));
-
-                finalTypes.ToList().ForEach(t => typeTreePicker.treeView.PopulateItem(t));
             }
 
             private Type GetRequiredBaseType()
             {
                 Type typeOfObject = serializedObject.targetObject.GetType();
-                Type[] assemblyTypes = AppDomain.CurrentDomain
-                    .GetAssemblies()
-                    .SelectMany(asm => RoR2EditorKit.Utilities.ReflectionUtils.GetTypesSafe(asm))
-                    .ToArray();
 
-                Type requiredBaseType = null;
+                Type requiredBaseType = GetBaseTypeFromFieldInfo(typeOfObject) ?? GetBaseTypeFromArrayFieldInfo(typeOfObject) ?? GetBaseTypeFromStructFieldInfo();
 
-                requiredBaseType = GetBaseTypeFromFieldInfo(typeOfObject);
-                if (requiredBaseType != null)
-                    return requiredBaseType;
-
-                requiredBaseType = GetBaseTypeFromStructFieldInfo();
-                if (requiredBaseType != null)
-                    return requiredBaseType;
-
-                requiredBaseType = GetBaseTypeFromArrayFieldInfo(typeOfObject);
-                if (requiredBaseType != null)
-                    return requiredBaseType;
-
-                throw new Exception("Could not find required base type.");
+                return requiredBaseType;
             }
 
 

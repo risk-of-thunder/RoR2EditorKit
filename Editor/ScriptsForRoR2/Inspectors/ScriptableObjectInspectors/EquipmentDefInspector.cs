@@ -1,6 +1,5 @@
 ﻿using RoR2;
-using RoR2EditorKit.Core.Inspectors;
-using RoR2EditorKit.Utilities;
+using RoR2EditorKit.Inspectors;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -41,7 +40,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             SetupBuffValidator();
 
             var dropOnDeathChance = inspectorData.Q<PropertyField>("dropOnDeathChance");
-            AddSimpleContextMenu(tokenHolder, new ContextMenuData(
+            dropOnDeathChance.AddSimpleContextMenu(new ContextMenuData(
                 "Set to Elite drop chance",
                 x => TargetType.dropOnDeathChance = 0.0025f,
                 callback =>
@@ -51,12 +50,12 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                     return DropdownMenuAction.Status.Disabled;
                 }));
 
-            AddSimpleContextMenu(tokenHolder, new ContextMenuData(
+            tokenHolder.AddSimpleContextMenu(new ContextMenuData(
                 "Set Tokens",
                 SetTokens,
                 callback =>
                 {
-                    var tokenPrefix = Settings.TokenPrefix;
+                    var tokenPrefix = Settings.tokenPrefix;
                     if (string.IsNullOrEmpty(tokenPrefix))
                         return DropdownMenuAction.Status.Disabled;
                     return DropdownMenuAction.Status.Normal;
@@ -97,7 +96,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private void SetTokens(DropdownMenuAction act)
         {
-            if (Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
+            if (Settings.tokenPrefix.IsNullOrEmptyOrWhitespace())
                 throw ErrorShorthands.NullTokenPrefix();
 
             string tokenBase = $"{Settings.GetPrefixUppercase()}_EQUIP_{TargetType.name.ToUpperInvariant().Replace(" ", "")}_";

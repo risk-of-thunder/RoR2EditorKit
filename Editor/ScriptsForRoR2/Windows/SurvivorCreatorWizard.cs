@@ -1,7 +1,5 @@
 ﻿using RoR2;
-using RoR2EditorKit.Common;
-using RoR2EditorKit.Core.EditorWindows;
-using RoR2EditorKit.Utilities;
+using RoR2EditorKit.EditorWindows;
 using System;
 using System.Threading.Tasks;
 using UnityEditor;
@@ -36,7 +34,7 @@ If you dont have a CharacterBody for this wizard, use the CharacterBodyWizard to
 
         protected override async Task<bool> RunWizard()
         {
-            if (Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
+            if (Settings.tokenPrefix.IsNullOrEmptyOrWhitespace())
             {
                 Debug.LogError("TokenPRefix is null, empty or whitespace");
                 return false;

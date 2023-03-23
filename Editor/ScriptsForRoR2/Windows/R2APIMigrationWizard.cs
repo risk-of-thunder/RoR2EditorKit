@@ -1,6 +1,4 @@
-﻿using RoR2EditorKit.Common;
-using RoR2EditorKit.Core.EditorWindows;
-using RoR2EditorKit.Utilities;
+﻿using RoR2EditorKit.EditorWindows;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,13 +7,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using ThunderKit.Core.Manifests;
-using ThunderKit.Core.Manifests.Datum;
-using ThunderKit.Core.Manifests.Datums;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.RoR2Related.EditorWindows
 {
@@ -54,13 +48,13 @@ Does the following things:
 
         protected override async Task<bool> RunWizard()
         {
-            if(!assemblyNames.Contains("BepInEx"))
+            if (!assemblyNames.Contains("BepInEx"))
             {
                 Debug.LogError("Cannot update mod as BepInEx is not installed.");
                 return false;
             }
 
-            if(!assemblyNames.Contains("R2API.Core"))
+            if (!assemblyNames.Contains("R2API.Core"))
             {
                 Debug.LogError("Cannot update mod as R2API.Core is not installed.");
                 return false;
@@ -72,7 +66,7 @@ Does the following things:
                 await UpdateAssemblyDef();
                 await UpdateManifest();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.LogError(e);
                 return false;
@@ -153,7 +147,7 @@ Does the following things:
 
         private Task UpdateAssemblyDef()
         {
-            if(!assemblyDefinition)
+            if (!assemblyDefinition)
             {
                 return Task.CompletedTask;
             }
@@ -162,7 +156,7 @@ Does the following things:
 
             List<string> precompiledReferences = def.precompiledReferences.ToList();
 
-            if(precompiledReferences.Contains("R2API.dll"))
+            if (precompiledReferences.Contains("R2API.dll"))
             {
                 precompiledReferences.Remove("R2API.dll");
             }
@@ -183,7 +177,7 @@ Does the following things:
 
             List<Manifest> dependencies = modManifest.Identity.Dependencies.Where(dep => dep).ToList();
             List<string> dependenciesAsNames = dependencies.Select(dep => dep.name).ToList();
-            if(dependenciesAsNames.Contains("R2API"))
+            if (dependenciesAsNames.Contains("R2API"))
             {
                 int index = dependenciesAsNames.IndexOf("R2API");
                 dependencies.RemoveAt(index);

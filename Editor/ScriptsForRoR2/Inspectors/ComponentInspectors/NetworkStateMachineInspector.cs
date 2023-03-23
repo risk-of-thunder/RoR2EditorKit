@@ -1,6 +1,6 @@
 ﻿using RoR2;
-using RoR2EditorKit.Core.Inspectors;
-using RoR2EditorKit.Utilities;
+using RoR2EditorKit.Inspectors;
+using RoR2EditorKit.VisualElements;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
@@ -12,28 +12,19 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
     public sealed class NetworkStateMachineInspector : ComponentInspector<NetworkStateMachine>
     {
         private SerializedProperty stateMachines;
-        private VisualElement inspectorData;
-        private ListViewHelper listView;
+        private ExtendedListView listView;
 
         protected override void OnEnable()
         {
             base.OnEnable();
             stateMachines = serializedObject.FindProperty($"stateMachines");
-
-            OnVisualTreeCopy += () =>
-            {
-                inspectorData = DrawInspectorElement.Q<VisualElement>($"InspectorDataContainer");
-            };
         }
         protected override void DrawInspectorGUI()
         {
-            ListViewHelper.ListViewHelperData data = new ListViewHelper.ListViewHelperData(
-                stateMachines,
-                inspectorData.Q<ListView>("stateMachines"),
-                inspectorData.Q<IntegerField>("arraySize"),
-                CreateElement,
-                BindElement);
-            listView = new ListViewHelper(data);
+            listView = DrawInspectorElement.Q<ExtendedListView>("extendedListView");
+            listView.CreateElement = CreateElement;
+            listView.BindElement = BindElement;
+            listView.collectionProperty = stateMachines;
         }
         private VisualElement CreateElement() => new ObjectField();
 

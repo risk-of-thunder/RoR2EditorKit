@@ -1,6 +1,5 @@
 ﻿using RoR2;
-using RoR2EditorKit.Core.Inspectors;
-using RoR2EditorKit.Utilities;
+using RoR2EditorKit.Inspectors;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -43,24 +42,24 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             displayPrefabValidator.ForceValidation();
 
             var primaryColor = inspectorDataHolder.Q<PropertyField>("primaryColor");
-            AddSimpleContextMenu(primaryColor, new ContextMenuData
+            primaryColor.AddSimpleContextMenu(new ContextMenuData
             {
                 actionStatusCheck = (dma) => TargetType.bodyPrefab && TargetType.bodyPrefab.GetComponent<CharacterBody>() ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled,
                 menuAction = SetPrimaryColorToBodyColor,
                 menuName = "Set Primary Color to Body Color"
             });
-            AddSimpleContextMenu(primaryColor, new ContextMenuData
+            primaryColor.AddSimpleContextMenu(new ContextMenuData
             {
                 actionStatusCheck = (dma) => TargetType.bodyPrefab && TargetType.bodyPrefab.GetComponent<CharacterBody>() ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled,
                 menuAction = SetBodyColorToPrimaryColor,
                 menuName = "Set Body Color to Primary Color"
             });
 
-            AddSimpleContextMenu(tokenFoldout, new ContextMenuData
+            tokenFoldout.AddSimpleContextMenu(new ContextMenuData
             {
                 actionStatusCheck = dma =>
                 {
-                    var tokenPrefix = Settings.TokenPrefix;
+                    var tokenPrefix = Settings.tokenPrefix;
                     if (tokenPrefix.IsNullOrEmptyOrWhitespace())
                         return DropdownMenuAction.Status.Disabled;
                     return DropdownMenuAction.Status.Normal;

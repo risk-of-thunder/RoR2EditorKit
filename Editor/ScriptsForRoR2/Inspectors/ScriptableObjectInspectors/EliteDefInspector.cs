@@ -1,6 +1,5 @@
 ﻿using RoR2;
-using RoR2EditorKit.Core.Inspectors;
-using RoR2EditorKit.Utilities;
+using RoR2EditorKit.Inspectors;
 using System;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -39,18 +38,18 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             equipValidator.ForceValidation();
 
             var modifierToken = inspectorData.Q<PropertyField>("modifierToken");
-            AddSimpleContextMenu(modifierToken, new ContextMenuData(
+            modifierToken.AddSimpleContextMenu(new ContextMenuData(
                 "Set Token",
                 SetToken,
                 statusCheck =>
                 {
-                    if (Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
+                    if (Settings.tokenPrefix.IsNullOrEmptyOrWhitespace())
                         return DropdownMenuAction.Status.Disabled;
                     return DropdownMenuAction.Status.Normal;
                 }));
 
             var eliteColor = inspectorData.Q<PropertyField>("color");
-            AddSimpleContextMenu(eliteColor, new ContextMenuData(
+            eliteColor.AddSimpleContextMenu(new ContextMenuData(
                 "Set Color to Buff Color",
                 SetColor,
                 statusCheck =>
@@ -113,7 +112,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
             void Add(string name)
             {
-                AddSimpleContextMenu(statCoefficients, new ContextMenuData($"Set Coefficients To/{name}", SetCoefficients, check =>
+                statCoefficients.AddSimpleContextMenu(new ContextMenuData($"Set Coefficients To/{name}", SetCoefficients, check =>
                 {
                     return AddressablesUtils.AddressableCatalogExists ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.None;
                 }));

@@ -1,5 +1,5 @@
 ﻿using UnityEditor;
-using static RoR2EditorKit.Core.Inspectors.ExtendedMaterialInspector;
+using static RoR2EditorKit.Inspectors.ExtendedMaterialInspector;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {

@@ -1,10 +1,9 @@
 ﻿using RoR2;
-using RoR2EditorKit.Core.Inspectors;
-using RoR2EditorKit.Utilities;
+using RoR2EditorKit.Inspectors;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
-using static RoR2EditorKit.Utilities.AssetDatabaseUtils;
+using static RoR2EditorKit.AssetDatabaseUtils;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
@@ -36,7 +35,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         protected override void DrawInspectorGUI()
         {
             var color = inspectorData.Q<PropertyField>("buffColor");
-            AddSimpleContextMenu(color, new ContextMenuData(
+            color.AddSimpleContextMenu(new ContextMenuData(
                 "Set Color to Elite Color",
                 SetColor,
                 statusCheck =>

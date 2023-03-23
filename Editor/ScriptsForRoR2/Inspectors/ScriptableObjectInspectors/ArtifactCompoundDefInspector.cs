@@ -1,6 +1,5 @@
 ﻿using RoR2;
-using RoR2EditorKit.Core.Inspectors;
-using RoR2EditorKit.Utilities;
+using RoR2EditorKit.Inspectors;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
@@ -14,8 +13,6 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         public bool UsesTokenForPrefix => false;
 
         private VisualElement inspectorDataHolder;
-
-        private IMGUIContainer valueMessageContainer;
 
         private PropertyValidator<int> valueValidator;
 
@@ -31,12 +28,12 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         protected override void DrawInspectorGUI()
         {
-            var value = inspectorDataHolder.Q<PropertyField>("value");
-            valueValidator = new PropertyValidator<int>(value, DrawInspectorElement);
+            var compoundValue = inspectorDataHolder.Q<PropertyField>("value");
+            valueValidator = new PropertyValidator<int>(compoundValue, DrawInspectorElement);
             SetupValidator(valueValidator);
             valueValidator.ForceValidation();
 
-            AddSimpleContextMenu(value, new ContextMenuData(
+            compoundValue.AddSimpleContextMenu(new ContextMenuData(
                 "Use RNG for Value",
                 dma =>
                 {

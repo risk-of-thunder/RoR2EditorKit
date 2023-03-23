@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <uie:IntegerField label="Collection Size" value="42" readonly="false" name="collectionSize" />
+    <ui:ListView focusable="true" name="listView" style="height: 200px; border-left-color: rgb(93, 93, 93); border-right-color: rgb(93, 93, 93); border-top-color: rgb(93, 93, 93); border-bottom-color: rgb(93, 93, 93); border-left-width: 3px; border-right-width: 3px; border-top-width: 3px; border-bottom-width: 3px; background-color: rgb(47, 47, 47);" />
+    <ui:VisualElement name="resizeBarContainer" style="align-items: center; justify-content: flex-start; height: 0; width: 100%;">
+        <ui:VisualElement name="handle" style="background-color: rgb(34, 34, 34); width: 5%; height: 10px; bottom: 5px; flex-grow: 0; flex-shrink: 0; border-left-color: rgb(93, 93, 93); border-right-color: rgb(93, 93, 93); border-top-color: rgb(93, 93, 93); border-bottom-color: rgb(93, 93, 93); border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-top-left-radius: 1px; border-bottom-left-radius: 1px; border-top-right-radius: 1px; border-bottom-right-radius: 1px; background-image: none;">
+            <ui:VisualElement name="bar2" style="height: 2px; background-color: rgb(93, 93, 93); top: 2px; flex-shrink: 0;" />
+            <ui:VisualElement name="circle" style="height: 6px; border-left-color: rgb(47, 47, 47); border-right-color: rgb(47, 47, 47); border-top-color: rgb(47, 47, 47); border-bottom-color: rgb(47, 47, 47); border-left-width: 1px; border-right-width: 1px; border-top-width: 1px; border-bottom-width: 1px; border-top-left-radius: 100px; border-bottom-left-radius: 100px; border-top-right-radius: 100px; border-bottom-right-radius: 100px; width: 6px; position: absolute; top: 0; left: 3px; background-color: rgb(56, 56, 56);" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

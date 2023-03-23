@@ -1,11 +1,8 @@
-﻿using System.Collections;
+﻿using RoR2EditorKit.EditorWindows;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UnityEditor;
-using UnityEditor.UIElements;
-using RoR2EditorKit.Core;
-using RoR2EditorKit.Core.EditorWindows;
 
 namespace RoR2EditorKit.RoR2Related.EditorWindows
 {
@@ -55,7 +52,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
         private VisualElement center;
         private VisualElement footer;
         private VisualElement resultsContainer;
-        [MenuItem(RoR2EditorKit.Common.Constants.RoR2EditorKitMenuRoot + "Scale Helper")]
+        [MenuItem(Constants.RoR2EditorKitMenuRoot + "Scale Helper")]
         private static void OpenWindow()
         {
             var window = OpenEditorWindow<ScaleHelperWindow>();

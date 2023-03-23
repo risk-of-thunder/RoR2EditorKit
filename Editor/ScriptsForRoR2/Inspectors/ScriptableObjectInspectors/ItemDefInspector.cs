@@ -1,5 +1,5 @@
 ﻿using RoR2;
-using RoR2EditorKit.Core.Inspectors;
+using RoR2EditorKit.Inspectors;
 using System;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -37,12 +37,12 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
             itemTierDef.style.display = enumValue == ItemTier.AssignedAtRuntime ? DisplayStyle.Flex : DisplayStyle.None;
 
-            AddSimpleContextMenu(tokenHolder, new ContextMenuData(
+            tokenHolder.AddSimpleContextMenu(new ContextMenuData(
                 "Set Tokens",
                 SetTokens,
                 callback =>
                 {
-                    var tokenPrefix = Settings.TokenPrefix;
+                    var tokenPrefix = Settings.tokenPrefix;
                     if (string.IsNullOrEmpty(tokenPrefix))
                         return DropdownMenuAction.Status.Disabled;
                     return DropdownMenuAction.Status.Normal;

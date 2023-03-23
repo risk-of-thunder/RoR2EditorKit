@@ -1,7 +1,5 @@
 ﻿using RoR2;
-using RoR2EditorKit.Common;
-using RoR2EditorKit.Core.EditorWindows;
-using RoR2EditorKit.Utilities;
+using RoR2EditorKit.EditorWindows;
 using System;
 using System.Threading.Tasks;
 using UnityEditor;
@@ -39,7 +37,7 @@ namespace RoR2EditorKit.RoR2Related.EditorWindows
                 return false;
             }
 
-            if (Settings.TokenPrefix.IsNullOrEmptyOrWhitespace())
+            if (Settings.tokenPrefix.IsNullOrEmptyOrWhitespace())
             {
                 Debug.LogError("tokenPrefix is null, empty or whitespace");
                 return false;

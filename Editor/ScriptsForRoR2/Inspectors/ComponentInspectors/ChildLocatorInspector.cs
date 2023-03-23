@@ -1,5 +1,5 @@
-﻿using RoR2EditorKit.Common;
-using RoR2EditorKit.Core.Inspectors;
+﻿using RoR2EditorKit.Inspectors;
+using RoR2EditorKit.VisualElements;
 using ThunderKit.Core.UIElements;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -11,27 +11,17 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
     public sealed class ChildLocatorInspector : ComponentInspector<ChildLocator>
     {
         private SerializedProperty nameTransformPairs;
-        private VisualElement inspectorData;
-        private ListViewHelper listView;
         protected override void OnEnable()
         {
             base.OnEnable();
             nameTransformPairs = serializedObject.FindProperty($"transformPairs");
-
-            OnVisualTreeCopy += () =>
-            {
-                inspectorData = DrawInspectorElement.Q<VisualElement>("InspectorDataContainer");
-            };
         }
         protected override void DrawInspectorGUI()
         {
-            var data = new ListViewHelper.ListViewHelperData(
-                nameTransformPairs,
-                inspectorData.Q<ListView>("nameTransformPairs"),
-                inspectorData.Q<IntegerField>("arraySize"),
-                CreateCLContainer,
-                BindCLContainer);
-            listView = new ListViewHelper(data);
+            var listView = DrawInspectorElement.Q<ExtendedListView>("extendedListView");
+            listView.CreateElement = CreateCLContainer;
+            listView.BindElement = BindCLContainer;
+            listView.collectionProperty = nameTransformPairs;
         }
 
         private void SetNamesToTransformNames(DropdownMenuAction act)
