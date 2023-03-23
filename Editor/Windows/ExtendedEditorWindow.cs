@@ -44,14 +44,28 @@ namespace RoR2EditorKit.EditorWindows
         private SerializedObject serializedObject;
 
         /// <summary>
-        /// Opens an ExtendedEditorWindow and sets it's <see cref="SerializedObject"/> to the new ExtendedEditorWindow instance
+        /// Opens an ExtendedEditorWindow without setting a <see cref="SerializedObject"/> for the window.
         /// </summary>
-        /// <typeparam name="TEditorWindow">The type of ExtendedEditorWindow to open</typeparam>
-        /// <param name="windowName">The name for this window, leaving this null nicifies the <typeparamref name="TEditorWindow"/>'s type name</param>
-        public static TEditorWindow OpenEditorWindow<TEditorWindow>(string windowName = null) where TEditorWindow : ExtendedEditorWindow
+        /// <typeparam name="TEditorWindow">The type of ExtendedEditorWindow to Open</typeparam>
+        /// <returns>The instancianced window.</returns>
+        public static TEditorWindow OpenEditorWindow<TEditorWindow>() where TEditorWindow : ExtendedEditorWindow
         {
-            TEditorWindow window = GetWindow<TEditorWindow>(windowName == null ? ObjectNames.NicifyVariableName(typeof(TEditorWindow).Name) : windowName);
-            window.SerializedObject = new SerializedObject(window);
+            TEditorWindow window = GetWindow<TEditorWindow>(ObjectNames.NicifyVariableName(typeof(TEditorWindow).Name));
+            window.OnWindowOpened();
+            return window;
+        }
+
+        /// <summary>
+        /// Opens an ExtendedEditorWindow without setting a <see cref="SerializedObject"/> for the window.
+        /// </summary>
+        /// <typeparam name="TEditorWindow">The type of ExtendedEditorWindow to Open</typeparam>
+        /// <param name="serializedObjectForWindow">The SerializedObject for this window, leaving this null will create a new SerializedObject from this window.</param>
+        /// <param name="windowName">The name for this window, leaving this null nicifies the <typeparamref name="TEditorWindow"/>'s type name</param>
+        /// <returns>The instancianced window.</returns>
+        public static TEditorWindow OpenEditorWindow<TEditorWindow>(SerializedObject serializedObjectForWindow = null, string windowName = null) where TEditorWindow : ExtendedEditorWindow
+        {
+            TEditorWindow window = GetWindow<TEditorWindow>(windowName ?? ObjectNames.NicifyVariableName(typeof(TEditorWindow).Name));
+            window.SerializedObject = serializedObjectForWindow ?? new SerializedObject(window);
             window.OnWindowOpened();
             return window;
         }

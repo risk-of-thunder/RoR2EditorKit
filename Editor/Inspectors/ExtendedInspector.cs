@@ -316,15 +316,15 @@ namespace RoR2EditorKit.Inspectors
             });
 
             container.tooltip = prefixData.tooltipMessage;
-
-            container.AddManipulator(new ContextualMenuManipulator((menuBuilder) =>
+            container.AddSimpleContextMenu(new RoR2EditorKit.ContextMenuData
             {
-                menuBuilder.menu.AppendAction("Fix naming convention", (action) =>
+                menuName = "Fix naming convention",
+                menuAction = (action) =>
                 {
                     prefixData.contextMenuAction();
                     OnObjectNameChanged();
-                });
-            }));
+                }
+            });
 
             return container;
         }

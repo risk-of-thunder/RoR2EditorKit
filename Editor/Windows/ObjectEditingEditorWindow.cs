@@ -22,13 +22,6 @@ namespace RoR2EditorKit.EditorWindows
                 SerializedObject.ApplyModifiedProperties();
             }
         }
-        /// <summary>
-        /// Not supported for ObjectEditingEditorWindows, use <see cref="OpenEditorWindow{TEditorWindow}(Object, string)"/> instead
-        /// </summary>
-        public static TEditorWindow OpenEditorWindow<TEditorWindow>(string windowName = null) where TEditorWindow : ExtendedEditorWindow
-        {
-            throw new NotImplementedException($"Do not use \"OpenEditorWindow<TEditorWindow>(string)\" for opening ObjectEditing Windows, use \"OpenEditorWindow<TEditorWindow>(Object, string)\" instead");
-        }
 
         /// <summary>
         /// Opens the ObjectEditingEditorWindow specified in <typeparamref name="TEditorWindow"/>, and sets the SerializedObject

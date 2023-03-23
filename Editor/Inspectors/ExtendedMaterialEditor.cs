@@ -148,6 +148,12 @@ namespace RoR2EditorKit.Inspectors
             return null;
         }
 
+        /// <summary>
+        /// Draws a Material Property in the inspector, using the shader's Property UI
+        /// </summary>
+        /// <param name="name">The name of the property to draw</param>
+        /// <param name="tooltip">A tooltip to display</param>
+        /// <returns>The Drawn Property, If no material editor instance exists, it returns null</returns>
         public static MaterialProperty DrawProperty(string name, string tooltip)
         {
             MaterialProperty prop = GetMaterialProperty(Instance.targets, name);
