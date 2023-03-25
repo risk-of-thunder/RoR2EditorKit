@@ -1,5 +1,6 @@
 ﻿using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace RoR2EditorKit
@@ -64,5 +65,30 @@ namespace RoR2EditorKit
         /// <param name="nameofProperty"></param>
         /// <returns>A normalized string for an UXML trait</returns>
         public static string NormalizeNameForUXMLTrait(string nameofProperty) => ObjectNames.NicifyVariableName(nameofProperty).ToLower().Replace(" ", "-");
+
+
+        /// <summary>
+        /// Sets the Top, Right, Bottom and Left border colors to <paramref name="color"/>
+        /// </summary>
+        /// <param name="color">The color to use</param>
+        public static void SetBorderColor(this IStyle style, StyleColor color)
+        {
+            style.borderLeftColor = color;
+            style.borderRightColor = color;
+            style.borderTopColor = color;
+            style.borderBottomColor = color;
+        }
+
+        /// <summary>
+        /// Sets the Top, Right, Bottom, and Left border width to <paramref name="width"/>
+        /// </summary>
+        /// <param name="width">The width of the border</param>
+        public static void SetBorderWidth(this IStyle style, StyleFloat width)
+        {
+            style.borderLeftWidth = width;
+            style.borderRightWidth = width;
+            style.borderTopWidth = width;
+            style.borderBottomWidth = width;
+        }
     }
 }

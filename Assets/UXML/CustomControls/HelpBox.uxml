@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:VisualElement name="Container" style="flex-direction: row; border-left-color: rgb(35, 35, 35); border-right-color: rgb(35, 35, 35); border-top-color: rgb(35, 35, 35); border-bottom-color: rgb(35, 35, 35); border-left-width: 1px; border-right-width: 1px; border-top-width: 1px; border-bottom-width: 1px; border-top-left-radius: 5px; border-bottom-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; background-color: rgb(64, 64, 64); flex-grow: 0; max-height: 256px; min-height: 32px; width: auto; min-width: 32px; align-items: center;">
+        <ui:VisualElement name="Icon" style="height: 32px; width: 32px; background-image: url(&apos;/Packages/riskofthunder-ror2editorkit/Assets/Sprites/RoR2EK_ErrorIcon.png&apos;); -unity-background-scale-mode: scale-to-fit; top: 0; position: relative; left: 0; flex-grow: 0;" />
+        <ui:Label name="Label" text="&#10;" style="display: flex; flex-grow: 2; flex-shrink: 1; white-space: normal;" />
+    </ui:VisualElement>
+</ui:UXML>

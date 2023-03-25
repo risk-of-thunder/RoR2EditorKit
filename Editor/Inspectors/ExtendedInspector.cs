@@ -1,4 +1,5 @@
 ﻿using RoR2EditorKit.Data;
+using RoR2EditorKit.VisualElements;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
@@ -171,7 +172,7 @@ namespace RoR2EditorKit.Inspectors
         #endregion Properties
 
         #region Fields
-        private IMGUIContainer prefixContainer = null;
+        private HelpBox namingConventionElement = null;
         #endregion Fields
 
         #region Methods
@@ -208,21 +209,21 @@ namespace RoR2EditorKit.Inspectors
                 bool flag = data.nameValidatorFunc == null ? serializedObject.targetObject.name.StartsWith(objNameConvention.Prefix) : data.nameValidatorFunc();
                 if (flag)
                 {
-                    prefixContainer?.RemoveFromHierarchy();
-                    prefixContainer = null;
+                    namingConventionElement?.RemoveFromHierarchy();
+                    namingConventionElement = null;
                     return;
                 }
-                else if (prefixContainer == null)
+                else if (namingConventionElement == null)
                 {
-                    prefixContainer = EnsureNamingConventions(objNameConvention);
-                    RootVisualElement.Add(prefixContainer);
-                    prefixContainer.SendToBack();
+                    namingConventionElement = EnsureNamingConventions(objNameConvention);
+                    RootVisualElement.Add(namingConventionElement);
+                    namingConventionElement.SendToBack();
                 }
                 else
                 {
-                    prefixContainer.RemoveFromHierarchy();
-                    RootVisualElement.Add(prefixContainer);
-                    prefixContainer.SendToBack();
+                    namingConventionElement.RemoveFromHierarchy();
+                    RootVisualElement.Add(namingConventionElement);
+                    namingConventionElement.SendToBack();
                 }
             }
         }
@@ -303,30 +304,24 @@ namespace RoR2EditorKit.Inspectors
             DrawDefaultInspector();
         }
 
-        private IMGUIContainer EnsureNamingConventions(IObjectNameConvention objectNameConvention)
+        private HelpBox EnsureNamingConventions(IObjectNameConvention objectNameConvention)
         {
             PrefixData prefixData = objectNameConvention.GetPrefixData();
 
-            IMGUIContainer container = new IMGUIContainer(() =>
-            {
-                if (prefixData.helpBoxMessage.IsNullOrEmptyOrWhitespace())
-                    EditorGUILayout.HelpBox($"This {typeof(T).Name}'s name should start with \"{objectNameConvention.Prefix}\" so it follows naming conventions", MessageType.Info);
-                else
-                    EditorGUILayout.HelpBox(prefixData.helpBoxMessage, MessageType.Info);
-            });
+            string message = prefixData.helpBoxMessage.IsNullOrEmptyOrWhitespace() ? $"This {typeof(T).Name}'s name should start with \"{objectNameConvention.Prefix} so it follows naming conventions" : prefixData.helpBoxMessage;
+            HelpBox box = new HelpBox(message, MessageType.Info, true, CreateContextMenu);
+            box.tooltip = prefixData.tooltipMessage;
 
-            container.tooltip = prefixData.tooltipMessage;
-            container.AddSimpleContextMenu(new RoR2EditorKit.ContextMenuData
+            return box;
+
+            void CreateContextMenu(ContextualMenuPopulateEvent evt)
             {
-                menuName = "Fix naming convention",
-                menuAction = (action) =>
+                evt.menu.AppendAction("Fix naming convention", (action) =>
                 {
                     prefixData.contextMenuAction();
                     OnObjectNameChanged();
-                }
-            });
-
-            return container;
+                });
+            }
         }
         #endregion Methods
 
@@ -364,6 +359,7 @@ namespace RoR2EditorKit.Inspectors
         /// <param name="message">The message that'll appear on the help box</param>
         /// <param name="messageType">The type of message</param>
         /// <returns>An IMGUIContainer that's either not attached to anything, attached to the RootElement, or attached to the elementToAttach argument.</returns>
+        [Obsolete("IMGUIContainer helpBoxes are no longer maintained, use the HelpBox VisualElement, or the CreateHelpBox(string, MessageType, bool, Action) method")]
         protected IMGUIContainer CreateHelpBox(string message, MessageType messageType)
         {
             IMGUIContainer container = new IMGUIContainer();
@@ -374,6 +370,11 @@ namespace RoR2EditorKit.Inspectors
             };
 
             return container;
+        }
+
+        protected HelpBox CreateHelpBox(string message, MessageType messageType, bool isExplicit, Action<ContextualMenuPopulateEvent> evt = null)
+        {
+            return new HelpBox(message, messageType, isExplicit, evt);
         }
 
         [Obsolete("This method has been made obsolete by the extension AddSimpleContextMenu that's implemented in ContextMenuHelper")]

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using RoR2EditorKit.VisualElements;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -35,7 +36,7 @@ namespace RoR2EditorKit.EditorWindows
         /// </summary>
         protected virtual bool RequiresTokenPrefix => false;
 
-        private IMGUIContainer warning;
+        private HelpBox warning;
 
         protected override void CreateGUI()
         {
@@ -103,7 +104,7 @@ namespace RoR2EditorKit.EditorWindows
                 return;
             }
 
-            warning = new IMGUIContainer(() => EditorGUILayout.HelpBox("Failed to run wizard, check console for errors.", MessageType.Error));
+            warning = new HelpBox("Failed to run wizard, check console for errors.", MessageType.Error, true);
             FooterContainer.Add(warning);
         }
         /// <summary>

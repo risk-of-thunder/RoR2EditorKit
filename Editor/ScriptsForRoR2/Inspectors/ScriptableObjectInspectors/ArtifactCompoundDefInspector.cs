@@ -2,6 +2,8 @@
 using RoR2EditorKit.Inspectors;
 using UnityEditor;
 using UnityEditor.UIElements;
+using RoR2EditorKit.VisualElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
@@ -28,35 +30,34 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         protected override void DrawInspectorGUI()
         {
-            var compoundValue = inspectorDataHolder.Q<PropertyField>("value");
-            valueValidator = new PropertyValidator<int>(compoundValue, DrawInspectorElement);
-            SetupValidator(valueValidator);
-            valueValidator.ForceValidation();
+            var compoundValue = inspectorDataHolder.Q<ValidatingPropertyField>();
+            SetupValidator(compoundValue);
+            compoundValue.ForceValidation();
 
-            compoundValue.AddSimpleContextMenu(new ContextMenuData(
+            /*compoundValue.AddSimpleContextMenu(new ContextMenuData(
                 "Use RNG for Value",
                 dma =>
                 {
                     var valueProp = serializedObject.FindProperty("value");
                     valueProp.intValue = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
                     serializedObject.ApplyModifiedProperties();
-                }));
+                }));*/
         }
 
-        private void SetupValidator(PropertyValidator<int> validator)
+        private void SetupValidator(ValidatingPropertyField compoundValue)
         {
-            validator.AddValidator(() => GetValue() == 1, MessageMaker(1, "Circle"), MessageType.Error);
+            compoundValue.AddValidator(() => GetValue() == 1, MessageMaker(1, "Circle"), MessageType.Error);
 
-            validator.AddValidator(() => GetValue() == 3, MessageMaker(3, "Triangle"), MessageType.Error);
+            compoundValue.AddValidator(() => GetValue() == 3, MessageMaker(3, "Triangle"), MessageType.Error);
 
-            validator.AddValidator(() => GetValue() == 5, MessageMaker(5, "Diamond"), MessageType.Error);
+            compoundValue.AddValidator(() => GetValue() == 5, MessageMaker(5, "Diamond"), MessageType.Error);
 
-            validator.AddValidator(() => GetValue() == 7, MessageMaker(7, "Square"), MessageType.Error);
+            compoundValue.AddValidator(() => GetValue() == 7, MessageMaker(7, "Square"), MessageType.Error);
 
-            validator.AddValidator(() => GetValue() == 11, MessageMaker(11, "Empty"), MessageType.Error);
+            compoundValue.AddValidator(() => GetValue() == 11, MessageMaker(11, "Empty"), MessageType.Error);
 
 
-            int GetValue() => validator.ChangeEvent == null ? TargetType.value : validator.ChangeEvent.newValue;
+            int GetValue() => compoundValue.ChangeEvent == null ? TargetType.value : (int)compoundValue.ChangeEvent.newValue;
             string MessageMaker(int value, string vanillaType) => $"Compound value cannot be {value}, as that value is reserved for the {vanillaType} compound";
         }
 

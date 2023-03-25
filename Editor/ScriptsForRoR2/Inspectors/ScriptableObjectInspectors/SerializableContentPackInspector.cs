@@ -18,7 +18,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 if (target is SerializableContentPack)
                 {
                     RootVisualElement.Add(CreateHelpBox($"The Vanilla SerializableContentPack is no longer supported as it lacks the new fields added to ContentPacks in Survivors of the Void." +
-                        $"\n\nSubclassing SerializableContentPack or using R2API's SerializableContentPack is recommended", MessageType.Warning));
+                        $"\n\nSubclassing SerializableContentPack or using R2API's SerializableContentPack is recommended", MessageType.Info, true));
                 }
             };
         }

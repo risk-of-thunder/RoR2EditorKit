@@ -3,7 +3,8 @@
         <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ScriptableObjectInspector.uss" />
         <ui:Label text="Label" name="scriptType" class="genericHolderHeader scriptType" />
         <ui:VisualElement name="InspectorDataContainer">
-            <uie:PropertyField name="value" binding-path="value" tooltip="The value of the Compound, needs to be unique." />
+            <RoR2EditorKit.VisualElements.ValidatingPropertyField name="name" binding-path="value" bindingPath="value" />
+            <uie:PropertyField name="oldValue" binding-path="value" tooltip="The value of the Compound, needs to be unique." />
             <uie:PropertyField name="decalMaterial" binding-path="decalMaterial" tooltip="The decal material, needs to use Decalicious/Deferred Decal" />
             <uie:PropertyField name="modelPrefab" binding-path="modelPrefab" tooltip="The model prefab of the compound" />
         </ui:VisualElement>
