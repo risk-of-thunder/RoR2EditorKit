@@ -1,3 +1,105 @@
+### '4.0.0'
+
+* General Changes:
+	* A general namespace changing and type moving has been made, types have been moved to different namespaces, the Namespace system now looks to encapsulate the most useful aspects of RoR2EK into the RoR2EditorKit namespace, while maintaining specific systems in different namespaces.
+	* The AssetRipper patch that fixes YAML shaders getting their data corrupted is now a separate assemblyDef to ensure it alwayss loads.
+
+* Core Changes:
+	* Added Extended versions of PropertyDrawers
+		* The ExtendedPropertyDrawer which is the base class for the others, it has a property to directly Get or Set the value of the serialzied property directly.
+		* IMGUIPropertyDrawer, which is used for creating universal PropertyDrawers using IMGUI
+		* VisualElementPropertyDrawer, much like the rest classes that use PropertyDrawers, it uses UXML Templates that are fetched by looking for a UXML file with the same name as it's type.
+	* Deprecated ListViewHelper and PropertyValidator
+	* Deprecated ExtendedInspector's CreateHelpBox() and AddSimpleContextMenu() methods
+	* ExtendedEditorWindows can now be dynamically bound and unbound to SerializedObjects
+	* Changed the method arguments for opening ExtendedEditorWindows
+	* Added new custom VisualElement Controls.
+		* ContextualMenuWrapper
+			* Create Easy to see and interact ContextMenus for any VisualElement, the ContextMenu is stored inside a small VisualElement Icon that is easy to access and find, the icon can be changed to anything you need.
+		* ExtendedListView
+			* A Replacement for the ListViewHelper, the ExtendedListView is used for creating complex ListViews that use handmade binding elements, alongside the same functions that the original ListViewHelper had, the ExtendedListView also has new features, such as resizable height and inherent ContextMenu support
+		* HelpBox
+			* A Replacement for creating IMGUIContainers and calling EditorGUILayout.HelpBox(), the HelpBox element relies information to the end user, the message of the help box can either be Explicit (shown on a label), or Implicit (shown as a tooltip when hovering over the help box icon)
+		* ValidatingField
+			* A Replacement for the PropertyValidator, the ValidatingField is used for creating Validation Methods for fields, using the new HelpBox elements, the messages created by a ValidatingField are now stored inside a ScrollView element on top of the field.
+			* Added ValidatingPropertyField and ValidatingObjectField
+	* Moved the VisualElement related extensions to VisualElementUtil
+	* Implemented KingEnderBrine's FixedConditionalWeakTable
+	* Added a TypeCacheRequester, which allows you to request a collection of types in the current AppDomain
+	* 
+
+* RoR2EditorScripts changes:
+	* Added a PropertyDrawer for TypeRestrictedReferenceAttribute
+	* Updated EnumMaskDrawer, PrefabReferenceDrawer, and SkillFamilyVariantDrawer to use the new extended versions of property drawers.
+	* SerializedEntityState and SerializedSystemType drawers now sort their types alphabetically
+	* Updated all occurances of using PropertyValidator, ListViewHelper and EditorGUILayout.HelpBox() to use the ValidatingPropertyField, ExtendedListView and HelpBox elements instead.
+	
+### '3.5.2'
+
+* RoR2EditorScripts changes:
+	* Fixed the R2APIMigrationWizard and ModCreatorWizard failing to find the split R2API assemblies.
+
+### '3.5.1'
+
+* RoR2EditorScripts changes:
+	* Fixed missing binding paths on R2APIMigrationWizard
+
+### '3.5.0'
+
+* Core Changes:
+	* ExtendedMaterialEditor now attempts to get the action for a material, if it doesnt find any, it'll use the default inspector.
+	* ObjectEditingWindow's TargetType is now just a getter, obtaining the target type directly from the SerializedObject.
+
+* RoR2EditorScripts changes:
+	* Made the EntityStateConfiguration inspector able to draw fields as enums, courtesy of KingEnderBrine
+		* This is done by using the field as an int, and marking it with the EnumMask attribute.
+	* Fixed a bug where the CharacterBody template would have unfitting entity states assigned.
+	* Added 3 new Template options to CharacterBody template, courtesy of HeyImNoop
+		* Grounded is now the original prefab template.
+		* Flying uses a Wisp as a template.
+		* Stationary uses an Alpha construct as a template
+		* Boss uses a StoneTitan as a template.
+	* Major improvements and fixes to the MapNodeGroup inspector.
+		* Painter should now work properly
+		* Added a button to update hull masks
+		* Added a button that shifts nodes upwards, for creating Air nodes from ground nodes.
+		* Added a button that shifts nodes downards, for creating ground nodes from Air nodes
+		* Increased visibility of the Scene GUI
+		* Removed "Add Node on Cam Pos" keybind
+	* Updated ModCreatorWizard window to support R2API's Split assemblies update.
+		* Now will scan for all assemblies in the AppDomain, and add all the R2API submodules it finds as dependencies.
+		* Automatically adds said dependencies to your Manifest, main class, and assembly definition.
+	* Added R2APIMigrationWizard
+		* Scans for all assemblies in the app domain to find the R2API submodules loaded in the editor.
+		* Used for migrating a mod that uses the old R2API system to the split assemblies system.
+		* Replaces the single BepInDependency attribute for multiple attributes, depending on the amount of assemblies it finds.
+		* Replaces the assemblyDefinition and Manifest's dependencies from the single dll to the multiple dll's, depending on the amount of assemblies and manifests it finds.
+
+### '3.4.0'
+
+* RoR2EditorScripts Changes:
+	* Added a Scaling Tool window, used to roughly see how big something is compared to ror2 bodies and stages.
+	* Changed the EntityStateConfiguration inspector to use the old IMGUI version instead of visual elements.
+		* All improvements made are also in the IMGUI inspector.
+		* EntityStateConfiguration inspector no longer tries to serialize fields marked as constant
+	* Added a Gizmo for visualizing the scale of a HitBox
+
+### '3.3.1'
+
+* Core Changes:
+	* Added SerializableShaderWrapper
+		* Serializes shaders by serializing their shader.name and their GUID's
+	* The material editor now works properly by using the SerializableShaderWrapper
+	* Added new utilities to the AssetDatabase utils class
+	* Added AssetRipper's Shader asset post processors.
+		* This in turn should fix unity destroying YAML shader assets.
+
+* RoR2EditorScripts changes:
+	* Stage Creator wizard now prefixes the scene's name with the token prefix
+	* Fixed an issue where having mutliple inspectors would break the Skill Locator inspector.
+	* Fixed an issue where the CanBeRandomlyTriggered bool for EquipmentDefs wouldnt show
+	* Exposed HGCloudRemap's Internal Simple Blend Mode property
+
 ### '3.3.0'
 
 * Core Changes:

@@ -11,11 +11,8 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
     {
         static HGDeferredInspectors()
         {
-            if (MaterialEditorEnabled)
-            {
-                AddShaderEditor("hgStandard", HGStandardEditor, typeof(HGDeferredInspectors));
-                AddShaderEditor("hgSnowtopped", HGSnowtoppedEditor, typeof(HGDeferredInspectors));
-            }
+            AddShaderEditor("hgStandard", HGStandardEditor, typeof(HGDeferredInspectors));
+            AddShaderEditor("hgSnowtopped", HGSnowtoppedEditor, typeof(HGDeferredInspectors));
         }
 
         private static void HGStandardEditor()
