@@ -64,7 +64,7 @@ namespace RoR2EditorKit.PropertyDrawers
         /// <returns>True if the path is for this property drawer, false otherwise</returns>
         protected virtual bool ValidateUXMLPath(string path)
         {
-            return path.Contains(Constants.PackageName);
+            return VisualElementUtil.ValidateUXMLPath(path);
         }
         /// <summary>
         /// Finish your property drawer's UI here.

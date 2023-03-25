@@ -16,8 +16,6 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private VisualElement inspectorDataHolder;
 
-        private PropertyValidator<int> valueValidator;
-
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -30,18 +28,18 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         protected override void DrawInspectorGUI()
         {
-            var compoundValue = inspectorDataHolder.Q<ValidatingPropertyField>();
+            var compoundValue = inspectorDataHolder.Q<ValidatingPropertyField>("value");
             SetupValidator(compoundValue);
             compoundValue.ForceValidation();
 
-            /*compoundValue.AddSimpleContextMenu(new ContextMenuData(
+            compoundValue.AddSimpleContextMenu(new ContextMenuData(
                 "Use RNG for Value",
                 dma =>
                 {
                     var valueProp = serializedObject.FindProperty("value");
                     valueProp.intValue = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
                     serializedObject.ApplyModifiedProperties();
-                }));*/
+                }));
         }
 
         private void SetupValidator(ValidatingPropertyField compoundValue)

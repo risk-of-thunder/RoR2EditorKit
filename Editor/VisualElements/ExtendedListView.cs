@@ -330,7 +330,7 @@ namespace RoR2EditorKit.VisualElements
         /// </summary>
         public ExtendedListView()
         {
-            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(GetType().Name, this, (txt) => true);
+            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(GetType().Name, this, VisualElementUtil.ValidateUXMLPath);
             collectionSizeField = this.Q<IntegerField>("collectionSize");
             collectionSizeField.isDelayed = true;
             heightHandleBar = this.Q<VisualElement>("resizeBarContainer").Q<VisualElement>("handle");
@@ -343,7 +343,7 @@ namespace RoR2EditorKit.VisualElements
         /// </summary>
         public ExtendedListView(int baseListViewHeightPixels, int listViewItemHeight, bool collectionResizable, bool createContextMenuWrappers, bool heightHandleBar)
         {
-            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(GetType().Name, this, (txt) => true);
+            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(GetType().Name, this, VisualElementUtil.ValidateUXMLPath);
             collectionSizeField = this.Q<IntegerField>("collectionSize");
             collectionSizeField.isDelayed = true;
             this.heightHandleBar = this.Q<VisualElement>("resizeBarContainer").Q<VisualElement>("handle");
@@ -363,7 +363,7 @@ namespace RoR2EditorKit.VisualElements
         /// </summary>
         public ExtendedListView(int baseListViewHeightPixels, int listViewItemHeight, bool collectionResizable, bool createContextMenuWrappers, bool heightHandleBar, SerializedProperty collectionProperty)
         {
-            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(GetType().Name, this, (txt) => true);
+            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(GetType().Name, this, VisualElementUtil.ValidateUXMLPath);
             collectionSizeField = this.Q<IntegerField>("collectionSize");
             collectionSizeField.isDelayed = true;
             this.heightHandleBar = this.Q<VisualElement>("resizeBarContainer").Q<VisualElement>("handle");

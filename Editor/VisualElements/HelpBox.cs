@@ -11,6 +11,10 @@ using Object = UnityEngine.Object;
 
 namespace RoR2EditorKit.VisualElements
 {
+    /// <summary>
+    /// A HelpBox is a custom VisualElement that works as a replacement for creating <see cref="IMGUIContainer"/> and calling <see cref="EditorGUILayout.HelpBox(GUIContent, bool)"/>
+    /// <para>The HelpBox element works by imitating the behaviour of the EditorGUILayout method, but with a few extra utilities, such as making messages implicit (showing in the icon's tooltip), and allowing for easy creation of ContextualMenus</para>
+    /// </summary>
     public class HelpBox : VisualElement
     {
         public new class UxmlFactory : UxmlFactory<HelpBox, UxmlTraits> { }
@@ -42,6 +46,9 @@ namespace RoR2EditorKit.VisualElements
             }
         }
 
+        /// <summary>
+        /// The Message that this HelpBox displays
+        /// </summary>
         public string message
         {
             get
@@ -62,6 +69,14 @@ namespace RoR2EditorKit.VisualElements
             }
         }
         private string _message;
+
+        /// <summary>
+        /// The type of message for this helpBox, different values change the Icon that's used in the Help Box.
+        /// <para><see cref="MessageType.None"/> will display a little page document icon</para>
+        /// <para><see cref="MessageType.Info"/> will display a round information bubble</para>
+        /// <para><see cref="MessageType.Warning"/> will display a yellow warning triangle</para>
+        /// <para><see cref="MessageType.Error"/> will display an red error octagon</para>
+        /// </summary>
         public MessageType messageType
         {
             get
@@ -92,6 +107,11 @@ namespace RoR2EditorKit.VisualElements
             }
         }
         private MessageType _messageType;
+        /// <summary>
+        /// Wether the string inputed in <see cref="message"/> is Explicit.
+        /// <para>When <see cref="messageIsExplicit"/> is set to true, a <see cref="UnityEngine.UIElements.Label"/> will be displayed alongside the icon, where the text in <see cref="message"/> is displayed in the label</para>
+        /// <para>When <see cref="messageIsExplicit"/> is set to false, the text in <see cref="message"/> will be displayed as a tooltip when hovering over the HelpBox's Icon</para>
+        /// </summary>
         public bool messageIsExplicit
         {
             get
@@ -117,6 +137,9 @@ namespace RoR2EditorKit.VisualElements
             }
         }
         private bool _messageIsExplicit;
+        /// <summary>
+        /// An Acton to populate a context menu when the HelpBox is clicked
+        /// </summary>
         public Action<ContextualMenuPopulateEvent> ContextualMenuPopulateEvent
         {
             set
@@ -136,21 +159,37 @@ namespace RoR2EditorKit.VisualElements
         }
         private Action<ContextualMenuPopulateEvent> _contextualMenuPopulateEvent;
         private ContextualMenuManipulator _manipulator;
+        /// <summary>
+        /// The Icon visual element
+        /// </summary>
         public VisualElement Icon { get; }
+        /// <summary>
+        /// A Container element, this element gets resized whenever <see cref="messageIsExplicit"/> changes value
+        /// </summary>
         public VisualElement Container { get; }
+        /// <summary>
+        /// The Label of the HelpBox
+        /// </summary>
         public Label Label { get; }
 
+        /// <summary>
+        /// Constructor for HelpBox
+        /// </summary>
         public HelpBox()
         {
-            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(nameof(HelpBox), this, (_) => true);
+            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(nameof(HelpBox), this, VisualElementUtil.ValidateUXMLPath);
 
             Container = this.Q<VisualElement>(nameof(Container));
             Icon = this.Q<VisualElement>(nameof(Icon));
             Label = this.Q<Label>(nameof(Label));
         }
+
+        /// <summary>
+        /// Constructor for HelpBox
+        /// </summary>
         public HelpBox(Action<ContextualMenuPopulateEvent> contextMenuPopulateEvent)
         {
-            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(nameof(HelpBox), this, (_) => true);
+            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(nameof(HelpBox), this, VisualElementUtil.ValidateUXMLPath);
 
             Container = this.Q<VisualElement>(nameof(Container));
             Icon = this.Q<VisualElement>(nameof(Icon));
@@ -159,9 +198,12 @@ namespace RoR2EditorKit.VisualElements
             ContextualMenuPopulateEvent = contextMenuPopulateEvent;
         }
 
+        /// <summary>
+        /// Constructor for HelpBox
+        /// </summary>
         public HelpBox(string message, MessageType messageType, bool messageIsExplicit)
         {
-            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(nameof(HelpBox), this, (_) => true);
+            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(nameof(HelpBox), this, VisualElementUtil.ValidateUXMLPath);
 
             Container = this.Q<VisualElement>(nameof(Container));
             Icon = this.Q<VisualElement>(nameof(Icon));
@@ -172,9 +214,12 @@ namespace RoR2EditorKit.VisualElements
             this.messageIsExplicit = messageIsExplicit;
         }
 
+        /// <summary>
+        /// Constructor for HelpBox
+        /// </summary>
         public HelpBox(string message, MessageType messageType, bool messageIsExplicit, Action<ContextualMenuPopulateEvent> contextMenuPopulateEvent)
         {
-            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(nameof(HelpBox), this, (_) => true);
+            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(nameof(HelpBox), this, VisualElementUtil.ValidateUXMLPath);
 
             Container = this.Q<VisualElement>(nameof(Container));
             Icon = this.Q<VisualElement>(nameof(Icon));

@@ -7,7 +7,7 @@
             <uie:PropertyField name="cooldown" binding-path="cooldown" tooltip="How long until this equipment can be activated again" />
             <uie:PropertyField name="pickupModelPrefab" binding-path="pickupModelPrefab" tooltip="The Pickup model for this equipment" />
             <uie:PropertyField name="pickupIconSprite" binding-path="pickupIconSprite" tooltip="The icon used for this equipment" />
-            <uie:PropertyField name="passiveBuffDef" binding-path="passiveBuffDef" tooltip="If assigned, this BuffDef is applied to the body when this equipment is held. If the buffDef has an associated Elitedef, the Elitedef&apos;s EquipmentDef needs to point to this EquipmenttDef!" />
+            <RoR2EditorKit.VisualElements.ValidatingPropertyField bindingPath="passiveBuffDef" tooltip="If assigned, this BuffDef is applied to the body when this equipment is held. If the buffDef has an associated Elitedef, the Elitedef&apos;s EquipmentDef needs to point to this EquipmenttDef!" name="passiveBuffDef" />
             <uie:PropertyField name="dropOnDeathChance" binding-path="dropOnDeathChance" tooltip="The chance that this equipment is dropped on death" focusable="true" />
             <uie:PropertyField name="canDrop" binding-path="canDrop" tooltip="Whether this equipment can be dropped from Barrels or Pods" />
             <uie:PropertyField name="randomlyTriggered" binding-path="canBeRandomlyTriggered" tooltip="Wether this equipment can be triggered by Bottled Chaos&apos; effectt" />

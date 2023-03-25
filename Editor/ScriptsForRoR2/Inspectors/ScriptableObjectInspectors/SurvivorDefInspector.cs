@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using RoR2EditorKit.VisualElements;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
@@ -13,8 +14,8 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         private VisualElement inspectorDataHolder;
         private Foldout tokenFoldout;
 
-        private PropertyValidator<UnityEngine.Object> bodyPrefabValidator;
-        private PropertyValidator<UnityEngine.Object> displayPrefabValidator;
+        private ValidatingPropertyField bodyPrefabValidator;
+        private ValidatingPropertyField displayPrefabValidator;
 
         public string Prefix => TargetType.bodyPrefab.name.Replace("Body", string.Empty);
         public bool UsesTokenForPrefix => false;
@@ -28,8 +29,8 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 inspectorDataHolder = container.Q<VisualElement>("InspectorDataContainer");
                 tokenFoldout = inspectorDataHolder.Q<Foldout>("TokenContainer");
 
-                bodyPrefabValidator = new PropertyValidator<Object>(inspectorDataHolder.Q<PropertyField>("bodyPrefab"), DrawInspectorElement);
-                displayPrefabValidator = new PropertyValidator<Object>(inspectorDataHolder.Q<PropertyField>("displayPrefab"), DrawInspectorElement);
+                bodyPrefabValidator = inspectorDataHolder.Q<ValidatingPropertyField>("bodyPrefab");
+                displayPrefabValidator = inspectorDataHolder.Q<ValidatingPropertyField>("displayPrefab");
             };
         }
 

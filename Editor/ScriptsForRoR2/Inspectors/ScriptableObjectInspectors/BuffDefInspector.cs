@@ -2,6 +2,7 @@
 using RoR2EditorKit.Inspectors;
 using UnityEditor;
 using UnityEditor.UIElements;
+using RoR2EditorKit.VisualElements;
 using UnityEngine.UIElements;
 using static RoR2EditorKit.AssetDatabaseUtils;
 
@@ -10,8 +11,8 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
     [CustomEditor(typeof(RoR2.BuffDef))]
     public sealed class BuffDefInspector : ScriptableObjectInspector<BuffDef>, IObjectNameConvention
     {
-        private PropertyValidator<UnityEngine.Object> eliteDefValidator;
-        private PropertyValidator<UnityEngine.Object> startSfxValidator;
+        private ValidatingPropertyField eliteDefValidator;
+        private ValidatingPropertyField startSfxValidator;
         private VisualElement inspectorData = null;
 
         public string Prefix => "bd";
@@ -28,8 +29,8 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             {
                 var container = DrawInspectorElement.Q<VisualElement>("Container");
                 inspectorData = container.Q<VisualElement>("InspectorDataContainer");
-                eliteDefValidator = new PropertyValidator<UnityEngine.Object>(inspectorData.Q<PropertyField>("eliteDef"), DrawInspectorElement);
-                startSfxValidator = new PropertyValidator<UnityEngine.Object>(inspectorData.Q<PropertyField>("startSfx"), DrawInspectorElement);
+                eliteDefValidator = inspectorData.Q<ValidatingPropertyField>("eliteDef");
+                startSfxValidator = inspectorData.Q<ValidatingPropertyField>("startSfx");
             };
         }
         protected override void DrawInspectorGUI()
@@ -57,7 +58,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             TargetType.buffColor = TargetType.eliteDef.color;
         }
 
-        private void SetupEliteValidator(PropertyValidator<UnityEngine.Object> validator)
+        private void SetupEliteValidator(ValidatingPropertyField validator)
         {
             validator.AddValidator(() =>
             {
@@ -79,10 +80,20 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 return ed && ed.eliteEquipmentDef && ed.eliteEquipmentDef.passiveBuffDef && ed.eliteEquipmentDef.passiveBuffDef != TargetType;
             }, $"You've associated an EliteDef to this buff, but the assigned EliteDef's EquippmentDef's ppassiveBuffDef is not the inspected buffDef!", MessageType.Warning);
 
-            EliteDef GetEliteDef() => validator.ChangeEvent == null ? TargetType.eliteDef : (EliteDef)validator.ChangeEvent.newValue;
+            EliteDef GetEliteDef()
+            {
+                if(validator.ChangeEvent == null)
+                {
+                    return TargetType.eliteDef;
+                }
+                else
+                {
+                    return (EliteDef)validator.ChangeEvent.newValue;
+                }
+            }
         }
 
-        private void SetupSfxValidator(PropertyValidator<UnityEngine.Object> validator)
+        private void SetupSfxValidator(ValidatingPropertyField validator)
         {
             validator.AddValidator(() =>
             {

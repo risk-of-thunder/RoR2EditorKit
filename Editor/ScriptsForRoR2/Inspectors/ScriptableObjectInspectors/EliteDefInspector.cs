@@ -4,6 +4,7 @@ using System;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
+using RoR2EditorKit.VisualElements;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
@@ -15,7 +16,8 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         public const string Tier2Address = "RoR2/Base/ElitePoison/edPoison.asset";
 
         VisualElement inspectorData;
-        PropertyValidator<UnityEngine.Object> equipValidator;
+
+        ValidatingPropertyField equipValidator;
         public string Prefix => "ed";
 
         public bool UsesTokenForPrefix => false;
@@ -28,7 +30,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             {
                 var container = DrawInspectorElement.Q<VisualElement>("Container");
                 inspectorData = container.Q<VisualElement>("InspectorDataContainer");
-                equipValidator = new PropertyValidator<UnityEngine.Object>(inspectorData.Q<PropertyField>("eliteEquipmentDef"), DrawInspectorElement);
+                equipValidator = inspectorData.Q<ValidatingPropertyField>("eliteEquipmentDef");
             };
         }
 
@@ -63,7 +65,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             BuildContextMenu(statCoefficients);
         }
 
-        private void SetupEquipValidator(PropertyValidator<UnityEngine.Object> validator)
+        private void SetupEquipValidator(ValidatingPropertyField validator)
         {
             validator.AddValidator(() =>
             {

@@ -40,7 +40,7 @@ namespace RoR2EditorKit.VisualElements
         /// </summary>
         public ContextualMenuWrapper()
         {
-            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(GetType().Name, this, (_) => true);
+            ThunderKit.Core.UIElements.TemplateHelpers.GetTemplateInstance(GetType().Name, this, VisualElementUtil.ValidateUXMLPath);
             _contentContainer = this.Q<VisualElement>("content");
             IconElement = this.Q<VisualElement>("icon");
             style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Row);

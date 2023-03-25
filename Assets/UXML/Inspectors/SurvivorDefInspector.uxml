@@ -3,8 +3,8 @@
         <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ScriptableObjectInspector.uss" />
         <ui:Label text="Label" name="scriptType" class="genericHolderHeader scriptType" />
         <ui:VisualElement name="InspectorDataContainer">
-            <uie:PropertyField name="bodyPrefab" binding-path="bodyPrefab" />
-            <uie:PropertyField name="displayPrefab" binding-path="displayPrefab" />
+            <RoR2EditorKit.VisualElements.ValidatingPropertyField name="bodyPrefab" bindingPath="bodyPrefab" />
+            <RoR2EditorKit.VisualElements.ValidatingPropertyField name="displayPrefab" bindingPath="displayPrefab" />
             <uie:PropertyField name="unlockableDef" binding-path="unlockableDef" />
             <uie:PropertyField name="primaryColor" binding-path="primaryColor" />
             <uie:PropertyField name="desiredSortPosition" binding-path="desiredSortPosition" />

@@ -22,7 +22,7 @@ namespace RoR2EditorKit.Inspectors
 
         private void AddComponentInspectorBase()
         {
-            var ve = TemplateHelpers.GetTemplateInstance("ComponentInspectorBase", DrawInspectorElement, (str) => str.Contains(Constants.PackageFolderPath));
+            var ve = TemplateHelpers.GetTemplateInstance("ComponentInspectorBase", DrawInspectorElement, VisualElementUtil.ValidateUXMLPath);
             ve.SendToBack();
         }
         private void AddToggle()

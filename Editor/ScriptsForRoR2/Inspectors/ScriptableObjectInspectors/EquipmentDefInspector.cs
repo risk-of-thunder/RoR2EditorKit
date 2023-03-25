@@ -4,13 +4,14 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using RoR2EditorKit.VisualElements;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
     [CustomEditor(typeof(EquipmentDef))]
     public sealed class EquipmentDefInspector : ScriptableObjectInspector<EquipmentDef>
     {
-        PropertyValidator<UnityEngine.Object> buffDefValidator;
+        ValidatingPropertyField buffDefValidator;
         bool DoesNotAppear => (!TargetType.appearsInMultiPlayer && !TargetType.appearsInSinglePlayer);
 
         protected override bool HasVisualTreeAsset => true;
@@ -26,7 +27,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 var container = DrawInspectorElement.Q<VisualElement>("Container");
                 inspectorData = container.Q<VisualElement>("InspectorDataContainer");
                 tokenHolder = inspectorData.Q<Foldout>("TokenContainer");
-                buffDefValidator = new PropertyValidator<UnityEngine.Object>(inspectorData.Q<PropertyField>("passiveBuffDef"), DrawInspectorElement);
+                buffDefValidator = inspectorData.Q<ValidatingPropertyField>("passiveBuffDef");
             };
         }
 

@@ -3,7 +3,7 @@
         <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ScriptableObjectInspector.uss" />
         <ui:Label text="Label" name="scriptType" class="genericHolderHeader scriptType" />
         <ui:VisualElement name="InspectorDataContainer">
-            <uie:PropertyField name="eliteEquipmentDef" binding-path="eliteEquipmentDef" tooltip="The EquipmentDef&apos;s associated with this EliteDef. The EquipmentDef&apos;s PassiveBuffDef&apos;s EliteDef should point to this EliteDef!" />
+            <RoR2EditorKit.VisualElements.ValidatingPropertyField name="eliteEquipmentDef" tooltip="The EquipmentDef&apos;s associated with this EliteDef. The EquipmentDef&apos;s PassiveBuffDef&apos;s EliteDef should point to this EliteDef!" bindingPath="eliteEquipmentDef" />
             <uie:PropertyField name="color" binding-path="color" tooltip="The color of this Elite" label="Elite Color" />
             <uie:PropertyField name="modifierToken" binding-path="modifierToken" tooltip="The token that&apos;s appended to the beginning of the body&apos;s name when it has this EliteDef" />
             <ui:Foldout text="Stat Coefficients" name="StatCoefficientContainer" class="genericHolderFoldout">

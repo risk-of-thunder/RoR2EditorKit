@@ -48,9 +48,11 @@ namespace RoR2EditorKit.EditorWindows
         /// </summary>
         /// <typeparam name="TEditorWindow">The type of ExtendedEditorWindow to Open</typeparam>
         /// <returns>The instancianced window.</returns>
-        public static TEditorWindow OpenEditorWindow<TEditorWindow>() where TEditorWindow : ExtendedEditorWindow
+        public static TEditorWindow OpenEditorWindow<TEditorWindow>(bool createSerializedObjectFromWindow = true) where TEditorWindow : ExtendedEditorWindow
         {
             TEditorWindow window = GetWindow<TEditorWindow>(ObjectNames.NicifyVariableName(typeof(TEditorWindow).Name));
+            if(createSerializedObjectFromWindow)
+                window.SerializedObject = new SerializedObject(window);
             window.OnWindowOpened();
             return window;
         }
@@ -62,9 +64,9 @@ namespace RoR2EditorKit.EditorWindows
         /// <param name="serializedObjectForWindow">The SerializedObject for this window, leaving this null will create a new SerializedObject from this window.</param>
         /// <param name="windowName">The name for this window, leaving this null nicifies the <typeparamref name="TEditorWindow"/>'s type name</param>
         /// <returns>The instancianced window.</returns>
-        public static TEditorWindow OpenEditorWindow<TEditorWindow>(SerializedObject serializedObjectForWindow = null, string windowName = null) where TEditorWindow : ExtendedEditorWindow
+        public static TEditorWindow OpenEditorWindow<TEditorWindow>(SerializedObject serializedObjectForWindow) where TEditorWindow : ExtendedEditorWindow
         {
-            TEditorWindow window = GetWindow<TEditorWindow>(windowName ?? ObjectNames.NicifyVariableName(typeof(TEditorWindow).Name));
+            TEditorWindow window = GetWindow<TEditorWindow>(ObjectNames.NicifyVariableName(typeof(TEditorWindow).Name));
             window.SerializedObject = serializedObjectForWindow ?? new SerializedObject(window);
             window.OnWindowOpened();
             return window;
@@ -96,7 +98,7 @@ namespace RoR2EditorKit.EditorWindows
         /// <returns>True if the path is for this editor window, false otherwise</returns>
         protected virtual bool ValidateUXMLPath(string path)
         {
-            return path.StartsWith(Constants.PackageFolderPath);
+            return VisualElementUtil.ValidateUXMLPath(path);
         }
 
         private void UpdateBinding()

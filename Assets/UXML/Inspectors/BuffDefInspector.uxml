@@ -5,8 +5,8 @@
         <ui:VisualElement name="InspectorDataContainer">
             <uie:PropertyField name="iconSprite" tooltip="The icon that&apos;s used for displaying this buff, The icon should be Grayscale" binding-path="iconSprite" />
             <uie:PropertyField name="buffColor" tooltip="The color of this buff, used to tint the buff&apos;s icon" binding-path="buffColor" />
-            <uie:PropertyField name="eliteDef" tooltip="The Associated EliteDef for this buff. The EliteDef&apos;s EquipmentDef&apos;s PassiveBuffDef should point to this BuffDef!" binding-path="eliteDef" label="Associated Elite Def" />
-            <uie:PropertyField name="startSfx" tooltip="A sound effect to play when the Buff gets inflicted on a Body" binding-path="startSfx" />
+            <RoR2EditorKit.VisualElements.ValidatingPropertyField name="eliteDef" tooltip="The Associated EliteDef for this buff. The EliteDef&apos;s EquipmentDef&apos;s PassiveBuffDef should point to this BuffDef!" bindingPath="eliteDef" label="Associated Elite Def" />
+            <RoR2EditorKit.VisualElements.ValidatingPropertyField name="startSfx" tooltip="A sound effect to play when the Buff gets inflicted on a Body" bindingPath="startSfx" />
             <ui:Label text="Toggles" name="Toggles" class="separatorLabel genericHolderHeader" />
             <uie:PropertyField name="canStack" binding-path="canStack" tooltip="Whether this buff is Stackable" />
             <uie:PropertyField name="isCooldown" binding-path="isCooldown" tooltip="Wether this buff is a Cooldown buff (IE: Elemental Rings Cooldown)" />

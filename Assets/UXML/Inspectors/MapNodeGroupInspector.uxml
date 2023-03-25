@@ -1,7 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
     <ui:VisualElement name="InspectorDataContainer" class="genericHolder">
         <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ComponentInspector.uss" />
-        <uie:PropertyField name="nodeGraph" binding-path="nodeGraph" />
+        <RoR2EditorKit.VisualElements.ValidatingPropertyField bindingPath="nodeGraph" name="nodeGraph" />
         <uie:PropertyField binding-path="testPointA" name="testPointA" />
         <uie:PropertyField name="testPointB" binding-path="testPointB" />
         <uie:PropertyField binding-path="debugHullDef" name="debugHullDef" />

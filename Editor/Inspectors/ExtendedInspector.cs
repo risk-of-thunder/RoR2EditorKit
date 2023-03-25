@@ -282,7 +282,7 @@ namespace RoR2EditorKit.Inspectors
         /// <returns>True if the path is for this inspector, false otherwise</returns>
         protected virtual bool ValidateUXMLPath(string path)
         {
-            return path.Contains(Constants.PackageName);
+            return VisualElementUtil.ValidateUXMLPath(path);
         }
 
         /// <summary>
