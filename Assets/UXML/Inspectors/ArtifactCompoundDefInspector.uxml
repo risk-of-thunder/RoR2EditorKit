@@ -1,9 +1,9 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:r2ek="RoR2EditorKit.VisualElements">
     <ui:VisualElement name="Container" class="genericHolder">
         <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ScriptableObjectInspector.uss" />
         <ui:Label text="Label" name="scriptType" class="genericHolderHeader scriptType" />
         <ui:VisualElement name="InspectorDataContainer">
-            <RoR2EditorKit.VisualElements.ValidatingPropertyField name="value" binding-path="value" bindingPath="value" />
+            <r2ek:ValidatingPropertyField name="value" binding-path="value" bindingPath="value" />
             <uie:PropertyField name="decalMaterial" binding-path="decalMaterial" tooltip="The decal material, needs to use Decalicious/Deferred Decal" />
             <uie:PropertyField name="modelPrefab" binding-path="modelPrefab" tooltip="The model prefab of the compound" />
         </ui:VisualElement>
