@@ -293,6 +293,7 @@ namespace RoR2EditorKit.VisualElements
         private void BuildMenu(ContextualMenuPopulateEvent evt)
         {
             evt.menu.AppendAction("Delete Item", DeleteItem, GetStatus, evt.target);
+            evt.menu.AppendAction("Duplicate Item", DuplicateItem, GetStatus, evt.target);
 
             DropdownMenuAction.Status GetStatus(DropdownMenuAction _) => collectionProperty != null ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.None;
         }

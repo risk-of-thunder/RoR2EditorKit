@@ -1,8 +1,14 @@
+### '4.0.1'
+
+* Core Changes:
+	* Fixed NullReferenceException caused by setting the ExtendedListView's collectionProperty to 0
+	* Implemented "Duplicate Element" context menu for ExtendedListView's entries.
+
 ### '4.0.0'
 
 * General Changes:
 	* A general namespace changing and type moving has been made, types have been moved to different namespaces, the Namespace system now looks to encapsulate the most useful aspects of RoR2EK into the RoR2EditorKit namespace, while maintaining specific systems in different namespaces.
-	* The AssetRipper patch that fixes YAML shaders getting their data corrupted is now a separate assemblyDef to ensure it alwayss loads.
+	* The AssetRipper patch that fixes YAML shaders getting their data corrupted is now a separate assemblyDef to ensure it always loads.
 
 * Core Changes:
 	* Added Extended versions of PropertyDrawers
@@ -26,7 +32,6 @@
 	* Moved the VisualElement related extensions to VisualElementUtil
 	* Implemented KingEnderBrine's FixedConditionalWeakTable
 	* Added a TypeCacheRequester, which allows you to request a collection of types in the current AppDomain
-	* 
 
 * RoR2EditorScripts changes:
 	* Added a PropertyDrawer for TypeRestrictedReferenceAttribute
