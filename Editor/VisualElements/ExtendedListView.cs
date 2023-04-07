@@ -181,7 +181,7 @@ namespace RoR2EditorKit.VisualElements
                 if(_collectionProperty != value)
                 {
                     _collectionProperty = value;
-                    _serializedObject = value.serializedObject;
+                    _serializedObject = value?.serializedObject;
                     SetupCollectionSizeField();
                     SetupListView();
                 }
@@ -219,7 +219,7 @@ namespace RoR2EditorKit.VisualElements
             if (!collectionResizable)
                 return;
 
-            collectionSizeField.value = collectionProperty.arraySize;
+            collectionSizeField.value = collectionProperty?.arraySize ?? internalListView.itemsSource.Count;
             collectionSizeField.UnregisterValueChangedCallback(OnSizeSet);
             collectionSizeField.RegisterValueChangedCallback(OnSizeSet);
 
