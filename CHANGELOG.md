@@ -1,3 +1,11 @@
+### '4.0.2'
+
+* Core Changes
+	* Re-implemented the AssetRipper YAML shader patches, as they where removed from the repository on accident
+
+* RoR2EditorScripts Changes
+	* Hitbox Gizmo Drawer now uses the DrawWireMesh gizmo to draw a cube that properly represents the hitbox's rotation
+
 ### '4.0.1'
 
 * Core Changes:
