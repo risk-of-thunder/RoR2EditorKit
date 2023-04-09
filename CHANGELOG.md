@@ -1,3 +1,7 @@
+### '4.0.3'
+
+* Made the ROR2EK release pipelines path components more uniquely named
+
 ### '4.0.2'
 
 * Core Changes
