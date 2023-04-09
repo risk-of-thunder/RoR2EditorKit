@@ -63,4 +63,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6261149e5a7f699eedbf121d034e9ace, type: 2}
   ArchiveType: 1
   Source: <ManifestStagingRoot>
-  Output: <ReleaseZipPath>
+  Output: <RoR2EKReleasePath>
