@@ -76,7 +76,7 @@ MonoBehaviour:
   Description: The Risk of Rain 2 Editor Kit (Abreviated as ROR2EK) is a Thunderkit
     Extension designed specifically for helping mod creators create content for Risk
     of Rain 2.
-  Version: 4.0.3
+  Version: 4.0.4
   Dependencies: []
 --- !u!114 &4683167005052068223
 MonoBehaviour:

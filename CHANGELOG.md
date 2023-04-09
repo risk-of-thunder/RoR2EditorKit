@@ -1,3 +1,7 @@
+### '4.0.4'
+
+* Fixed the assembly definition for AssetRipper's YAML shader patches not being editor only
+
 ### '4.0.3'
 
 * Made the ROR2EK release pipelines path components more uniquely named
