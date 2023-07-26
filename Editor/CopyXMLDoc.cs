@@ -19,6 +19,11 @@ namespace RoR2EditorKit
         private static bool ShouldCopy()
         {
             var relativePath = Constants.AssetGUIDS.GetPath(Constants.AssetGUIDS.xmlDocGUID);
+            if (string.IsNullOrEmpty(relativePath))
+            {
+                return false;
+            }
+            
             var fullPath = Path.GetFullPath(relativePath);
             var fileName = Path.GetFileName(fullPath);
             var pathToCheck = Path.Combine(Constants.FolderPaths.ScriptAssembliesFolder, fileName);
