@@ -18,7 +18,8 @@
         "Assembly-CSharp.dll",
         "HGUnityUtils.dll",
         "Unity.ResourceManager.dll",
-        "Unity.Addressables.dll"
+        "Unity.Addressables.dll",
+        "LegacyResourcesAPI.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],
