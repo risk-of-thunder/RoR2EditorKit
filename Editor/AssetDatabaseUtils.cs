@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ThunderKit.Core.Data;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace RoR2EditorKit
 {
@@ -127,5 +130,35 @@ namespace RoR2EditorKit
             var path = AssetDatabase.GetAssetPath(obj);
             return path.IsNullOrEmptyOrWhitespace() ? string.Empty : AssetDatabase.AssetPathToGUID(path);
         }
+        /// <summary>
+        /// Obtains all the assets in <paramref name="inputAssets"/>
+        /// <br>If a folder asset is inside <paramref name="inputAssets"/>, this method is called again recursively until all the assets are obtained</br>
+        /// </summary>
+        /// <param name="inputAssets">The assets to look from</param>
+        /// <param name="outputAssets">All the assets obtained</param>
+        /// <param name="filter">An optional delegate to filter assets</param>
+        public static void GetAllAssetsFromInput(IEnumerable<Object> inputAssets, List<Object> outputAssets, Func<Object, bool> filter = null)
+        {
+            foreach (var asset in inputAssets)
+            {
+                var assetPath = AssetDatabase.GetAssetPath(asset);
+
+                if (AssetDatabase.IsValidFolder(assetPath))
+                {
+                    var files = Directory.GetFiles(assetPath, "*", SearchOption.AllDirectories);
+                    var assets = files.Select(path => AssetDatabase.LoadAssetAtPath<Object>(path));
+                    GetAllAssetsFromInput(assets, outputAssets, filter);
+                }
+                else if (asset is UnityPackage up)
+                {
+                    GetAllAssetsFromInput(up.AssetFiles, outputAssets, filter);
+                }
+                else if (filter(asset))
+                {
+                    outputAssets.Add(asset);
+                }
+            }
+        }
+
     }
 }

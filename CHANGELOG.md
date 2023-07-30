@@ -1,3 +1,20 @@
+### '4.1.0'
+
+* General Changes:
+	* Assemblies no longer compile if the ``RISKOFRAIN2`` definition is missing in the project
+	* Added editor scripts for R2API
+		* Added inspector for R2APISerializableContentPack
+		* Added property drawers for AddressReferencedAssets
+		* Assembly only compiles if either ``RiskOfThunder-R2API_ContentManagement`` or ``RiskOfThunder-R2API_Addressables`` are present in the project.
+
+* Core Changes:
+	* Fixed issue where a null reference exception gets thrown if the XMLDoc becomes missing
+	* Fixed minor issues on the ValidatingObjectField VisualElement
+
+* RoR2EditorScripts Changes
+	* Added a new script to avoid having NGSS_DIRECTIONAL saving an Addressable Texture, causing issues with lighting
+	* 
+
 ### '4.0.4'
 
 * Fixed the assembly definition for AssetRipper's YAML shader patches not being editor only

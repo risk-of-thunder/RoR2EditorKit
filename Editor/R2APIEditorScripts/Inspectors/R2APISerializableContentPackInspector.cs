@@ -53,7 +53,7 @@ namespace RoR2EditorKit.R2APIRelated.Inspectors
                 actionStatusCheck = HasManifestSelected,
                 menuAction = AutoPopulate,
                 menuName = "Auto Populate",
-                userData = GetArrayType(property.bindingPath)
+                userData = new SerializableContentPackUtil.ContentArray(TargetType, property.bindingPath)
             });
         }
 
@@ -70,7 +70,7 @@ namespace RoR2EditorKit.R2APIRelated.Inspectors
             var manifest = (Manifest)manifestField.objectField.value;
             var assemblyDefinitionDatum = manifest.Data.OfType<AssemblyDefinitions>().FirstOrDefault();
             var assetBundleDefinitionDatum = manifest.Data.OfType<AssetBundleDefinitions>().FirstOrDefault();
-            ContentArray contentArray = (ContentArray)action.userData;
+            SerializableContentPackUtil.ContentArray contentArray = (SerializableContentPackUtil.ContentArray)action.userData;
 
             if(contentArray.contentType == typeof(SerializableEntityStateType) && assemblyDefinitionDatum)
             {
@@ -86,32 +86,22 @@ namespace RoR2EditorKit.R2APIRelated.Inspectors
             }
         }
 
-        private void AddEntityStates(AssemblyDefinitions assemblyDefinitionDatum, ContentArray contentArray)
+        private void AddEntityStates(AssemblyDefinitions assemblyDefinitionDatum, SerializableContentPackUtil.ContentArray contentArray)
         {
             Assembly[] assemblies = assemblyDefinitionDatum.definitions.Select(GetAssemblyFromAssemblyDefinition).ToArray();
 
-            List<SerializableEntityStateType> serializableTypes = new List<SerializableEntityStateType>();
-            foreach (var assembly in assemblies)
-            {
-                var entityStateTypes = assembly.GetTypesSafe()
-                    .Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(EntityState)))
-                    .Select(t => new SerializableEntityStateType(t));
-                serializableTypes.AddRange(entityStateTypes);
-            }
-
-            contentArray.arrayField.SetValue(target, serializableTypes.ToArray());
+            SerializableContentPackUtil.SetEntityStates(assemblies, contentArray);
         }
 
-        private void AddGameObjects(AssetBundleDefinitions assetBundles, ContentArray contentArray)
+        private void AddGameObjects(AssetBundleDefinitions assetBundles, SerializableContentPackUtil.ContentArray contentArray)
         {
             List<Object> assetsFromBundleDefs = new List<Object>();
             foreach (var bundle in assetBundles.assetBundles)
             {
-                GetAssetsFromBundle(bundle.assets, assetsFromBundleDefs, IsValid);
+                AssetDatabaseUtils.GetAllAssetsFromInput(bundle.assets, assetsFromBundleDefs, IsValid);
             }
 
-            GameObject[] array = assetsFromBundleDefs.Cast<GameObject>().ToArray();
-            contentArray.arrayField.SetValue(target, array);
+            SerializableContentPackUtil.SetGameObjects(assetsFromBundleDefs.OfType<GameObject>(), contentArray);
 
             bool IsValid(Object obj)
             {
@@ -132,47 +122,19 @@ namespace RoR2EditorKit.R2APIRelated.Inspectors
             }
         }
 
-        private void AddScriptableObjects(AssetBundleDefinitions assetBundles, ContentArray contentArray)
+        private void AddScriptableObjects(AssetBundleDefinitions assetBundles, SerializableContentPackUtil.ContentArray contentArray)
         {
             List<Object> assetsFromBundles = new List<Object>();
             foreach(var bundle in assetBundles.assetBundles)
             {
-                GetAssetsFromBundle(bundle.assets, assetsFromBundles, IsValid);
+                AssetDatabaseUtils.GetAllAssetsFromInput(bundle.assets, assetsFromBundles, IsValid);
             }
 
-            var array = Array.CreateInstance(contentArray.contentType, assetsFromBundles.Count);
-            for (int i = 0; i < array.Length; i++)
-            {
-                array.SetValue(assetsFromBundles[i], i);
-            }
-            contentArray.arrayField.SetValue(target, array);
+            SerializableContentPackUtil.SetScriptableObjects(contentArray.contentType, assetsFromBundles.OfType<ScriptableObject>(), contentArray);
 
             bool IsValid(Object obj)
             {
                 return (obj is ScriptableObject && (obj.GetType() == contentArray.contentType || obj.GetType().IsSubclassOf(contentArray.contentType)));
-            }
-        }
-
-        private static void GetAssetsFromBundle(IEnumerable<Object> inputAssets, List<Object> outputAssets, Func<Object, bool> filter)
-        {
-            foreach (var asset in inputAssets)
-            {
-                var assetPath = AssetDatabase.GetAssetPath(asset);
-
-                if (AssetDatabase.IsValidFolder(assetPath))
-                {
-                    var files = Directory.GetFiles(assetPath, "*", SearchOption.AllDirectories);
-                    var assets = files.Select(path => AssetDatabase.LoadAssetAtPath<Object>(path));
-                    GetAssetsFromBundle(assets, outputAssets, filter);
-                }
-                else if (asset is UnityPackage up)
-                {
-                    GetAssetsFromBundle(up.AssetFiles, outputAssets, filter);
-                }
-                else if(filter(asset))
-                {
-                    outputAssets.Add(asset);
-                }
             }
         }
 
@@ -183,26 +145,6 @@ namespace RoR2EditorKit.R2APIRelated.Inspectors
             {
                 return ass.GetName().Name == asmDef.name;
             });
-        }
-
-        private ContentArray GetArrayType(string bindingPath)
-        {
-            Type t = TargetType.GetType();
-            FieldInfo fieldInfo = t.GetField(bindingPath, BindingFlags.Instance | BindingFlags.Public);
-            Type collectionType = fieldInfo.FieldType;
-            return new ContentArray
-            {
-                arrayField = fieldInfo,
-                contentType = collectionType.GetElementType(),
-                fieldName = bindingPath
-            };
-        }
-
-        private class ContentArray
-        {
-            public FieldInfo arrayField;
-            public Type contentType;
-            public string fieldName;
         }
 
         [Serializable]
