@@ -21,12 +21,33 @@ namespace RoR2EditorKit.VisualElements
         //We do not inherit from <see cref="ObjectField.UxmlTraits"/> despite using an ObjectField internally, this is due to the Objectfield traits being private instead of protected, which means we cant set the field's properties to the bag's values.
         public new class UxmlTraits : VisualElement.UxmlTraits
         {
+            private UxmlStringAttributeDescription m_Label = new UxmlStringAttributeDescription
+            {
+                name = VisualElementUtil.NormalizeNameForUXMLTrait(nameof(label)),
+                defaultValue = "Label"
+            };
+
+            private UxmlStringAttributeDescription m_BindingPath = new UxmlStringAttributeDescription
+            {
+                name = VisualElementUtil.NormalizeNameForUXMLTrait(nameof(bindingPath))
+            };
+
             private UxmlBoolAttributeDescription m_AllowSceneObjects = new UxmlBoolAttributeDescription
             {
                 name = VisualElementUtil.NormalizeNameForUXMLTrait(nameof(allowSceneObjects)),
                 defaultValue = true
             };
+
+            public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc)
+            {
+                base.Init(ve, bag, cc);
+                ValidatingObjectField field = (ValidatingObjectField)ve;
+                field.bindingPath = m_BindingPath.GetValueFromBag(bag, cc);
+                field.allowSceneObjects = m_AllowSceneObjects.GetValueFromBag(bag, cc);
+                field.label = m_Label.GetValueFromBag(bag, cc);
+            }
         }
+        public string label { get => objectField.label; set => objectField.label = value; }
         public override IBinding binding { get => objectField.binding; set => objectField.binding = value; }
         public override string bindingPath { get => objectField.bindingPath; set => objectField.bindingPath = value; }
         /// <summary>

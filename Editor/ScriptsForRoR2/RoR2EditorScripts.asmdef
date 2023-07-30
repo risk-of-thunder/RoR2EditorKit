@@ -22,7 +22,9 @@
         "LegacyResourcesAPI.dll"
     ],
     "autoReferenced": true,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "RISKOFRAIN2"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }

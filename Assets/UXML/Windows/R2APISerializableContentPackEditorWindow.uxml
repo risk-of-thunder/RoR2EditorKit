@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:VisualElement name="Header" class="genericHolder" style="height: auto;">
+        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ScriptableObjectInspector.uss" />
+        <uie:ObjectField label="Manifest" name="ManifestField" tooltip="The Manifest of this SerializableContentPack, setting this allows you to scan your manifest for asset types for your SerializableContentPack" />
+    </ui:VisualElement>
+    <ui:VisualElement name="Body" class="genericHolder" style="flex-direction: row; height: 100%;">
+        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ScriptableObjectInspector.uss" />
+        <RoR2EditorKit.VisualElements.ExtendedListView collection-resizable="false" create-context-menu-wrappers="false" name="ContentPackButtonsList" base-list-view-height-pixels="500" style="width: 50%;" />
+        <ui:VisualElement name="ContentPackArrayContent" style="width: 50%; height: auto;">
+            <uie:PropertyField name="ContentPackContent" />
+            <ui:Button text="Auto Populate" name="AutoPopulateContent" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
