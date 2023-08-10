@@ -61,8 +61,10 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                     return;
                 }
                 SerializedProperty prop = jumpVelocity.GetBindedProperty(serializedObject);
-                float val = Trajectory.CalculateInitialYSpeed(TargetType.time, TargetType.targetElevationTransform.position.y);
-                prop.vector3Value = new Vector3(TargetType.targetElevationTransform.position.x / TargetType.time, val, TargetType.targetElevationTransform.position.z / TargetType.time);
+                float yInitSpeed = Trajectory.CalculateInitialYSpeed(TargetType.time, TargetType.targetElevationTransform.position.y - TargetType.gameObject.transform.position.y);
+                float xOffset = TargetType.targetElevationTransform.position.x - TargetType.gameObject.transform.position.x;
+                float zOffset = TargetType.targetElevationTransform.position.z - TargetType.gameObject.transform.position.z;
+                prop.vector3Value = new Vector3(xOffset / TargetType.time, yInitSpeed, zOffset / TargetType.time);
                 serializedObject.ApplyModifiedProperties();
             }
         }
