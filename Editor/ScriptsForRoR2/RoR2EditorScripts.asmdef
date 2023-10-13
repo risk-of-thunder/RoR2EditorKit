@@ -19,7 +19,8 @@
         "HGUnityUtils.dll",
         "Unity.ResourceManager.dll",
         "Unity.Addressables.dll",
-        "LegacyResourcesAPI.dll"
+        "LegacyResourcesAPI.dll",
+        "KinematicCharacterController.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [
