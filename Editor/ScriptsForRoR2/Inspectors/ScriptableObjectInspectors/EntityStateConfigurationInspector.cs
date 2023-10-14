@@ -1,6 +1,7 @@
 ﻿using HG.GeneralSerializer;
 using RoR2;
 using RoR2EditorKit.Inspectors;
+using RoR2EditorKit.RoR2Related.PropertyDrawers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,8 @@ using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+
+
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
@@ -19,33 +22,27 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         public bool UsesTokenForPrefix => false;
 
-        private delegate object FieldDrawHandler(GUIContent labelTooltip, object value, FieldInfo field);
-        private static readonly Dictionary<Type, FieldDrawHandler> typeDrawers = new Dictionary<Type, FieldDrawHandler>
-        {
-            [typeof(bool)] = (labelTooltip, value, field) => EditorGUILayout.Toggle(labelTooltip, (bool)value),
-            [typeof(long)] = (labelTooltip, value, field) => EditorGUILayout.LongField(labelTooltip, (long)value),
-            [typeof(int)] = (labelTooltip, value, field) => TryDrawEnumField(labelTooltip, (int)value, field) ?? EditorGUILayout.IntField(labelTooltip, (int)value),
-            [typeof(float)] = (labelTooltip, value, field) => EditorGUILayout.FloatField(labelTooltip, (float)value),
-            [typeof(double)] = (labelTooltip, value, field) => EditorGUILayout.DoubleField(labelTooltip, (double)value),
-            [typeof(string)] = (labelTooltip, value, field) => EditorGUILayout.TextField(labelTooltip, (string)value),
-            [typeof(Vector2)] = (labelTooltip, value, field) => EditorGUILayout.Vector2Field(labelTooltip, (Vector2)value),
-            [typeof(Vector3)] = (labelTooltip, value, field) => EditorGUILayout.Vector3Field(labelTooltip, (Vector3)value),
-            [typeof(Color)] = (labelTooltip, value, field) => EditorGUILayout.ColorField(labelTooltip, (Color)value),
-            [typeof(Color32)] = (labelTooltip, value, field) => (Color32)EditorGUILayout.ColorField(labelTooltip, (Color32)value),
-            [typeof(AnimationCurve)] = (labelTooltip, value, field) => EditorGUILayout.CurveField(labelTooltip, (AnimationCurve)value ?? new AnimationCurve()),
-        };
+        private delegate object FieldDrawHandler(GUIContent labelTooltip, object value);
+        private static readonly Dictionary<Type, FieldDrawHandler> typeDrawers = new Dictionary<Type, FieldDrawHandler>();
+
+#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
+        private static FieldDrawHandler enumFlagsTypeHandler;
+        private static FieldDrawHandler enumTypeHandler;
+#endif
 
         private static readonly Dictionary<Type, Func<object>> specialDefaultValueCreators = new Dictionary<Type, Func<object>>
         {
             [typeof(AnimationCurve)] = () => new AnimationCurve(),
         };
 
-        private static readonly ConditionalWeakTable<FieldInfo, Type> enumFieldsCache = new ConditionalWeakTable<FieldInfo, Type>();
-
         private Type entityStateType;
         private readonly List<FieldInfo> serializableStaticFields = new List<FieldInfo>();
         private readonly List<FieldInfo> serializableInstanceFields = new List<FieldInfo>();
 
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+        }
         protected override void DrawInspectorGUI()
         {
             DrawInspectorElement.Clear();
@@ -152,21 +149,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                     stringValue = string.IsNullOrWhiteSpace(stringValue.stringValue) ? null : stringValue.stringValue
                 };
 
-                if (typeDrawers.TryGetValue(fieldInfo.FieldType, out var drawer))
-                {
-                    EditorGUI.BeginChangeCheck();
-                    var newValue = drawer(guiContent, serializedValue.GetValue(fieldInfo), fieldInfo);
-
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        serializedValue.SetValue(fieldInfo, newValue);
-                        stringValue.stringValue = serializedValue.stringValue;
-                    }
-                }
-                else
-                {
-                    DrawUnrecognizedField(field);
-                }
+                DrawFieldUsingDrawers(fieldInfo, field, guiContent, stringValue, ref serializedValue);
             }
         }
 
@@ -190,11 +173,11 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             var serializedValue = new SerializedValue();
             if (specialDefaultValueCreators.TryGetValue(fieldInfo.FieldType, out var creator))
             {
-                serializedValue.SetValue(fieldInfo, creator());
+                SetValue(fieldInfo, ref serializedValue, creator());
             }
             else
             {
-                serializedValue.SetValue(fieldInfo, fieldInfo.FieldType.IsValueType ? Activator.CreateInstance(fieldInfo.FieldType) : (object)null);
+                SetValue(fieldInfo, ref serializedValue, fieldInfo.FieldType.IsValueType ? Activator.CreateInstance(fieldInfo.FieldType) : (object)null);
             }
 
             fieldValueProperty.FindPropertyRelative(nameof(SerializedValue.stringValue)).stringValue = serializedValue.stringValue;
@@ -216,7 +199,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             var allFieldsInType = entityStateType.GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
             var filteredFields = allFieldsInType.Where(fieldInfo =>
             {
-                bool canSerialize = SerializedValue.CanSerializeField(fieldInfo);
+                bool canSerialize = CanSerialize(fieldInfo);
                 bool shouldSerialize = !fieldInfo.IsStatic || (fieldInfo.DeclaringType == entityStateType);
                 bool doesNotHaveAttribute = fieldInfo.GetCustomAttribute<HideInInspector>() == null;
                 bool notConstant = !fieldInfo.IsLiteral;
@@ -252,26 +235,190 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 return true;
         }
 
-        private static int? TryDrawEnumField(GUIContent labelTooltip, int value, FieldInfo field)
+        private bool CanSerialize(FieldInfo fieldInfo)
         {
-            if (!enumFieldsCache.TryGetValue(field, out var enumType))
+#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
+            Type fieldType = fieldInfo.FieldType;
+            if(!typeof(UnityEngine.Object).IsAssignableFrom(fieldType) && !EditorStringSerializer.CanSerializeType(fieldType))
             {
-                var enumMask = field.GetCustomAttribute<EnumMaskAttribute>();
-                enumType = enumMask?.enumType;
-                if (!enumType?.IsEnum ?? true)
+                return false;
+            }
+
+            if(fieldInfo.IsStatic && fieldInfo.IsPublic)
+            {
+                return true;
+            }
+            return fieldInfo.GetCustomAttribute<SerializeField>() != null;
+#else
+            return SerializedValue.CanSerializeField(fieldInfo);
+#endif
+        }
+
+        private void DrawFieldUsingDrawers(FieldInfo fieldInfo, SerializedProperty field, GUIContent guiContent, SerializedProperty stringValue, ref SerializedValue serializedValue)
+        {
+#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
+            Type fieldType = fieldInfo.FieldType;
+            if(typeDrawers.TryGetValue(fieldType, out var drawer))
+            {
+                EditorGUI.BeginChangeCheck();
+                var newValue = drawer(guiContent, GetValue(fieldInfo, ref serializedValue));
+
+                if(EditorGUI.EndChangeCheck())
                 {
-                    enumFieldsCache.Add(field, null);
-                    return null;
+                    SetValue(fieldInfo, ref serializedValue, newValue);
+                    stringValue.stringValue = serializedValue.stringValue;
                 }
-
-                enumFieldsCache.Add(field, enumType);
             }
-            else if (enumType == null)
+            else if(fieldType.IsEnum)
             {
-                return null;
+                object newValue;
+                EditorGUI.BeginChangeCheck();
+                if (fieldType.GetCustomAttribute<FlagsAttribute>() != null || fieldType.GetCustomAttribute<EnumMaskAttribute>() != null)
+                {
+                    newValue = enumFlagsTypeHandler(guiContent, GetValue(fieldInfo, ref serializedValue));
+                }
+                else
+                {
+                    newValue = enumTypeHandler(guiContent, GetValue(fieldInfo, ref serializedValue));
+                }
+                if(EditorGUI.EndChangeCheck())
+                {
+                    SetValue(fieldInfo, ref serializedValue, newValue);
+                    stringValue.stringValue = serializedValue.stringValue;
+                }
+                return;
             }
+            else
+            {
+                DrawUnrecognizedField(field);
+            }
+#else
+            if (typeDrawers.TryGetValue(fieldInfo.FieldType, out var drawer))
+            {
+                EditorGUI.BeginChangeCheck();
+                var newValue = drawer(guiContent, GetValue(fieldInfo));
 
-            return Convert.ToInt32(EditorGUILayout.EnumFlagsField(labelTooltip, (Enum)Enum.ToObject(enumType, value)));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    serializedValue.SetValue(fieldInfo, newValue);
+                    stringValue.stringValue = serializedValue.stringValue;
+                }
+            }
+            else
+            {
+                DrawUnrecognizedField(field);
+            }
+#endif
+        }
+
+        private object GetValue(FieldInfo field, ref SerializedValue serializedValue)
+        {
+#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
+            Type fieldType = field.FieldType;
+            if(typeof(UnityEngine.Object).IsAssignableFrom(fieldType))
+            {
+                if((object)serializedValue.objectValue != null)
+                {
+                    Type type = serializedValue.objectValue.GetType();
+                    if(!fieldType.IsAssignableFrom(type))
+                    {
+                        if(type == typeof(UnityEngine.Object))
+                        {
+                            return null;
+                        }
+                    }
+                }
+                return serializedValue.objectValue;
+            }
+            if(EditorStringSerializer.CanSerializeType(fieldType) && serializedValue.stringValue != null)
+            {
+                try
+                {
+                    return EditorStringSerializer.Deserialize(serializedValue.stringValue, fieldType);
+                }
+                catch (StringSerializerException ex)
+                {
+                    Debug.LogWarningFormat("Could not deserialize field '{0}.{1}': {2}", field.DeclaringType.Name, field.Name, ex);
+                }
+            }
+            if (fieldType.IsValueType)
+            {
+                return Activator.CreateInstance(fieldType);
+            }
+            return null;
+#else
+            serializedValue.GetValue(field);
+#endif
+        }
+
+        private void SetValue(FieldInfo fieldInfo, ref SerializedValue serializedValue, object newValue)
+        {
+#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
+            try
+            {
+                serializedValue.stringValue = null;
+                serializedValue.objectValue = null;
+
+                if(typeof(UnityEngine.Object).IsAssignableFrom(fieldInfo.FieldType))
+                {
+                    serializedValue.objectValue = (UnityEngine.Object)newValue;
+                    return;
+                }
+                if(EditorStringSerializer.CanSerializeType(fieldInfo.FieldType))
+                {
+                    serializedValue.stringValue = EditorStringSerializer.Serialize(newValue, fieldInfo.FieldType);
+                    return;
+                }
+                throw new Exception($"Unrecognized type \"{fieldInfo.FieldType.FullName}\".");
+            }
+            catch(Exception e)
+            {
+                throw new Exception($"Could not serialize field \"{fieldInfo.DeclaringType.FullName}.{fieldInfo.Name}\"", e);
+            }
+#else
+            serializedValue.SetValue(fieldInfo, newValue);
+#endif
+        }
+
+        static EntityStateConfigurationInspector()
+        {
+            typeDrawers.Add(typeof(bool), (labelTooltip, value) => EditorGUILayout.Toggle(labelTooltip, (bool)value));
+            typeDrawers.Add(typeof(long), (labelTooltip, value) => EditorGUILayout.LongField(labelTooltip, (long)value));
+            typeDrawers.Add(typeof(int), (labelTooltip, value) => EditorGUILayout.IntField(labelTooltip, (int)value));
+            typeDrawers.Add(typeof(float), (labelTooltip, value) => EditorGUILayout.FloatField(labelTooltip, (float)value));
+            typeDrawers.Add(typeof(double), (labelTooltip, value) => EditorGUILayout.DoubleField(labelTooltip, (double)value));
+            typeDrawers.Add(typeof(string), (labelTooltip, value) => EditorGUILayout.TextField(labelTooltip, (string)value));
+            typeDrawers.Add(typeof(Vector2), (labelTooltip, value) => EditorGUILayout.Vector2Field(labelTooltip, (Vector2)value));
+            typeDrawers.Add(typeof(Vector3), (labelTooltip, value) => EditorGUILayout.Vector3Field(labelTooltip, (Vector3)value));
+            typeDrawers.Add(typeof(Color), (labelTooltip, value) => EditorGUILayout.ColorField(labelTooltip, (Color)value));
+            typeDrawers.Add(typeof(Color32), (labelTooltip, value) => (Color32)EditorGUILayout.ColorField(labelTooltip, (Color32)value));
+            typeDrawers.Add(typeof(AnimationCurve), (labelTooltip, value) => EditorGUILayout.CurveField(labelTooltip, (AnimationCurve)value ?? new AnimationCurve()));
+
+#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
+            typeDrawers.Add(typeof(LayerMask), (labelTooltip, value) => EditorGUILayout.LayerField(labelTooltip, (LayerMask)value));
+            typeDrawers.Add(typeof(Vector4), (labelTooltip, value) => EditorGUILayout.Vector4Field(labelTooltip, (Vector4)value));
+            typeDrawers.Add(typeof(Rect), (labelTooltip, value) => EditorGUILayout.RectField(labelTooltip, (Rect)value));
+            typeDrawers.Add(typeof(RectInt), (labelTooltip, value) => EditorGUILayout.RectIntField(labelTooltip, (RectInt)value));
+            typeDrawers.Add(typeof(char), (labelTooltip, value) =>
+            {
+                string val = ((char)value).ToString();
+                val = EditorGUILayout.TextField(labelTooltip, val);
+                return val.ToCharArray().FirstOrDefault();
+            });
+            typeDrawers.Add(typeof(Bounds), (labelTooltip, value) => EditorGUILayout.BoundsField(labelTooltip, (Bounds)value));
+            typeDrawers.Add(typeof(BoundsInt), (labelTooltip, value) => EditorGUILayout.BoundsIntField(labelTooltip, (BoundsInt)value));
+            typeDrawers.Add(typeof(Quaternion), (labelTooltip, value) =>
+            {
+                Quaternion quat = (Quaternion)value;
+                Vector3 euler = quat.eulerAngles;
+                euler = EditorGUILayout.Vector3Field(labelTooltip, euler);
+                return Quaternion.Euler(euler);
+            });
+            typeDrawers.Add(typeof(Vector2Int), (labelTooltip, value) => EditorGUILayout.Vector2IntField(labelTooltip, (Vector2Int)value));
+            typeDrawers.Add(typeof(Vector3Int), (labelTooltip, value) => EditorGUILayout.Vector3IntField(labelTooltip, (Vector3Int)value));
+            enumFlagsTypeHandler = (labelTooltip, value) => EditorGUILayout.EnumFlagsField(labelTooltip, (Enum)value);
+            enumTypeHandler = (labelTooltip, value) => EditorGUILayout.EnumPopup(labelTooltip, (Enum)value);
+#endif
         }
     }
 }

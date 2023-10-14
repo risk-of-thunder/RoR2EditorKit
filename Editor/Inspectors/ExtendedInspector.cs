@@ -50,30 +50,13 @@ namespace RoR2EditorKit.Inspectors
         /// </summary>
         public static RoR2EditorKitSettings Settings { get => ThunderKit.Core.Data.ThunderKitSetting.GetOrCreateSettings<RoR2EditorKitSettings>(); }
 
-        /// <summary>
-        /// The setting for this inspector
-        /// </summary>
-        public EditorInspectorSettings.InspectorSetting InspectorSetting
+        public EditorSetting EditorSettings
         {
             get
             {
-                if (_inspectorSetting == null)
-                {
-                    _inspectorSetting = Settings.InspectorSettings.GetOrCreateInspectorSetting(GetType()); ;
-                }
-                return _inspectorSetting;
-            }
-            set
-            {
-                if (_inspectorSetting != value)
-                {
-                    var index = Settings.InspectorSettings.inspectorSettings.IndexOf(_inspectorSetting);
-                    Settings.InspectorSettings.inspectorSettings[index] = value;
-                    _inspectorSetting = value;
-                }
+                return Settings.EditorSettings.GetEditorSetting(GetType());
             }
         }
-        private EditorInspectorSettings.InspectorSetting _inspectorSetting;
 
         /// <summary>
         /// Check if the inspector is enabled
@@ -83,13 +66,14 @@ namespace RoR2EditorKit.Inspectors
         {
             get
             {
-                return InspectorSetting.isEnabled;
+                return EditorSettings.GetSettingValue<bool>("IsEnabled", true);
             }
             set
             {
-                if (value != InspectorSetting.isEnabled)
+                var origValue = EditorSettings.GetSettingValue<bool>("IsEnabled");
+                if(origValue != value)
                 {
-                    InspectorSetting.isEnabled = value;
+                    EditorSettings.SetSettingValue("IsEnabled", value);
                     OnInspectorEnabledChange();
                 }
             }
@@ -202,7 +186,7 @@ namespace RoR2EditorKit.Inspectors
             if (this == null || serializedObject == null || serializedObject.targetObject == null)
                 return;
 
-            if (serializedObject.targetObject && Settings.InspectorSettings.enableNamingConventions && this is IObjectNameConvention objNameConvention)
+            if (serializedObject.targetObject && Settings.EditorSettings.enableNamingConventions && this is IObjectNameConvention objNameConvention)
             {
                 PrefixData data = objNameConvention.GetPrefixData();
 

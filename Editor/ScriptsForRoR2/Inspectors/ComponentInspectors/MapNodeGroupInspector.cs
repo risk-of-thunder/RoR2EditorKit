@@ -36,8 +36,10 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         private float maxDistance = 0;
         private Transform parentGameObject;
 
+        private HullMask test;
         protected override void OnEnable()
         {
+            test = EditorSettings.GetSettingValue("ForbiddenHulls", HullMask.BeetleQueen);
             base.OnEnable();
             var egu = typeof(EditorGUIUtility);
             var flags = BindingFlags.InvokeMethod | BindingFlags.Static | BindingFlags.NonPublic;

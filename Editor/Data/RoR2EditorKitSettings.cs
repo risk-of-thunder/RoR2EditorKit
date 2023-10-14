@@ -30,15 +30,12 @@ namespace RoR2EditorKit.Data
         /// </summary>
         public bool madeRoR2EKAssetsNonEditable = false;
 
-        /// <summary>
-        /// Direct access to RoR2EditorKit's Inspector Settings
-        /// </summary>
-        public EditorInspectorSettings InspectorSettings { get => GetOrCreateSettings<EditorInspectorSettings>(); }
+        public EditorSettings EditorSettings => GetOrCreateSettings<EditorSettings>();
 
         /// <summary>
         /// Direct access to RoR2EditorKit's MaterialEditorSettings
         /// </summary>
-        public MaterialEditorSettings MaterialEditorSettings { get => GetOrCreateSettings<MaterialEditorSettings>(); }
+        public MaterialEditorSettings MaterialEditorSettings => GetOrCreateSettings<MaterialEditorSettings>();
 
         public override void Initialize() => tokenPrefix = "";
 

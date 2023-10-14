@@ -14,7 +14,7 @@ namespace RoR2EditorKit
         private static MethodInfo _gridSizeGetMethod;
         public static Vector3 RoundToNearestGrid(Vector3 position, Vector3? gridSize = null)
         {
-            gridSize ??= (Vector3)_gridSizeGetMethod.Invoke(null, null);
+            gridSize = gridSize ?? (Vector3)_gridSizeGetMethod.Invoke(null, null);
 
             var x = RoundToNearestGridValue(position.x, gridSize.Value.x);
             var y = RoundToNearestGridValue(position.y, gridSize.Value.y);

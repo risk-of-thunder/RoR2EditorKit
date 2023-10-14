@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEngine;
 
 namespace RoR2EditorKit.CodeGen
 {
@@ -21,7 +23,7 @@ namespace RoR2EditorKit.CodeGen
             if (File.Exists(data.desiredPath))
             {
                 var existingCode = File.ReadAllText(data.desiredPath);
-                if (existingCode == code || existingCode.WithAllWhitespaceStripped() == code.WithAllWhitespaceStripped())
+                if (existingCode == code || WithAllWhitespaceStripped(existingCode) == WithAllWhitespaceStripped(code))
                     return false;
             }
 
@@ -42,6 +44,19 @@ namespace RoR2EditorKit.CodeGen
             AssetDatabase.MakeEditable(path);
 
             File.WriteAllText(path, code);
+        }
+
+        private static string WithAllWhitespaceStripped(string str)
+        {
+            var buffer = new StringBuilder();
+            foreach(var ch in str)
+            {
+                if(!char.IsWhiteSpace(ch))
+                {
+                    buffer.Append(ch);
+                }
+            }
+            return buffer.ToString();
         }
     }
 }
