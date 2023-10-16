@@ -59,6 +59,9 @@ namespace RoR2EditorKit.Inspectors
         }
         private static RoR2EditorKitSettings _settings;
 
+        /// <summary>
+        /// Retrieves the EditorSettings for this Inspector
+        /// </summary>
         public EditorSetting EditorSettings
         {
             get
@@ -351,12 +354,7 @@ namespace RoR2EditorKit.Inspectors
         protected abstract void DrawInspectorGUI();
 
         #region Util Methods
-        /// <summary>
-        /// Creates a HelpBox and attatches it to a visualElement using IMGUIContainer
-        /// </summary>
-        /// <param name="message">The message that'll appear on the help box</param>
-        /// <param name="messageType">The type of message</param>
-        /// <returns>An IMGUIContainer that's either not attached to anything, attached to the RootElement, or attached to the elementToAttach argument.</returns>
+
         [Obsolete("IMGUIContainer helpBoxes are no longer maintained, use the HelpBox VisualElement, or the CreateHelpBox(string, MessageType, bool, Action) method")]
         protected IMGUIContainer CreateHelpBox(string message, MessageType messageType)
         {
@@ -370,6 +368,14 @@ namespace RoR2EditorKit.Inspectors
             return container;
         }
 
+        ///<summary>
+        /// Creates a HelpBox
+        /// </summary>
+        /// <param name="message">The message that'll appear on the help box, either as straight text or as a tooltip</param>
+        /// <param name="messageType">The severity of the message</param>
+        /// <param name="isExplicit"> If true, the message is displayed with a label alongside an icon, if false, the text is stored and displayed as a tooltip when hovering over the HelpBox's Icon.</param>
+        /// <param name="evt">An event to create a context menu for the help box.</param>
+        /// <returns>A HelpBox</returns>
         protected HelpBox CreateHelpBox(string message, MessageType messageType, bool isExplicit, Action<ContextualMenuPopulateEvent> evt = null)
         {
             return new HelpBox(message, messageType, isExplicit, evt);
@@ -379,6 +385,22 @@ namespace RoR2EditorKit.Inspectors
         protected void AddSimpleContextMenu(VisualElement element, ContextMenuData contextMenuData)
         {
             element.AddSimpleContextMenu(new RoR2EditorKit.ContextMenuData(contextMenuData.menuName, contextMenuData.menuAction, contextMenuData.actionStatusCheck));
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="EditorSetting.GetSetting{T}(string, T)"/>
+        /// </summary>
+        protected T1 GetSetting<T1>(string settingName, T1 defaultValue = default)
+        {
+            return EditorSettings.GetSetting(settingName, defaultValue);
+        }
+
+        /// <summary>
+        /// <inheritdoc cref="EditorSetting.SetSetting(string, object)"/>
+        /// </summary>
+        protected void SetSetting(string settingName, object value)
+        {
+            EditorSettings.SetSetting(settingName, value);
         }
         #endregion
     }

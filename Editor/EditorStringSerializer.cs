@@ -11,10 +11,24 @@ namespace RoR2EditorKit
 {
     /// <summary>
     /// An extension of the <see cref="HG.GeneralSerializer.StringSerializer"/>
-    /// <br>Note that this should not be used on anything but editor related scripts, as it contains extra serializers.</br>
+    /// <br>Note that this should not be used on anything but editor related scripts, as it contains extra serializers. UNLESS the BepInExPack for ROR2 is installed.</br>
     /// <br>The EditorStringSerializer calls first the <see cref="HG.GeneralSerializer.StringSerializer"/> and checks if RoR2 already supports it, if not, RoR2EK uses custom handlers for serializing extra values.</br>
-    /// <para>It includes extra serializers that are not found in the HG.GeneralSerializer, which includes:</para>
+    /// <para>In total, the EditorStringSerializer can serialize the following types:</para>
     /// <list type="bullet">
+    /// <item>bool [*]</item>
+    /// <item>long [*]</item>
+    /// <item>ulong [*]</item>
+    /// <item>int [*]</item>
+    /// <item>uint [*]</item>
+    /// <item>short [*]</item>
+    /// <item>ushort [*]</item>
+    /// <item>float [*]</item>
+    /// <item>double [*]</item>
+    /// <item>string [*]</item>
+    /// <item>Vector2 [*]</item>
+    /// <item>Vector3 [*]</item>
+    /// <item>Color [*]</item>
+    /// <item>Animation Curve [*]</item>
     /// <item>LayerMask</item>
     /// <item>Vector4</item>
     /// <item>Rect</item>
@@ -27,6 +41,7 @@ namespace RoR2EditorKit
     /// <item>Vector3Int</item>
     /// <item>Any Enum</item>
     /// </list>
+    /// <br>(Items suffixed with an [*] are already serializeed by <see cref="HG.GeneralSerializer.StringSerializer"/></br>
     /// <br>If you feel like there should be another special serializer, create an issue in the Github</br>
     /// </summary>
     public static class EditorStringSerializer
@@ -34,6 +49,14 @@ namespace RoR2EditorKit
         private static readonly Dictionary<Type, SerializationHandler> _extendedSerializationHandlers = new Dictionary<Type, SerializationHandler>();
         private static readonly SerializationHandler _enumHandler;
         private static CultureInfo Invariant => CultureInfo.InvariantCulture;
+        
+        /// <summary>
+        /// Splits <paramref name="str"/> into components using ' ' as the <see cref="string.Split(char[])"/> argument.
+        /// <br>Throws a <see cref="FormatException"/> if the length of the string array is less than <paramref name="minimumComponentCount"/></br>
+        /// </summary>
+        /// <param name="str">The string to split</param>
+        /// <param name="type">The type of element trying to be split</param>
+        /// <param name="minimumComponentCount">The minimum components the string array should have</param>
         public static string[] SplitToComponents(string str, Type type, int minimumComponentCount)
         {
             string[] array = str.Split(' ');
@@ -44,7 +67,16 @@ namespace RoR2EditorKit
             return array;
         }
 
+        /// <summary>
+        /// Checks whether the <see cref="EditorStringSerializer"/> can serialize <typeparamref name="T"/>
+        /// </summary>
+        /// <returns>True if the Type can be serialized, false otherwise</returns>
         public static bool CanSerializeType<T>() => CanSerializeType(typeof(T));
+
+        /// <summary>
+        /// Checks whether the <see cref="EditorStringSerializer"/> can serialize <paramref name="type"/>
+        /// </summary>
+        /// <returns>True if the Type can be serialized, false otherwise</returns>
         public static bool CanSerializeType(Type type)
         {
             var canSerializeByDefault = StringSerializer.CanSerializeType(type);
@@ -55,10 +87,23 @@ namespace RoR2EditorKit
             return _extendedSerializationHandlers.ContainsKey(type) || type.IsEnum;
         }
 
+        /// <summary>
+        /// Deserializes <paramref name="str"/> into a value of type <typeparamref name="T"/>, which then can be serialized using <see cref="Serialize{T}(T)"/>
+        /// </summary>
+        /// <typeparam name="T">The type of the value</typeparam>
+        /// <param name="str">the string to deserialize</param>
+        /// <returns>The deserialized value, null if the string was not deserialized.</returns>
         public static T Deserialize<T>(string str)
         {
             return (T)Deserialize(str, typeof(T));
         }
+
+        /// <summary>
+        /// Deserializes <paramref name="str"/> into a value of <paramref name="type"/>, which then can be serialized using <see cref="Serialize(object, Type)"/>
+        /// </summary>
+        /// <param name="type">The type of the value</param>
+        /// <param name="str">the string to deserialize</param>
+        /// <returns>The deserialized value, null if the string was not deserialized.</returns>
         public static object Deserialize(string str, Type type)
         {
             object value = StringSerializer.Deserialize(type, str);
@@ -88,10 +133,24 @@ namespace RoR2EditorKit
                 }
             }
         }
+
+        /// <summary>
+        /// Serializes the <paramref name="value"/> into a string, which then can be deserialized with <see cref="Deserialize{T}(string)"/>
+        /// </summary>
+        /// <typeparam name="T">The type of the value being serialized</typeparam>
+        /// <param name="value">The value being serialized</param>
+        /// <returns>The value serialized as a string, null if the value could not be serialized</returns>
         public static string Serialize<T>(T value)
         {
             return Serialize(value, typeof(T));
         }
+
+        /// <summary>
+        /// Serializes the <paramref name="value"/> into a string, which then can be deserialized with <see cref="Deserialize(string, Type)"/>
+        /// </summary>
+        /// <param name="type">The type of the value being serialized</param>
+        /// <param name="value">The value being serialized</param>
+        /// <returns>The value serialized as a string, null if the value could not be serialized</returns>
         public static string Serialize(object value, Type type)
         {
             string serializedValue = StringSerializer.Serialize(type, value);

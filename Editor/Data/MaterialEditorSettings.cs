@@ -59,6 +59,11 @@ namespace RoR2EditorKit.Data
             rootElement.Bind(materialEditorSettingsSO);
         }
 
+        /// <summary>
+        /// Creates a new ShaderStringPair if no shader string pair exists.
+        /// </summary>
+        /// <param name="shaderName">The asset name of the shader</param>
+        /// <param name="callingType">The type that's calling this method.</param>
         public void CreateShaderStringPairIfNull(string shaderName, Type callingType)
         {
             var pair = shaderStringPairs.Find(x => x.shaderName == shaderName);

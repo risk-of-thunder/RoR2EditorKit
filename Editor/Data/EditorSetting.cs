@@ -8,11 +8,21 @@ using UnityEngine;
 
 namespace RoR2EditorKit.Data
 {
+    /// <summary>
+    /// Represents settings stored for an Editor to use.
+    /// </summary>
     [Serializable]
     public class EditorSetting
     {
+        /// <summary>
+        /// The Type that owns these settings
+        /// </summary>
         public Type OwnerType => Type.GetType(_editorTypeQualifiedName);
+        /// <summary>
+        /// A collection of all the settings stored in this EditorSetting
+        /// </summary>
         public ReadOnlyCollection<string> AllSettingNames => _serializedSettings.Select(x => x.settingName).ToList().AsReadOnly();
+
 
         [SerializeField]
         internal string _typeName;
@@ -23,6 +33,11 @@ namespace RoR2EditorKit.Data
         [SerializeField]
         internal List<SettingValue> _serializedSettings;
 
+        /// <summary>
+        /// Resets the setting specified in <paramref name="settingName"/> to it's default value
+        /// <br>* If no setting of name <paramref name="settingName"/> exists, no setting is reset.</br>
+        /// </summary>
+        /// <param name="settingName">The setting to reset</param>
         public void ResetSetting(string settingName)
         {
             int id = settingName.GetHashCode();
@@ -37,6 +52,14 @@ namespace RoR2EditorKit.Data
             }
         }
 
+        /// <summary>
+        /// Retrieves the value of the setting specified in <paramref name="settingName"/>
+        /// <br>* If no setting with the name specified exists, a new one is created with the value specified in <paramref name="defaultValue"/></br>
+        /// </summary>
+        /// <typeparam name="T">The type of the setting</typeparam>
+        /// <param name="settingName">The name of the setting</param>
+        /// <param name="defaultValue">The default value to use in case the setting does not exist</param>
+        /// <returns>The value for the setting</returns>
         public T GetSetting<T>(string settingName, T defaultValue = default)
         {
             int id = settingName.GetHashCode();
@@ -51,6 +74,14 @@ namespace RoR2EditorKit.Data
             return (T)CreateSetting(defaultValue, settingName);
         }
 
+        /// <summary>
+        /// Sets the value of the setting specified in <paramref name="settingName"/>
+        /// <br>* If no setting with the name specified exists, a new one is created with the value specified in <paramref name="value"/></br>
+        /// <br>* An <see cref="InvalidOperationException"/> gets thrown if a setting of name <paramref name="settingName"/> exists, but the ValueType of the setting is not the type of <paramref name="value"/></br>
+        /// </summary>
+        /// <param name="settingName">The name of the setting to set</param>
+        /// <param name="value">The setting's new value</param>
+        /// <exception cref="InvalidOperationException">Thrown then a setting with the name <paramref name="settingName"/> exists, but it's value type is not the type of <paramref name="value"/></exception>
         public void SetSetting(string settingName, object value)
         {
             int id = settingName.GetHashCode();
@@ -72,6 +103,10 @@ namespace RoR2EditorKit.Data
             CreateSetting(value, settingName);
         }
 
+        /// <summary>
+        /// Orders the settings in the EditorSetting in alphabetical order.
+        /// </summary>
+        /// <param name="ignoredSettings">a series of settings that are taken out of the sort. the settings specified here gets sorted and then inserted at the beginning of the rest of the settings.</param>
         public void OrderSettings(params string[] ignoredSettings)
         {
             int[] ids = ignoredSettings.Select(x => x.GetHashCode()).ToArray();

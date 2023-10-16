@@ -10,6 +10,9 @@ using UnityEngine;
 
 namespace RoR2EditorKit
 {
+    /// <summary>
+    /// A class containing a plethora of utility methods for drawing IMGUI based UI's
+    /// </summary>
     public static class IMGUIUtil
     {
         private delegate object FieldDrawHandler(GUIContent labelTooltip, object value);
@@ -20,6 +23,13 @@ namespace RoR2EditorKit
         private static FieldDrawHandler enumTypeHandler;
 #endif
 
+        /// <summary>
+        /// Draws the serialized property specified in <paramref name="prop"/> inside a <see cref="EditorGUI.BeginChangeCheck"/> block.
+        /// </summary>
+        /// <param name="prop">The property to draw</param>
+        /// <param name="propertyChangedAction">The action to trigger when the property's value changes</param>
+        /// <param name="includeChildren">Wether the property's children are also drawn</param>
+        /// <param name="label">A custom label for the field</param>
         public static void DrawCheckableProperty(SerializedProperty prop, Action propertyChangedAction, bool includeChildren = false, GUIContent label = null)
         {
             EditorGUI.BeginChangeCheck();
@@ -30,6 +40,10 @@ namespace RoR2EditorKit
                 propertyChangedAction();
             }
         }
+
+        /// <summary>
+        /// <inheritdoc cref="DrawCheckableProperty(SerializedProperty, Action, bool, GUIContent)"/>
+        /// </summary>
         public static void DrawCheckableProperty(SerializedProperty prop, Action<SerializedProperty> propertyChangedAction, bool includeChildren = true, GUIContent label = null)
         {
             EditorGUI.BeginChangeCheck();
@@ -41,26 +55,58 @@ namespace RoR2EditorKit
             }
         }
 
+        /// <summary>
+        /// Returns a label from a property
+        /// </summary>
+        /// <returns>The label for the property</returns>
         public static GUIContent GetLabelFromProperty(SerializedProperty prop)
         {
             return new GUIContent(prop.displayName, prop.tooltip);
         }
 
+        /// <summary>
+        /// Creates a button that only becomes enabled if <paramref name="condition"/> is true
+        /// </summary>
+        /// <param name="condition">The condition for the button to be clickable</param>
+        /// <param name="text">The text in the button</param>
+        /// <param name="tooltip">A tooltip for the button</param>
+        /// <param name="texture">A texture for the button</param>
+        /// <returns>True if the button was clicked, false otherwise.</returns>
         public static bool ConditionalButton(bool condition, string text, string tooltip = null, Texture texture = null)
         {
             return ConditionalButton(() => condition, text, tooltip, texture);
         }
 
+        /// <summary>
+        /// Creates a button that only becomes enabled if <paramref name="condition"/> is true
+        /// </summary>
+        /// <param name="condition">The condition for the button to be clickable</param>
+        /// <param name="label">The label for the button</param>
+        /// <returns>True if the button was clicked, false otherwise.</returns>
         public static bool ConditionalButton(bool condition, GUIContent label)
         {
             return ConditionalButton(() => condition, label);
         }
 
+        /// <summary>
+        /// Creates a button that only becomes enabled if <paramref name="condition"/> returns true
+        /// </summary>
+        /// <param name="condition">The condition for the button to be clickable</param>
+        /// <param name="text">The text in the button</param>
+        /// <param name="tooltip">A tooltip for the button</param>
+        /// <param name="texture">A texture for the button</param>
+        /// <returns>True if the button was clicked, false otherwise.</returns>
         public static bool ConditionalButton(Func<bool> condition, string text, string tooltip = null, Texture texture = null)
         {
             return ConditionalButton(condition, new GUIContent(text, texture, tooltip));
         }
 
+        /// <summary>
+        /// Creates a button that only becomes enabled if <paramref name="condition"/> returns true
+        /// </summary>
+        /// <param name="condition">The condition for the button to be clickable</param>
+        /// <param name="label">The label for the button</param>
+        /// <returns>True if the button was clicked, false otherwise.</returns>
         public static bool ConditionalButton(Func<bool> condition, GUIContent label)
         {
             EditorGUI.BeginDisabledGroup(!condition());
@@ -69,55 +115,49 @@ namespace RoR2EditorKit
             return buttonVal;
         }
 
-        public static bool ConditionalButtonAction(Action action, bool condition, string text, string tooltip = null, Texture texture = null)
-        {
-            return ConditionalButtonAction(action, () => condition, text, tooltip, texture);
-        }
-        public static bool ConditionalButtonAction(Action action, bool condition, GUIContent content)
-        {
-            return ConditionalButtonAction(action, () => condition, content);
-        }
-
-        public static bool ConditionalButtonAction(Action action, Func<bool> condition, string text, string tooltip = null, Texture texture = null)
-        {
-            return ConditionalButtonAction(action, condition, new GUIContent(text, texture, tooltip));
-        }
-
-        public static bool ConditionalButtonAction(Action action, Func<bool> condition, GUIContent content)
-        {
-            var val = ConditionalButton(condition, content);
-            if (val)
-                action();
-            return val;
-        }
-        public static bool ButtonAction(Action action, string text, string tooltip = null, Texture texture = null, params GUILayoutOption[] options) => ButtonAction(action, new GUIContent(text, texture, tooltip), options);
-
-        public static bool ButtonAction(Action action, GUIContent label, params GUILayoutOption[] options)
-        {
-            if (GUILayout.Button(label, options))
-            {
-                action();
-                return true;
-            }
-            return false;
-        }
-
+        /// <summary>
+        /// Checks if the type specified in <paramref name="type"/> can be drawn using IMGUI
+        /// </summary>
+        /// <returns>True if the type can be drawn, false otherwise</returns>
         public static bool CanDrawFieldFromType(Type type)
         {
+#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
             return typeDrawers.ContainsKey(type) || type.IsEnum;
+#else
+            return typeDrawers.ContainsKey(type);
+#endif
         }
 
+        /// <summary>
+        /// Checks if the FieldInfo specifieed in <paramref name="fieldInfo"/> can be drawn using IMGUI
+        /// </summary>
+        /// <param name="fieldInfo">The field to draw</param>
+        /// <returns>True if the type can be drawn, false otherwise</returns>
         public static bool CanDrawFieldFromFieldInfo(FieldInfo fieldInfo)
         {
-            return typeDrawers.ContainsKey(fieldInfo.FieldType) || fieldInfo.FieldType.IsEnum;
+            return CanDrawFieldFromType(fieldInfo.FieldType);
         }
 
-
+        /// <summary>
+        /// Creates a Mask field for the project's Layers
+        /// </summary>
+        /// <param name="mask">The current value of the LayerMask</param>
+        /// <param name="label">The label for the field</param>
+        /// <returns>The new modified mask</returns>
         public static LayerMask LayerMaskField(LayerMask mask, GUIContent label)
         {
             return EditorGUILayout.MaskField(label, UnityEditorInternal.InternalEditorUtility.LayerMaskToConcatenatedLayersMask(mask), UnityEditorInternal.InternalEditorUtility.layers);
         }
 
+        /// <summary>
+        /// Draws a field of type <paramref name="type"/>
+        /// <br>Throws a <see cref="NotImplementedException"/> is the type specified in <paramref name="type"/> cannot be drawn</br>
+        /// </summary>
+        /// <param name="type">The type to draw</param>
+        /// <param name="fieldValue">The value of the field</param>
+        /// <param name="newValue">The new value of the field which was picked by the user</param>
+        /// <param name="content">A label/tooltip for the field</param>
+        /// <returns>True if the value has changed and newValue has indeed a new value, false otherwise.</returns>
         public static bool DrawFieldWithType(Type type, object fieldValue, out object newValue, GUIContent content)
         {
 #if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
@@ -150,6 +190,16 @@ namespace RoR2EditorKit
 #endif
             throw new NotImplementedException($"Cannot draw a field of type {type.Name}");
         }
+
+        /// <summary>
+        /// Draws a field from the <see cref="FieldInfo"/> specified in <paramref name="fieldInfo"/>
+        /// <br>Throws a <see cref="NotImplementedException"/> if the FieldType from the FieldInfo specified in <paramref name="fieldInfo"/> cannot be drawn</br>
+        /// </summary>
+        /// <param name="fieldInfo">The Field to draw</param>
+        /// <param name="fieldValue">The value of the field</param>
+        /// <param name="newValue">The new value of the field which was picked by the user</param>
+        /// <param name="content">A label/tooltip for the field</param>
+        /// <returns>True if the value has changed and newValue has indeed a new value, false otherwise.</returns>
         public static bool DrawFieldFromFieldInfo(FieldInfo fieldInfo, object fieldValue, out object newValue, GUIContent guiContent = null)
         {
             guiContent = guiContent ?? new GUIContent
@@ -159,36 +209,7 @@ namespace RoR2EditorKit
             };
 
             Type fieldType = fieldInfo.FieldType;
-
-#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
-            if(typeDrawers.TryGetValue(fieldType, out var drawer))
-            {
-                EditorGUI.BeginChangeCheck();
-                newValue = drawer(guiContent, fieldValue);
-                return EditorGUI.EndChangeCheck();
-            }
-            else if(fieldType.IsEnum)
-            {
-                EditorGUI.BeginChangeCheck();
-                if(fieldType.GetCustomAttribute<FlagsAttribute>() != null || fieldInfo.GetCustomAttribute<EnumMaskAttribute>() != null)
-                {
-                    newValue = enumFlagsTypeHandler(guiContent, fieldValue);
-                }
-                else
-                {
-                    newValue = enumTypeHandler(guiContent, fieldValue);
-                }
-                return EditorGUI.EndChangeCheck();
-            }
-#else
-            if (typeDrawers.TryGetValue(fieldType, out var handler))
-            {
-                EditorGUI.BeginChangeCheck();
-                newValue = handler(guiContent, fieldValue);
-                return EditorGUI.EndChangeCheck();
-            }
-#endif
-            throw new NotImplementedException($"Cannot draw a field of type {fieldType.Name}");
+            return DrawFieldWithType(fieldType, fieldValue, out newValue, guiContent);
         }
 
         static IMGUIUtil()

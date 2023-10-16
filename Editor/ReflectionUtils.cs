@@ -45,6 +45,10 @@ namespace RoR2EditorKit
             return types;
         }
 
+        /// <summary>
+        /// Checks if <paramref name="givenType"/> is assignable to the type specified in <paramref name="genericType"/>
+        /// </summary>
+        /// <returns>True if the type <paramref name="givenType"/> can be assigned to <paramref name="genericType"/>, false otherwise</returns>
         public static bool IsAssignableToGenericType(Type givenType, Type genericType)
         {
             var interfaceTypes = givenType.GetInterfaces();
