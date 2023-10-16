@@ -22,14 +22,6 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         public bool UsesTokenForPrefix => false;
 
-        private delegate object FieldDrawHandler(GUIContent labelTooltip, object value);
-        private static readonly Dictionary<Type, FieldDrawHandler> typeDrawers = new Dictionary<Type, FieldDrawHandler>();
-
-#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
-        private static FieldDrawHandler enumFlagsTypeHandler;
-        private static FieldDrawHandler enumTypeHandler;
-#endif
-
         private static readonly Dictionary<Type, Func<object>> specialDefaultValueCreators = new Dictionary<Type, Func<object>>
         {
             [typeof(AnimationCurve)] = () => new AnimationCurve(),
@@ -256,51 +248,11 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private void DrawFieldUsingDrawers(FieldInfo fieldInfo, SerializedProperty field, GUIContent guiContent, SerializedProperty stringValue, ref SerializedValue serializedValue)
         {
-#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
-            Type fieldType = fieldInfo.FieldType;
-            if(typeDrawers.TryGetValue(fieldType, out var drawer))
+            if (IMGUIUtil.CanDrawFieldFromFieldInfo(fieldInfo))
             {
-                EditorGUI.BeginChangeCheck();
-                var newValue = drawer(guiContent, GetValue(fieldInfo, ref serializedValue));
-
-                if(EditorGUI.EndChangeCheck())
+                if(IMGUIUtil.DrawFieldFromFieldInfo(fieldInfo, GetValue(fieldInfo, ref serializedValue), out var newValue, guiContent))
                 {
                     SetValue(fieldInfo, ref serializedValue, newValue);
-                    stringValue.stringValue = serializedValue.stringValue;
-                }
-            }
-            else if(fieldType.IsEnum)
-            {
-                object newValue;
-                EditorGUI.BeginChangeCheck();
-                if (fieldType.GetCustomAttribute<FlagsAttribute>() != null || fieldType.GetCustomAttribute<EnumMaskAttribute>() != null)
-                {
-                    newValue = enumFlagsTypeHandler(guiContent, GetValue(fieldInfo, ref serializedValue));
-                }
-                else
-                {
-                    newValue = enumTypeHandler(guiContent, GetValue(fieldInfo, ref serializedValue));
-                }
-                if(EditorGUI.EndChangeCheck())
-                {
-                    SetValue(fieldInfo, ref serializedValue, newValue);
-                    stringValue.stringValue = serializedValue.stringValue;
-                }
-                return;
-            }
-            else
-            {
-                DrawUnrecognizedField(field);
-            }
-#else
-            if (typeDrawers.TryGetValue(fieldInfo.FieldType, out var drawer))
-            {
-                EditorGUI.BeginChangeCheck();
-                var newValue = drawer(guiContent, GetValue(fieldInfo));
-
-                if (EditorGUI.EndChangeCheck())
-                {
-                    serializedValue.SetValue(fieldInfo, newValue);
                     stringValue.stringValue = serializedValue.stringValue;
                 }
             }
@@ -308,7 +260,6 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             {
                 DrawUnrecognizedField(field);
             }
-#endif
         }
 
         private object GetValue(FieldInfo field, ref SerializedValue serializedValue)
@@ -377,47 +328,6 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             }
 #else
             serializedValue.SetValue(fieldInfo, newValue);
-#endif
-        }
-
-        static EntityStateConfigurationInspector()
-        {
-            typeDrawers.Add(typeof(bool), (labelTooltip, value) => EditorGUILayout.Toggle(labelTooltip, (bool)value));
-            typeDrawers.Add(typeof(long), (labelTooltip, value) => EditorGUILayout.LongField(labelTooltip, (long)value));
-            typeDrawers.Add(typeof(int), (labelTooltip, value) => EditorGUILayout.IntField(labelTooltip, (int)value));
-            typeDrawers.Add(typeof(float), (labelTooltip, value) => EditorGUILayout.FloatField(labelTooltip, (float)value));
-            typeDrawers.Add(typeof(double), (labelTooltip, value) => EditorGUILayout.DoubleField(labelTooltip, (double)value));
-            typeDrawers.Add(typeof(string), (labelTooltip, value) => EditorGUILayout.TextField(labelTooltip, (string)value));
-            typeDrawers.Add(typeof(Vector2), (labelTooltip, value) => EditorGUILayout.Vector2Field(labelTooltip, (Vector2)value));
-            typeDrawers.Add(typeof(Vector3), (labelTooltip, value) => EditorGUILayout.Vector3Field(labelTooltip, (Vector3)value));
-            typeDrawers.Add(typeof(Color), (labelTooltip, value) => EditorGUILayout.ColorField(labelTooltip, (Color)value));
-            typeDrawers.Add(typeof(Color32), (labelTooltip, value) => (Color32)EditorGUILayout.ColorField(labelTooltip, (Color32)value));
-            typeDrawers.Add(typeof(AnimationCurve), (labelTooltip, value) => EditorGUILayout.CurveField(labelTooltip, (AnimationCurve)value ?? new AnimationCurve()));
-
-#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
-            typeDrawers.Add(typeof(LayerMask), (labelTooltip, value) => EditorGUILayout.LayerField(labelTooltip, (LayerMask)value));
-            typeDrawers.Add(typeof(Vector4), (labelTooltip, value) => EditorGUILayout.Vector4Field(labelTooltip, (Vector4)value));
-            typeDrawers.Add(typeof(Rect), (labelTooltip, value) => EditorGUILayout.RectField(labelTooltip, (Rect)value));
-            typeDrawers.Add(typeof(RectInt), (labelTooltip, value) => EditorGUILayout.RectIntField(labelTooltip, (RectInt)value));
-            typeDrawers.Add(typeof(char), (labelTooltip, value) =>
-            {
-                string val = ((char)value).ToString();
-                val = EditorGUILayout.TextField(labelTooltip, val);
-                return val.ToCharArray().FirstOrDefault();
-            });
-            typeDrawers.Add(typeof(Bounds), (labelTooltip, value) => EditorGUILayout.BoundsField(labelTooltip, (Bounds)value));
-            typeDrawers.Add(typeof(BoundsInt), (labelTooltip, value) => EditorGUILayout.BoundsIntField(labelTooltip, (BoundsInt)value));
-            typeDrawers.Add(typeof(Quaternion), (labelTooltip, value) =>
-            {
-                Quaternion quat = (Quaternion)value;
-                Vector3 euler = quat.eulerAngles;
-                euler = EditorGUILayout.Vector3Field(labelTooltip, euler);
-                return Quaternion.Euler(euler);
-            });
-            typeDrawers.Add(typeof(Vector2Int), (labelTooltip, value) => EditorGUILayout.Vector2IntField(labelTooltip, (Vector2Int)value));
-            typeDrawers.Add(typeof(Vector3Int), (labelTooltip, value) => EditorGUILayout.Vector3IntField(labelTooltip, (Vector3Int)value));
-            enumFlagsTypeHandler = (labelTooltip, value) => EditorGUILayout.EnumFlagsField(labelTooltip, (Enum)value);
-            enumTypeHandler = (labelTooltip, value) => EditorGUILayout.EnumPopup(labelTooltip, (Enum)value);
 #endif
         }
     }

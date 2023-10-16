@@ -126,6 +126,7 @@ namespace RoR2EditorKit
 
         static EditorStringSerializer()
         {
+
             _extendedSerializationHandlers.Add(typeof(LayerMask), new SerializationHandler
             {
                 serializer = (obj) =>

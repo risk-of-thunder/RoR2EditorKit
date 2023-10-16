@@ -26,6 +26,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 targetElevationTransform = inspectorDataContainer.Q<PropertyField>("targetElevationTransform");
                 time = inspectorDataContainer.Q<PropertyField>("time");
                 autoCalculateJumpVelocity = inspectorDataContainer.Q<Toggle>("autoCalculateJumpVelocity");
+                autoCalculateJumpVelocity.ConnectWithSetting(EditorSettings, "AutoCalculateJumpVelocity", false);
                 jumpVelocity = inspectorDataContainer.Q<PropertyField>("jumpVelocity");
             };
         }

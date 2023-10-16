@@ -28,9 +28,17 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             {
                 inspectorData = DrawInspectorElement.Q<VisualElement>("InspectorDataContainer");
                 tokenContainer = inspectorData.Q<Foldout>("TokenContainer");
+
+                tokenContainer.ConnectWithSetting(EditorSettings, "TokenFoldoutOpen", false);
+
                 spreadBloomContainer = inspectorData.Q<Foldout>("SpreadBloomContainer");
+                spreadBloomContainer.ConnectWithSetting(EditorSettings, "SpreadBloomFoldoutOpen", false);
+
                 baseStatsContainer = inspectorData.Q<Foldout>("BaseStatsContainer");
+                baseStatsContainer.ConnectWithSetting(EditorSettings, "BaseStatsFoldoutOpen", false);
+
                 levelStatsContainer = inspectorData.Q<Foldout>("LevelStatsContainer");
+                levelStatsContainer.ConnectWithSetting(EditorSettings, "LevelStatsFoldoutOpen", false);
             };
         }
 

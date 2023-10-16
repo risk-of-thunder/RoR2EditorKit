@@ -66,8 +66,7 @@ namespace RoR2EditorKit
         /// <returns>A normalized string for an UXML trait</returns>
         public static string NormalizeNameForUXMLTrait(string nameofProperty) => ObjectNames.NicifyVariableName(nameofProperty).ToLower().Replace(" ", "-");
 
-        internal
-            static bool ValidateUXMLPath(string path) => path.Contains(Constants.PackageName);
+        internal static bool ValidateUXMLPath(string path) => path.Contains(Constants.PackageName);
 
         /// <summary>
         /// Sets the Top, Right, Bottom and Left border colors to <paramref name="color"/>

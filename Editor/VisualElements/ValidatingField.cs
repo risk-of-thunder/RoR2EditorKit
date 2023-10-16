@@ -77,10 +77,8 @@ namespace RoR2EditorKit.VisualElements
             if ((element is PropertyField || element is INotifyValueChanged<TValue>) && _elementToValidate != element)
             {
                 _elementToValidate?.UnregisterCallback<ChangeEvent<TValue>>(ValidateInternal);
-                if(!(element is PropertyField))
-                {
-                    element.RegisterCallback<ChangeEvent<TValue>>(ValidateInternal);
-                }
+                element.RegisterCallback<ChangeEvent<TValue>>(ValidateInternal);
+
                 _elementToValidate = element;
                 ElementType = element is PropertyField ? ElementToValidateType.PropertyField : ElementToValidateType.INotifyValueChanged;
                 return true;

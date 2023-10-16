@@ -1,0 +1,19 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:VisualElement name="Header" class="border" style="height: 12%; flex-direction: column; justify-content: center; width: 100%;">
+        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/EditorSettingsWindowStyle.uss" />
+        <ui:VisualElement style="width: 100%;">
+            <ui:Label text="RoREditorKit Editor Settings" name="Title" class="titleText" style="-unity-text-align: middle-center; align-items: auto; font-size: 400%; -unity-font-style: bold; height: 100%; justify-content: flex-start;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="Center" style="flex-direction: row; height: 100%; width: 100%;">
+        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/EditorSettingsWindowStyle.uss" />
+        <ui:VisualElement name="SettingsSidebar" class="border darkBackground" style="width: 25%;">
+            <ui:Toggle label="Enable Naming Conventions          " binding-path="enableNamingConventions" style="flex-direction: row;" />
+            <RoR2EditorKit.VisualElements.ExtendedListView name="SettingsButtons" collection-resizable="false" show-height-handle-bar="false" create-context-menu-wrappers="true" list-view-item-height="25" base-list-view-height-pixels="250" create-delete-context-menu="false" create-duplicate-context-menu="false" style="height: 100%;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="EditorSettings" class="border" style="width: 100%;">
+            <ui:Label text="Select Editor from the Left List View..." name="SubtitleText" class="subtitleText border" style="-unity-text-align: middle-center; font-size: 300%;" />
+            <ui:ScrollView show-vertical-scroller="true" name="EditorSettingView" class="darkBackground" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

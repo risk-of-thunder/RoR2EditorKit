@@ -59,6 +59,18 @@ namespace RoR2EditorKit.VisualElements
                 defaultValue = false
             };
 
+            private UxmlBoolAttributeDescription m_CollectionElementDeleteContextMenu = new UxmlBoolAttributeDescription
+            {
+                name = VisualElementUtil.NormalizeNameForUXMLTrait(nameof(createDeleteContextMenu)),
+                defaultValue = true
+            };
+
+            private UxmlBoolAttributeDescription m_CollectionElementDuplicateContextMenu = new UxmlBoolAttributeDescription
+            {
+                name = VisualElementUtil.NormalizeNameForUXMLTrait(nameof(createDuplicateContextMenu)),
+                defaultValue = true
+            };
+
             public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc)
             {
                 base.Init(ve, bag, cc);
@@ -68,6 +80,8 @@ namespace RoR2EditorKit.VisualElements
                 @this.showHeightHandleBar = m_heightHandleBar.GetValueFromBag(bag, cc);
                 @this.collectionResizable = m_CollectionResizable.GetValueFromBag(bag, cc);
                 @this.createContextMenuWrappers = m_CollectionElementsHaveContextMenus.GetValueFromBag(bag, cc);
+                @this.createDeleteContextMenu = m_CollectionElementDeleteContextMenu.GetValueFromBag(bag, cc);
+                @this.createDuplicateContextMenu = m_CollectionElementDuplicateContextMenu.GetValueFromBag(bag, cc);
             }
         }
 
@@ -132,6 +146,10 @@ namespace RoR2EditorKit.VisualElements
         /// <para>Setting this to false means that elements wont have a ContextualMenuWrapper, but will still implement the Detele Item and Duplicate Item context menus</para>
         /// </summary>
         public bool createContextMenuWrappers { get; set; }
+
+        public bool createDeleteContextMenu { get; set; }
+
+        public bool createDuplicateContextMenu { get; set; }
 
         /// <summary>
         /// Wether this ExtendedListView has a resizable height.
@@ -269,17 +287,28 @@ namespace RoR2EditorKit.VisualElements
 
             if(createContextMenuWrappers)
             {
-                var contextMenuData = new ContextMenuData
+                if(createDeleteContextMenu)
                 {
-                    menuAction = DeleteItem,
-                    userData = visualElementForBinding,
-                    menuName = "Delete Item",
-                    actionStatusCheck = (_) => collectionProperty == null ? DropdownMenuAction.Status.Hidden : DropdownMenuAction.Status.Normal
-                };
-                visualElementForBinding.AddSimpleContextMenu(contextMenuData);
-                contextMenuData.menuAction = DuplicateItem;
-                contextMenuData.menuName = "Duplicate Item";
-                visualElementForBinding.AddSimpleContextMenu(contextMenuData);
+                    var contextMenuData = new ContextMenuData
+                    {
+                        menuAction = DeleteItem,
+                        userData = visualElementForBinding,
+                        menuName = "Delete Item",
+                        actionStatusCheck = (_) => collectionProperty == null ? DropdownMenuAction.Status.Hidden : DropdownMenuAction.Status.Normal
+                    };
+                    visualElementForBinding.AddSimpleContextMenu(contextMenuData);
+                }
+                if(createDuplicateContextMenu)
+                {
+                    var contextMenuData = new ContextMenuData
+                    {
+                        menuAction = DuplicateItem,
+                        userData = visualElementForBinding,
+                        menuName = "Duplicate Item",
+                        actionStatusCheck = (_) => collectionProperty == null ? DropdownMenuAction.Status.Hidden : DropdownMenuAction.Status.Normal
+                    };
+                    visualElementForBinding.AddSimpleContextMenu(contextMenuData);
+                }
             }
             else
             {
@@ -292,8 +321,14 @@ namespace RoR2EditorKit.VisualElements
 
         private void BuildMenu(ContextualMenuPopulateEvent evt)
         {
-            evt.menu.AppendAction("Delete Item", DeleteItem, GetStatus, evt.target);
-            evt.menu.AppendAction("Duplicate Item", DuplicateItem, GetStatus, evt.target);
+            if(createDeleteContextMenu)
+            {
+                evt.menu.AppendAction("Delete Item", DeleteItem, GetStatus, evt.target);
+            }
+            if(createDuplicateContextMenu)
+            {
+                evt.menu.AppendAction("Duplicate Item", DuplicateItem, GetStatus, evt.target);
+            }
 
             DropdownMenuAction.Status GetStatus(DropdownMenuAction _) => collectionProperty != null ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.None;
         }

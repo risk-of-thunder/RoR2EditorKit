@@ -30,7 +30,7 @@ namespace RoR2EditorKit.Data
         /// </summary>
         public bool madeRoR2EKAssetsNonEditable = false;
 
-        public EditorSettings EditorSettings => GetOrCreateSettings<EditorSettings>();
+        public R2EditorSettings EditorSettings => GetOrCreateSettings<R2EditorSettings>();
 
         /// <summary>
         /// Direct access to RoR2EditorKit's MaterialEditorSettings

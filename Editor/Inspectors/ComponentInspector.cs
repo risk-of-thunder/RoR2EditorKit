@@ -38,7 +38,10 @@ namespace RoR2EditorKit.Inspectors
                     var container = DrawInspectorElement.Q<VisualElement>("ComponentToggleContainer");
                     var toggle = container.Q<Toggle>("InspectorToggle");
                     toggle.value = InspectorEnabled;
-                    toggle.RegisterValueChangedCallback(cb => InspectorEnabled = cb.newValue);
+                    toggle.RegisterValueChangedCallback(cb =>
+                    {
+                        InspectorEnabled = cb.newValue;
+                    });
 
                     var scriptType = toggle.Q<Label>("scriptType");
                     scriptType.text = serializedObject.FindProperty("m_Script").objectReferenceValue.name;

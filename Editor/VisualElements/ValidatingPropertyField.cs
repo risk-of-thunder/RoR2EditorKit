@@ -33,6 +33,7 @@ namespace RoR2EditorKit.VisualElements
                 {
                     ChangeEvent<object> newObjectEvent = ChangeEvent<object>.GetPooled(evtType.GetProperty("previousValue").GetGetMethod().Invoke(evt, new object[0]), evtType.GetProperty("newValue").GetGetMethod().Invoke(evt, new object[0]));
                     newObjectEvent.target = evt.target;
+                    evt.StopImmediatePropagation();
                     tie.ValidateInternal(newObjectEvent);
                 }
             }

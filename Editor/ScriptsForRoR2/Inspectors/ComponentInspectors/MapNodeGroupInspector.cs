@@ -36,10 +36,8 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         private float maxDistance = 0;
         private Transform parentGameObject;
 
-        private HullMask test;
         protected override void OnEnable()
         {
-            test = EditorSettings.GetSettingValue("ForbiddenHulls", HullMask.BeetleQueen);
             base.OnEnable();
             var egu = typeof(EditorGUIUtility);
             var flags = BindingFlags.InvokeMethod | BindingFlags.Static | BindingFlags.NonPublic;
@@ -54,11 +52,13 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 hullMaskFlags.label = "Forbidden Hulls";
                 hullMaskFlags.RegisterValueChangedCallback(evt => forbiddenHulls = (HullMask)evt.newValue);
                 nodePlacerContainers.Insert(0, hullMaskFlags);
+                hullMaskFlags.ConnectWithSetting(EditorSettings, "ForbiddenHullMask", forbiddenHulls);
 
                 EnumFlagsField nodeFlagsField = new EnumFlagsField(NodeFlags.None);
                 nodeFlagsField.label = "Flags";
                 nodeFlagsField.RegisterValueChangedCallback(evt => nodeFlags = (NodeFlags)evt.newValue);
                 nodePlacerContainers.Insert(1, nodeFlagsField);
+                nodeFlagsField.ConnectWithSetting(EditorSettings, "NodeFlags", nodeFlags);
 
                 ObjectField parentField = nodePlacerContainers.Q<ObjectField>("parentGameObject");
                 parentField.SetObjectType<Transform>();
@@ -75,26 +75,32 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             {
                 gateName = evt.newValue;
             });
+            gateNameField.ConnectWithSetting(EditorSettings, "GateName", string.Empty);
 
-            var painterSize = nodePlacerContainers.Q<FloatField>("painterSize");
-            painterSize.RegisterValueChangedCallback(evt =>
-            {
-                currentPainterSize = Mathf.Abs(evt.newValue);
-                painterSize.value = Mathf.Abs(evt.newValue);
-            });
-            painterSize.SetDisplay(false);
-
-            var toggle0 = nodePlacerContainers.Q<Toggle>("drawAll");
-            toggle0.RegisterValueChangedCallback(evt =>
+            var toggle = nodePlacerContainers.Q<Toggle>("drawAll");
+            toggle.RegisterValueChangedCallback(evt =>
             {
                 drawAll = evt.newValue;
             });
-            var toggle = nodePlacerContainers.Q<Toggle>("usePainter");
+            toggle.ConnectWithSetting(EditorSettings, "DrawAllNodes", false);
+
+
+            var painterSize = nodePlacerContainers.Q<FloatField>("painterSize");
+            toggle = nodePlacerContainers.Q<Toggle>("usePainter");
             toggle.RegisterValueChangedCallback(evt =>
             {
                 usePainter = evt.newValue;
                 painterSize.SetDisplay(usePainter);
             });
+            toggle.ConnectWithSetting(EditorSettings, "UseNodePainter", false);
+
+            painterSize.RegisterValueChangedCallback(evt =>
+            {
+                currentPainterSize = Mathf.Abs(evt.newValue);
+                painterSize.value = Mathf.Abs(evt.newValue);
+            });
+            painterSize.SetDisplay(toggle.value);
+            painterSize.ConnectWithSetting(EditorSettings, "NodePainterSize", 5);
 
             var container = nodePlacerContainers.Q<VisualElement>("ButtonContainer1");
             container.Q<Button>("clearNodes").clicked += ClearNodes;
@@ -123,13 +129,39 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             },
             $"Cannot display node placing utilities without a NodeGraph asset!");
 
-            NodeGraph GetNodeGraph() => nodeGraphValidator.ChangeEvent == null ? TargetType.nodeGraph : (NodeGraph)nodeGraphValidator.ChangeEvent.newValue;
+            NodeGraph GetNodeGraph()
+            {
+                try
+                {
+                    if(nodeGraphValidator.ChangeEvent == null)
+                    {
+                        return TargetType.nodeGraph;
+                    }
+                    else if(nodeGraphValidator.ChangeEvent.newValue == null)
+                    {
+                        return null;
+                    }
+                    if((UnityEngine.Object)nodeGraphValidator.ChangeEvent.newValue)
+                    {
+                        return (NodeGraph)nodeGraphValidator.ChangeEvent.newValue;
+                    }
+                    return null;
+                }
+                catch(InvalidCastException ex)
+                {
+                    /*gulp
+                     * Note to self, i have no idea how to fix it, and i dont care.
+                     */
+                    return null;
+                }
+            }
         }
 
         private void OnSceneGUI()
         {
             if (InspectorEnabled && TargetType.nodeGraph)
             {
+                float nodeCylinderSize = EditorSettings.GetSetting("NodeCylinderSize", 1f);
                 Cursor.visible = true;
 
                 // You'll need a control id to avoid messing with other tools!
@@ -140,10 +172,6 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
                 if (Event.current.GetTypeForControl(controlID) == EventType.KeyDown)
                 {
-                    if (Event.current.keyCode == KeyCode.V)
-                    {
-                        Cursor.visible ^= true;
-                    }
                     //Paint or add node
                     if (Event.current.keyCode == KeyCode.B)
                     {
@@ -163,6 +191,12 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                         DeleteNearestNode(currentHitInfo);
                         Event.current.Use();
                     }
+                    //Add on cam pos
+                    if(Event.current.keyCode == KeyCode.V)
+                    {
+                        AddNode(TargetType, Camera.current.transform.position);
+                        Event.current.Use();
+                    }
                 }
 
                 Vector2 guiPosition = Event.current.mousePosition;
@@ -172,9 +206,15 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 var currentNodeList = cachedMapNodeList;
                 var rotation = Quaternion.Euler(90, 0, 0);
 
-                if (Physics.Raycast(ray, out var hitInfo, 99999999999f, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                LayerMask mask = EditorSettings.GetSetting("RaycastMask", LayerIndex.CommonMasks.bullet);
+                if (Physics.Raycast(ray, out var hitInfo, 99999999999f, mask, QueryTriggerInteraction.Collide))
                 {
-                    currentHitInfo = TargetType.graphType == MapNodeGroup.GraphType.Air ? hitInfo.point + offsetUpVector : hitInfo.point;
+                    currentHitInfo = hitInfo.point;
+                    if(EditorSettings.GetSetting("RoundHitPositionToNearestGrid", false))
+                    {
+                        currentHitInfo = EditorMath.RoundToNearestGrid(currentHitInfo);
+                    }
+                    currentHitInfo += TargetType.graphType == MapNodeGroup.GraphType.Air ? offsetUpVector : Vector3.zero;
                     if (cachedMapNodeList.Count > 0)
                     {
                         var inRange = false;
@@ -183,7 +223,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                         {
                             if (mapNode && Vector3.Distance(mapNode.transform.position, currentHitInfo) <= MapNode.maxConnectionDistance)
                             {
-                                Handles.color = Color.yellow;
+                                Handles.color = EditorSettings.GetSetting("LinkPreviewColor", Color.yellow);
                                 Handles.DrawLine(mapNode.transform.position, currentHitInfo);
                                 inRange = true;
                             }
@@ -191,25 +231,26 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
                         if (inRange)
                         {
-                            Handles.color = Color.yellow;
+                            Handles.color = EditorSettings.GetSetting("PreviewNodeInRangeColor", Color.yellow);
                         }
                         else
                         {
-                            Handles.color = Color.red;
+                            Handles.color = EditorSettings.GetSetting("PreviewNodeOutOfRangeColor", Color.red);
                         }
                     }
                     else
                     {
-                        Handles.color = Color.yellow;
+                        Handles.color = EditorSettings.GetSetting("PreviewNodeInRangeColor", Color.yellow);
                     }
 
-                    Handles.CylinderHandleCap(controlID, currentHitInfo, Quaternion.Euler(90, 0, 0), 1, EventType.Repaint);
+
+                    Handles.CylinderHandleCap(controlID, currentHitInfo, Quaternion.Euler(90, 0, 0), nodeCylinderSize, EventType.Repaint);
 
                     if (usePainter)
                     {
                         if (currentPainterSize <= 0)
                         {
-                            Handles.CylinderHandleCap(controlID, currentHitInfo, Quaternion.Euler(90, 0, 0), 1, EventType.Repaint);
+                            Handles.CylinderHandleCap(controlID, currentHitInfo, Quaternion.Euler(90, 0, 0), nodeCylinderSize, EventType.Repaint);
                         }
                         else
                         {
@@ -229,21 +270,26 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                     {
                         if (mapNode.links.Count <= 0)
                         {
-                            Handles.color = Color.yellow;
+                            Handles.color = EditorSettings.GetSetting("PlacedNodeWithNoLinksColor", (Color)new Color32
+                            {
+                                a = 255,
+                                r = 255,
+                                g = 165,
+                            });
                         }
                         else
                         {
-                            Handles.color = Color.green;
+                            Handles.color = EditorSettings.GetSetting("BakedNodeColor", Color.green);
                         }
                     }
                     else
                     {
-                        Handles.color = Color.red;
+                        Handles.color = EditorSettings.GetSetting("InvalidPlacedNode", Color.black);
                     }
 
-                    Handles.CylinderHandleCap(controlID, mapNode.transform.position, rotation, 1, EventType.Repaint);
+                    Handles.CylinderHandleCap(controlID, mapNode.transform.position, rotation, nodeCylinderSize, EventType.Repaint);
 
-                    Handles.color = Color.magenta;
+                    Handles.color = EditorSettings.GetSetting("BakedLinkColor", Color.magenta);
                     foreach (var link in mapNode.links)
                     {
                         if (link.nodeB)
@@ -261,6 +307,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                 var placerString = "Press B to ";
                 placerString += usePainter ? "paint nodes at current mouse position (raycast)" : "add map node at current mouse position (raycast)";
                 EditorGUILayout.LabelField(placerString, EditorStyles.boldLabel);
+                EditorGUILayout.LabelField("Press V to add map node at current camera position", EditorStyles.boldLabel);
                 EditorGUILayout.LabelField("Press M to remove the nearest map node at cursor position", EditorStyles.boldLabel);
 
                 EditorGUILayout.EndVertical();
@@ -273,7 +320,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private void ClearNodes()
         {
-            if (EditorUtility.DisplayDialog("WARNING: Clear All Nodes", "Clicking this button will delete EVERY node. Are you sure you want to do this?", "Yes, Im sure", "No, Take me back"))
+            if (EditorUtility.DisplayDialog("WARNING: Clear All Nodes", "Clicking this button will delete EVERY node. Are you sure you want to do this? (YOU CANNOT UNDO THIS OPERATION)", "Yes, Im sure", "No, Take me back"))
             {
                 TargetType.Clear();
             }
@@ -378,15 +425,18 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         {
             foreach (MapNode node in cachedMapNodeList)
             {
+                LayerMask mask = EditorSettings.GetSetting("RaycastMask", LayerIndex.CommonMasks.bullet);
                 RaycastHit hit;
-                if (Physics.Raycast(node.transform.position, Vector3.up, out hit, offsetUpVector.magnitude, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                Vector3 newPos = node.transform.position;
+                if (Physics.Raycast(node.transform.position, Vector3.up, out hit, offsetUpVector.magnitude, mask, QueryTriggerInteraction.Collide))
                 {
-                    node.transform.position += (hit.point - node.transform.position) / 2;
+                    newPos += (hit.point - newPos) / 2;
                 }
                 else
                 {
-                    node.transform.position += offsetUpVector;
+                    newPos += offsetUpVector;
                 }
+                node.transform.position = EditorSettings.GetSetting("RoundHitPositionToNearestGrid", false) ? EditorMath.RoundToNearestGrid(newPos) : newPos;
             }
         }
 
@@ -394,20 +444,24 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
         {
             foreach (MapNode node in cachedMapNodeList)
             {
+                LayerMask mask = EditorSettings.GetSetting("RaycastMask", LayerIndex.CommonMasks.bullet);
                 RaycastHit hit;
-                if (Physics.Raycast(node.transform.position, Vector3.down, out hit, offsetUpVector.magnitude * 2, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                Vector3 newPos = node.transform.position;
+                if (Physics.Raycast(node.transform.position, Vector3.down, out hit, offsetUpVector.magnitude * 2, mask, QueryTriggerInteraction.Collide))
                 {
-                    node.transform.position = hit.point;
+                    newPos = hit.point;
                 }
                 else
                 {
-                    node.transform.position -= offsetUpVector;
+                    newPos -= offsetUpVector;
                 }
+                node.transform.position = EditorSettings.GetSetting("RoundHitPositionToNearestGrid", false) ? EditorMath.RoundToNearestGrid(newPos) : newPos;
             }
         }
 
         private void Painter(float currentMaxDistance, float zPainterOffset, List<MapNode> cachedMapNodeList)
         {
+            LayerMask mask = EditorSettings.GetSetting("RaycastMask", LayerIndex.CommonMasks.bullet);
             for (float x = currentHitInfo.x - currentPainterSize, zCount = 0; x <= currentHitInfo.x; x += currentMaxDistance - 4, zCount++)
             {
                 for (float z = currentHitInfo.z - currentPainterSize; z <= currentHitInfo.z; z += currentMaxDistance - 4)
@@ -429,11 +483,13 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                         if (!Physics.Linecast(currentHitInfo, future1, out _, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
                         {
                             bool canPlace = true;
-                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future1, Vector3.down, out RaycastHit raycastHit, 30, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future1, Vector3.down, out RaycastHit raycastHit, 30, mask, QueryTriggerInteraction.Collide))
                             {
+                                var point = raycastHit.point;
                                 foreach (MapNode node in cachedMapNodeList)
                                 {
-                                    if (Vector3.Distance(node.transform.position, raycastHit.point) <= currentMaxDistance)
+                                    point = EditorSettings.GetSetting("RoundHitPositionToNearestGrid", false) ? EditorMath.RoundToNearestGrid(point) : point;
+                                    if (Vector3.Distance(node.transform.position, point) <= currentMaxDistance)
                                     {
                                         canPlace = false;
                                         break;
@@ -441,7 +497,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                                 }
                                 if (canPlace)
                                 {
-                                    AddNode(TargetType, raycastHit.point);
+                                    AddNode(TargetType, point);
                                 }
                             }
                             /*else
@@ -463,11 +519,13 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                         if (!Physics.Linecast(currentHitInfo, future2, out _, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
                         {
                             bool canPlace = true;
-                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future2, Vector3.down, out RaycastHit raycastHitto, 30, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future2, Vector3.down, out RaycastHit raycastHit, 30, mask, QueryTriggerInteraction.Collide))
                             {
+                                var point = raycastHit.point;
                                 foreach (MapNode node in cachedMapNodeList)
                                 {
-                                    if (Vector3.Distance(node.transform.position, raycastHitto.point) <= currentMaxDistance)
+                                    point = EditorSettings.GetSetting("RoundHitPositionToNearestGrid", false) ? EditorMath.RoundToNearestGrid(point) : point;
+                                    if (Vector3.Distance(node.transform.position, point) <= currentMaxDistance)
                                     {
                                         canPlace = false;
                                         break;
@@ -475,7 +533,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                                 }
                                 if (canPlace)
                                 {
-                                    AddNode(TargetType, raycastHitto.point);
+                                    AddNode(TargetType, point);
                                 }
                             }
                             /*else
@@ -497,11 +555,13 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                         if (!Physics.Linecast(currentHitInfo, future3, out _, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
                         {
                             bool canPlace = true;
-                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future3, Vector3.down, out RaycastHit raycastHittoto, 30, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future3, Vector3.down, out RaycastHit raycastHit, 30, mask, QueryTriggerInteraction.Collide))
                             {
+                                var point = raycastHit.point;
                                 foreach (MapNode node in cachedMapNodeList)
                                 {
-                                    if (Vector3.Distance(node.transform.position, raycastHittoto.point) <= currentMaxDistance)
+                                    point = EditorSettings.GetSetting("RoundHitPositionToNearestGrid", false) ? EditorMath.RoundToNearestGrid(point) : point;
+                                    if (Vector3.Distance(node.transform.position, point) <= currentMaxDistance)
                                     {
                                         canPlace = false;
                                         break;
@@ -509,7 +569,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                                 }
                                 if (canPlace)
                                 {
-                                    AddNode(TargetType, raycastHittoto.point);
+                                    AddNode(TargetType, point);
                                 }
                             }
                             /*else
@@ -531,11 +591,13 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                         if (!Physics.Linecast(currentHitInfo, future4, out _, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
                         {
                             bool canPlace = true;
-                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future4, Vector3.down, out RaycastHit raycastHittototo, 30, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                            if (TargetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future4, Vector3.down, out RaycastHit raycastHit, 30, mask, QueryTriggerInteraction.Collide))
                             {
+                                var point = raycastHit.point;
                                 foreach (MapNode node in cachedMapNodeList)
                                 {
-                                    if (Vector3.Distance(node.transform.position, raycastHittototo.point) <= currentMaxDistance)
+                                    point = EditorSettings.GetSetting           ("RoundHitPositionToNearestGrid", false) ? EditorMath.RoundToNearestGrid(point) : point;
+                                    if (Vector3.Distance(node.transform.position, raycastHit.point) <= currentMaxDistance)
                                     {
                                         canPlace = false;
                                         break;
@@ -543,7 +605,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
                                 }
                                 if (canPlace)
                                 {
-                                    AddNode(TargetType, raycastHittototo.point);
+                                    AddNode(TargetType, raycastHit.point);
                                 }
                             }
                             /*else

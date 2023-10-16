@@ -98,6 +98,7 @@ namespace RoR2EditorKit
     {
         private static FixedConditionalWeakTable<VisualElement, List<ContextMenuData>> elementToData = new FixedConditionalWeakTable<VisualElement, List<ContextMenuData>>();
 
+        private static DropdownMenuAction.Status DefaultStatusCheck(DropdownMenuAction action) => DropdownMenuAction.Status.Normal;
 
         /// <summary>
         /// A custom way of adding a ContextMenu, it is incredibly recommended to use this method instead of manually adding a Manipulator, as this method will create a little icon that will be the clickable element for the context menu 
@@ -127,7 +128,7 @@ namespace RoR2EditorKit
             {
                 foreach (ContextMenuData data in datas)
                 {
-                    populateEvent.menu.AppendAction(data.menuName, data.menuAction, data.actionStatusCheck, data.userData);
+                    populateEvent.menu.AppendAction(data.menuName, data.menuAction, data.actionStatusCheck ?? DefaultStatusCheck, data.userData);
                 }
             }
         }

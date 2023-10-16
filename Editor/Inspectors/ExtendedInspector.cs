@@ -48,15 +48,29 @@ namespace RoR2EditorKit.Inspectors
         /// <summary>
         /// Access to the main RoR2EditorKit Settings file
         /// </summary>
-        public static RoR2EditorKitSettings Settings { get => ThunderKit.Core.Data.ThunderKitSetting.GetOrCreateSettings<RoR2EditorKitSettings>(); }
+        public static RoR2EditorKitSettings Settings
+        {
+            get
+            {
+                if (!_settings)
+                    _settings = RoR2EditorKitSettings.GetOrCreateSettings<RoR2EditorKitSettings>();
+                return _settings;
+            }
+        }
+        private static RoR2EditorKitSettings _settings;
 
         public EditorSetting EditorSettings
         {
             get
             {
-                return Settings.EditorSettings.GetEditorSetting(GetType());
+                if(_editorSettings == null)
+                {
+                    _editorSettings = Settings.EditorSettings.GetOrCreateSettingsFor(GetType());
+                }
+                return _editorSettings;
             }
         }
+        private EditorSetting _editorSettings;
 
         /// <summary>
         /// Check if the inspector is enabled
@@ -66,14 +80,14 @@ namespace RoR2EditorKit.Inspectors
         {
             get
             {
-                return EditorSettings.GetSettingValue<bool>("IsEnabled", true);
+                return EditorSettings.GetSetting("IsEditorEnabled", true);
             }
             set
             {
-                var origValue = EditorSettings.GetSettingValue<bool>("IsEnabled");
+                var origValue = EditorSettings.GetSetting<bool>("IsEditorEnabled", true);
                 if(origValue != value)
                 {
-                    EditorSettings.SetSettingValue("IsEnabled", value);
+                    EditorSettings.SetSetting("IsEditorEnabled", value);
                     OnInspectorEnabledChange();
                 }
             }

@@ -25,7 +25,7 @@ namespace RoR2EditorKit.Inspectors
         protected override void OnEnable()
         {
             base.OnEnable();
-            InspectorEnabled = EditorSettings.GetSettingValue<bool>("IsEnabled");
+            InspectorEnabled = EditorSettings.GetSetting<bool>("IsEditorEnabled", true);
             OnVisualTreeCopy += () =>
             {
                 try
