@@ -49,19 +49,52 @@ namespace RoR2EditorKit.CodeGen
             return true;
         }
 
+        public static async Task<bool> ValidateAsync(ValidationData data)
+        {
+            var code = data.code.ToString();
+
+            if (File.Exists(data.desiredPath))
+            {
+                string existingCode = string.Empty;
+                using(TextReader reader = new StreamReader(data.desiredPath))
+                {
+                    existingCode = await reader.ReadToEndAsync();
+                }
+                if (existingCode == code || WithAllWhitespaceStripped(existingCode) == WithAllWhitespaceStripped(code))
+                    return false;
+            }
+
+            await CheckOutAsync(data.desiredPath, code);
+            return true;
+        }
+
         private static void CheckOut(string path, string code)
         {
             if (string.IsNullOrEmpty(path))
                 throw new NullReferenceException("data.desiredPath");
 
-            // Make path relative to project folder.
-            var projectPath = Application.dataPath;
-            if (path.StartsWith(projectPath) && path.Length > projectPath.Length &&
-                (path[projectPath.Length] == '/' || path[projectPath.Length] == '\\'))
-                path = path.Substring(0, projectPath.Length + 1);
+            path = IOUtils.FormatPathForUnity(path);
+            path = FileUtil.GetProjectRelativePath(path);
+
             AssetDatabase.MakeEditable(path);
 
             File.WriteAllText(path, code);
+        }
+
+        private static async Task CheckOutAsync(string path, string code)
+        {
+            if (string.IsNullOrEmpty(path))
+                throw new NullReferenceException("data.desiredPath");
+
+            path = IOUtils.FormatPathForUnity(path);
+            path = FileUtil.GetProjectRelativePath(path);
+
+            AssetDatabase.MakeEditable(path);
+        
+            using(TextWriter writer = new StreamWriter(path))
+            {
+                await writer.WriteAsync(code);
+            }
         }
 
         private static string WithAllWhitespaceStripped(string str)
