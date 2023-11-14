@@ -18,10 +18,8 @@ namespace RoR2EditorKit
         private delegate object FieldDrawHandler(GUIContent labelTooltip, object value);
         private static readonly Dictionary<Type, FieldDrawHandler> typeDrawers = new Dictionary<Type, FieldDrawHandler>();
 
-#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
         private static FieldDrawHandler enumFlagsTypeHandler;
         private static FieldDrawHandler enumTypeHandler;
-#endif
 
         /// <summary>
         /// Draws the serialized property specified in <paramref name="prop"/> inside a <see cref="EditorGUI.BeginChangeCheck"/> block.
