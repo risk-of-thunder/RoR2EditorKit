@@ -229,7 +229,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private bool CanSerialize(FieldInfo fieldInfo)
         {
-#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
+#if RISKOFTHUNDER_R2API_STRINGSERIALIZEREXTENSIONS
             Type fieldType = fieldInfo.FieldType;
             if(!typeof(UnityEngine.Object).IsAssignableFrom(fieldType) && !EditorStringSerializer.CanSerializeType(fieldType))
             {
@@ -264,7 +264,7 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
 
         private object GetValue(FieldInfo field, ref SerializedValue serializedValue)
         {
-#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
+#if RISKOFTHUNDER_R2API_STRINGSERIALIZEREXTENSIONS
             Type fieldType = field.FieldType;
             if(typeof(UnityEngine.Object).IsAssignableFrom(fieldType))
             {
@@ -298,13 +298,13 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             }
             return null;
 #else
-            serializedValue.GetValue(field);
+            return serializedValue.GetValue(field);
 #endif
         }
 
         private void SetValue(FieldInfo fieldInfo, ref SerializedValue serializedValue, object newValue)
         {
-#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
+#if RISKOFTHUNDER_R2API_STRINGSERIALIZEREXTENSIONS
             try
             {
                 serializedValue.stringValue = null;

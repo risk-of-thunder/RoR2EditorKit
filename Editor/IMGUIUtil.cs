@@ -121,11 +121,7 @@ namespace RoR2EditorKit
         /// <returns>True if the type can be drawn, false otherwise</returns>
         public static bool CanDrawFieldFromType(Type type)
         {
-#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
             return typeDrawers.ContainsKey(type) || type.IsEnum;
-#else
-            return typeDrawers.ContainsKey(type);
-#endif
         }
 
         /// <summary>
@@ -160,7 +156,6 @@ namespace RoR2EditorKit
         /// <returns>True if the value has changed and newValue has indeed a new value, false otherwise.</returns>
         public static bool DrawFieldWithType(Type type, object fieldValue, out object newValue, GUIContent content)
         {
-#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
             if (typeDrawers.TryGetValue(type, out var drawer))
             {
                 EditorGUI.BeginChangeCheck();
@@ -180,14 +175,6 @@ namespace RoR2EditorKit
                 }
                 return EditorGUI.EndChangeCheck();
             }
-#else
-            if (typeDrawers.TryGetValue(type, out var handler))
-            {
-                EditorGUI.BeginChangeCheck();
-                newValue = handler(content, fieldValue);
-                return EditorGUI.EndChangeCheck();
-            }
-#endif
             throw new NotImplementedException($"Cannot draw a field of type {type.Name}");
         }
 
@@ -230,8 +217,6 @@ namespace RoR2EditorKit
             });
 
             typeDrawers.Add(typeof(AnimationCurve), (labelTooltip, value) => EditorGUILayout.CurveField(labelTooltip, (AnimationCurve)value ?? new AnimationCurve()));
-
-#if BBEPIS_BEPINEXPACK || RISKOFTHUNDER_ROR2BEPINEXPACK
             typeDrawers.Add(typeof(LayerMask), (labelTooltip, value) => LayerMaskField((LayerMask)value, labelTooltip));
             typeDrawers.Add(typeof(Vector4), (labelTooltip, value) => EditorGUILayout.Vector4Field(labelTooltip, (Vector4)value));
             typeDrawers.Add(typeof(Rect), (labelTooltip, value) => EditorGUILayout.RectField(labelTooltip, (Rect)value));
@@ -255,7 +240,6 @@ namespace RoR2EditorKit
             typeDrawers.Add(typeof(Vector3Int), (labelTooltip, value) => EditorGUILayout.Vector3IntField(labelTooltip, (Vector3Int)value));
             enumFlagsTypeHandler = (labelTooltip, value) => EditorGUILayout.EnumFlagsField(labelTooltip, (Enum)value);
             enumTypeHandler = (labelTooltip, value) => EditorGUILayout.EnumPopup(labelTooltip, (Enum)value);
-#endif
         }
     }
 }

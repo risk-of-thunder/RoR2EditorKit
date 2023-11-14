@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -11,7 +11,7 @@ namespace RoR2EditorKit
 {
     /// <summary>
     /// An extension of the <see cref="HG.GeneralSerializer.StringSerializer"/>
-    /// <br>Note that this should not be used on anything but editor related scripts, as it contains extra serializers. UNLESS the BepInExPack for ROR2 is installed.</br>
+    /// <br>Note that this should not be used on anything but editor related scripts, as it contains extra serializers. UNLESS R2API.StringSerializerExtensions is installed.</br>
     /// <br>The EditorStringSerializer calls first the <see cref="HG.GeneralSerializer.StringSerializer"/> and checks if RoR2 already supports it, if not, RoR2EK uses custom handlers for serializing extra values.</br>
     /// <para>In total, the EditorStringSerializer can serialize the following types:</para>
     /// <list type="bullet">
@@ -41,7 +41,7 @@ namespace RoR2EditorKit
     /// <item>Vector3Int</item>
     /// <item>Any Enum</item>
     /// </list>
-    /// <br>(Items suffixed with an [*] are already serializeed by <see cref="HG.GeneralSerializer.StringSerializer"/></br>
+    /// <br>(Items suffixed with an [*] are already serialized by <see cref="HG.GeneralSerializer.StringSerializer"/></br>
     /// <br>If you feel like there should be another special serializer, create an issue in the Github</br>
     /// </summary>
     public static class EditorStringSerializer
