@@ -23,36 +23,39 @@ namespace RoR2EditorKit.CodeGen
         /// <summary>
         /// Creates a new code block and indents the future text properly.
         /// </summary>
-        public void BeginBlock()
+        public Writer BeginBlock()
         {
             WriteIndent();
             buffer.Append("{\n");
             ++indentLevel;
+            return this;
         }
 
         /// <summary>
         /// Finishes a code block started with <see cref="BeginBlock"/> and indents the future text properly
         /// </summary>
-        public void EndBlock()
+        public Writer EndBlock()
         {
             --indentLevel;
             WriteIndent();
             buffer.Append("}\n");
+            return this;
         }
 
         /// <summary>
         /// Writes a line with no text, only a '\n' character
         /// </summary>
-        public void WriteLine()
+        public Writer WriteLine()
         {
             buffer.Append('\n');
+            return this;
         }
 
         /// <summary>
         /// Writes a line of code with the text given
         /// </summary>
         /// <param name="text">The text to write</param>
-        public void WriteLine(string text)
+        public Writer WriteLine(string text)
         {
             if (!text.All(char.IsWhiteSpace))
             {
@@ -60,27 +63,41 @@ namespace RoR2EditorKit.CodeGen
                 buffer.Append(text);
             }
             buffer.Append('\n');
+            return this;
+        }
+
+        public Writer WritePreprocessorDirectiveLine(string directive)
+        {
+            if (!directive.All(char.IsWhiteSpace))
+            {
+                buffer.Append('#');
+                buffer.Append(directive);
+            }
+            buffer.Append('\n');
+            return this;
         }
 
         /// <summary>
         /// Writes code with the text given without appending a new line, useful for finishing existing lines.
         /// </summary>
         /// <param name="text">The text to write</param>
-        public void Write(string text)
+        public Writer Write(string text)
         {
             buffer.Append(text);
+            return this;
         }
 
         /// <summary>
         /// Writes an indent
         /// </summary>
-        public void WriteIndent()
+        public Writer WriteIndent()
         {
             for (var i = 0; i < indentLevel; ++i)
             {
                 for (var n = 0; n < 4; ++n)
                     buffer.Append(' ');
             }
+            return this;
         }
 
         /// <summary>
