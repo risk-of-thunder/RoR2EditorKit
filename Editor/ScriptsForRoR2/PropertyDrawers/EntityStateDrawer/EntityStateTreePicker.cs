@@ -123,7 +123,7 @@ namespace RoR2EditorKit.RoR2Related.PropertyDrawers
                 stateTreePicker.treeView.AssignDefaults();
                 stateTreePicker.treeView.SetRootItem("Entity Statess");
 
-                foreach(Type t in TypeCacheRequester.GetTypesDerivedFrom<EntityState>(false))
+                foreach(Type t in TypeCacheRequester.GetTypesDerivedFrom<EntityState>(true))
                 {
                     stateTreePicker.treeView.PopulateItem(t);
                 }

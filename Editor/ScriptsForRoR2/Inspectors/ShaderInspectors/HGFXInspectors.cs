@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using UnityEditor;
 using UnityEngine;
 using static RoR2EditorKit.Inspectors.ExtendedMaterialInspector;
@@ -59,4 +59,4 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             prop.floatValue = Convert.ToSingle(EditorGUILayout.EnumPopup(guiContent, (BlendMode)prop.floatValue));
         }
     }
-}
+}*/

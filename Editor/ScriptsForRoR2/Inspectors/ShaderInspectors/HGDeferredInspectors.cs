@@ -1,4 +1,4 @@
-﻿using UnityEditor;
+﻿/*using UnityEditor;
 using static RoR2EditorKit.Inspectors.ExtendedMaterialInspector;
 
 namespace RoR2EditorKit.RoR2Related.Inspectors
@@ -139,4 +139,4 @@ namespace RoR2EditorKit.RoR2Related.Inspectors
             }
         }
     }
-}
+}*/

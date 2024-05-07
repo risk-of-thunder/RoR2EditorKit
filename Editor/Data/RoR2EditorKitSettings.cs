@@ -35,11 +35,6 @@ namespace RoR2EditorKit.Data
         /// </summary>
         public R2EditorSettings EditorSettings => GetOrCreateSettings<R2EditorSettings>();
 
-        /// <summary>
-        /// Direct access to RoR2EditorKit's MaterialEditorSettings
-        /// </summary>
-        public MaterialEditorSettings MaterialEditorSettings => GetOrCreateSettings<MaterialEditorSettings>();
-
         public override void Initialize() => tokenPrefix = "";
 
         public override void CreateSettingsUI(VisualElement rootElement)
