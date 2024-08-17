@@ -1,6 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <uie:PropertyField name="mainClass" binding-path="mainClass" tooltip="Your mod&apos;s main class" />
-    <uie:PropertyField name="assemblyDefinition" binding-path="assemblyDefinition" tooltip="Your mod&apos;s AssemblyDefinition" />
-    <uie:PropertyField name="modManifest" binding-path="modManifest" tooltip="Your mod&apos;s ThunderKit manifest" />
-    <ui:Label text="Note: R2API and Bepinex need to be installed for this wizard to work" name="notice" style="-unity-text-align: middle-center; white-space: normal; -unity-font-style: bold; font-size: 19px;" />
-</ui:UXML>

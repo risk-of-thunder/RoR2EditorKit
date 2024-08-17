@@ -1,4 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:TextField picking-mode="Ignore" label="Stage Name" value="filler text" name="stageName" binding-path="stageName" />
-    <uie:IntegerField label="Stage Order" value="42" name="stageOrder" binding-path="stageOrder" />
-</ui:UXML>

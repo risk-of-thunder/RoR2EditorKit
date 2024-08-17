@@ -1,4 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:ScrollView show-horizontal-scroller="true" name="validatingFieldMessages" horizontal-page-size="20" show-vertical-scroller="false" mode="Horizontal" style="height: 50px; border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-left-color: rgb(81, 81, 81); border-right-color: rgb(81, 81, 81); border-top-color: rgb(81, 81, 81); border-bottom-color: rgb(81, 81, 81); background-color: rgb(34, 34, 34); display: none;" />
-    <ui:VisualElement name="ContentContainer" />
-</ui:UXML>

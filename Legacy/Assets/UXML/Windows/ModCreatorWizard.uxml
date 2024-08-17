@@ -1,8 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <uie:PropertyField name="authorName" binding-path="authorName" tooltip="Author name, should not contain spaces, use CamelCasing or underscores instead of spaces" />
-    <uie:PropertyField name="modName" binding-path="modName" tooltip="The mod&apos;s name, should follow CamelCase, no spaces" />
-    <uie:PropertyField name="humanReadableModName" binding-path="humanReadableModName" tooltip="A human readable version of the mod&apos;s name" />
-    <ui:TextField picking-mode="Ignore" label="Mod Description" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam arcu." name="modDescription" multiline="true" binding-path="modDescription" tooltip="Your mod&apos;s description" style="flex-wrap: nowrap; white-space: normal;" />
-    <uie:PropertyField name="r2apiToggle" binding-path="r2apiToggle" label="Automatically Add R2API Dependencies" tooltip="R2API was detected in your project, this will add all the installed submodules as dependencies in your assemblydef and manifest" />
-    <ui:Label text="Note: BepInExPack needs to be installed for this wizard to run." name="bepinexNotice" style="-unity-font-style: bold; font-size: 11px;" />
-</ui:UXML>

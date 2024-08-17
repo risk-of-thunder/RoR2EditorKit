@@ -1,6 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <uie:PropertyField name="characterName" binding-path="characterName" tooltip="The name of this character, used for creating Tokens and setting the game object&apos;s name. should not contain &quot;Body&quot; and be written in PascalCase" />
-    <uie:PropertyField name="bodyType" binding-path="bodyType" tooltip="The type of body you want to generate. Grounded is the default body for survivors" />
-    <uie:PropertyField name="extraComponents" binding-path="extraComponents" tooltip="A list of components to add to the root object." />
-    <uie:PropertyField name="modelFBX" binding-path="modelFBX" tooltip="Your character&apos;s FBX object, used for creating the mdl game object for the CharacterBody" />
-</ui:UXML>
