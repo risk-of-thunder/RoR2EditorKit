@@ -108,8 +108,8 @@ namespace RoR2.Editor
         private static EditorSetting GetEditorSetting(Type editorType, IEditorSettingProvider provider)
         {
             var settings = provider.editorSettings;
-            int hash = editorType.Assembly.GetHashCode();
-            for (int i = 0; i < hash; i++)
+            int hash = editorType.AssemblyQualifiedName.GetHashCode();
+            for (int i = 0; i < settings.Count; i++)
             {
                 var editorSetting = settings[i];
                 if (editorSetting._editorTypeQualifiedHash != hash)
@@ -128,7 +128,8 @@ namespace RoR2.Editor
                 _typeName = editorType.Name,
                 _editorTypeQualifiedHash = editorType.AssemblyQualifiedName.GetHashCode(),
                 _editorTypeQualifiedName = editorType.AssemblyQualifiedName,
-                _serializedSettings = new List<EditorSetting.SettingValue>()
+                _serializedSettings = new List<EditorSetting.SettingValue>(),
+                _settingType = settingType
             };
             provider.editorSettings.Add(setting);
             provider.SaveSettings();

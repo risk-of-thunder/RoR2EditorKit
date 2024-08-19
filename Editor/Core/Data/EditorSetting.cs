@@ -73,14 +73,18 @@ namespace RoR2.Editor
         public void SetSettingValue(string settingName, object newValue)
         {
             int id = settingName.GetHashCode();
-            Type type = newValue.GetType();
             for(int i = 0; i < _serializedSettings.Count; i++)
             {
                 var setting = _serializedSettings[i];
                 if (setting._settingID != id)
                     continue;
 
-                setting.boxedValue = newValue;
+                if(setting.boxedValue != newValue)
+                {
+                    setting.boxedValue = newValue;
+                    _serializedSettings[i] = setting;
+                    SaveSettings();
+                }
                 return;
             }
 
@@ -89,13 +93,13 @@ namespace RoR2.Editor
 
         private object CreateSetting(object defaultValueForSetting, string settingName)
         {
-            Type valueType = defaultValueForSetting.GetType();
             _serializedSettings.Add(new SettingValue
             {
                 boxedValue = defaultValueForSetting,
                 _settingID = settingName.GetHashCode(),
                 _settingName = settingName,
             });
+            SaveSettings();
             return defaultValueForSetting;
         }
 
@@ -107,7 +111,7 @@ namespace RoR2.Editor
                 get
                 {
                     //Ensure boxed value is deserialized prior to comparing equality.
-                    if (_boxedValue == null)
+                    if (_boxedValue == null && _valueTypeQualifiedName != null)
                         Deserialize();
 
                     return _boxedValue;
@@ -115,7 +119,7 @@ namespace RoR2.Editor
                 set
                 {
                     //Ensure boxed value is deserialized prior to comparing equality.
-                    if (_boxedValue == null)
+                    if (_boxedValue == null && _valueTypeQualifiedName != null)
                         Deserialize();
 
                     if (_boxedValue != value)
