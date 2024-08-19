@@ -1,0 +1,17 @@
+.r2ek-text_header {
+    font-size: 48px;
+    border-bottom-width: 3px;
+    border-bottom-color: rgba(47, 47, 47, 255);
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.r2ek-bombardier {
+    -unity-font: url('/Packages/riskofthunder-ror2editorkit/Assets/Bombardier.ttf');
+}
+
+.unity-base-field__label {
+    width: 25%;
+}
