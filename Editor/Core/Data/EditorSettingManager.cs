@@ -128,7 +128,7 @@ namespace RoR2.Editor
                 _typeName = editorType.Name,
                 _editorTypeQualifiedHash = editorType.AssemblyQualifiedName.GetHashCode(),
                 _editorTypeQualifiedName = editorType.AssemblyQualifiedName,
-                _serializedSettings = new List<EditorSetting.SettingValue>(),
+                _serializedSettings = Array.Empty<EditorSetting.SettingValue>(),
                 _settingType = settingType
             };
             provider.editorSettings.Add(setting);

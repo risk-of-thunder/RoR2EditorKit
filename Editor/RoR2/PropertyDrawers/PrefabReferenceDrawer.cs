@@ -11,7 +11,7 @@ namespace RoR2.Editor.PropertyDrawers
     /// <para>If youre a hopoo employee, and the team have decided this is not ok, please contact Nebby at nebby1999@gmail.com</para>
     /// </summary>
     [CustomPropertyDrawer(typeof(PrefabReferenceAttribute))]
-    public sealed class PrefabReferenceDrawer : PropertyDrawer
+    public sealed class PrefabReferenceDrawer : IMGUIPropertyDrawer<PrefabReferenceAttribute>
     {
         private static GameObject ConvertToPrefab(GameObject sceneObject)
         {
@@ -53,7 +53,7 @@ namespace RoR2.Editor.PropertyDrawers
             return null;
         }
 
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             EditorGUI.BeginProperty(position, label, property);
 

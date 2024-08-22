@@ -12,10 +12,11 @@ using UnityEngine.UIElements;
 namespace RoR2.Editor.PropertyDrawers
 {
     [CustomPropertyDrawer(typeof(SerializableEntityStateType))]
-    internal sealed class SerializableEntityStateTypePropertyDrawer : PropertyDrawer
+    internal sealed class SerializableEntityStateTypePropertyDrawer : IMGUIPropertyDrawer<SerializableEntityStateType>
     {
         private SerializableEntityStateTypeDrawer _drawer;
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+
+        protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             _drawer = new SerializableEntityStateTypeDrawer();
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 namespace RoR2.Editor
@@ -20,7 +21,7 @@ namespace RoR2.Editor
         [SerializeField]
         internal int _editorTypeQualifiedHash;
         [SerializeField]
-        internal List<SettingValue> _serializedSettings;
+        internal SettingValue[] _serializedSettings;
         [SerializeField]
         internal EditorSettingManager.SettingType _settingType;
 
@@ -31,11 +32,10 @@ namespace RoR2.Editor
 
         public void ResetAllSettings()
         {
-            for(int i = 0; i < _serializedSettings.Count; i++)
+            for (int i = 0; i < _serializedSettings.Length; i++)
             {
-                var setting = _serializedSettings[i];
+                ref SettingValue setting = ref _serializedSettings[i];
                 setting.ResetValue();
-                _serializedSettings[i] = setting;
             }
         }
 
@@ -43,14 +43,13 @@ namespace RoR2.Editor
         {
             int id = settingName.GetHashCode();
 
-            for(int i = 0; i < _serializedSettings.Count; i++)
+            for(int i = 0; i < _serializedSettings.Length; i++)
             {
-                var setting = _serializedSettings[i];
+                ref var setting = ref _serializedSettings[i];
                 if (setting._settingID != id)
                     continue;
 
                 setting.ResetValue();
-                _serializedSettings[i] = setting;
                 break;
             }
         }
@@ -58,9 +57,9 @@ namespace RoR2.Editor
         public T GetOrCreateSetting<T>(string settingName, T defaultValue = default)
         {
             int id = settingName.GetHashCode();
-            for(int i = 0; i < _serializedSettings.Count; i++)
+            for(int i = 0; i < _serializedSettings.Length; i++)
             {
-                var setting = _serializedSettings[i];
+                ref var setting = ref _serializedSettings[i];
                 if (setting._settingID != id)
                     continue;
 
@@ -73,16 +72,15 @@ namespace RoR2.Editor
         public void SetSettingValue(string settingName, object newValue)
         {
             int id = settingName.GetHashCode();
-            for(int i = 0; i < _serializedSettings.Count; i++)
+            for(int i = 0; i < _serializedSettings.Length; i++)
             {
-                var setting = _serializedSettings[i];
+                ref var setting = ref _serializedSettings[i];
                 if (setting._settingID != id)
                     continue;
 
                 if(setting.boxedValue != newValue)
                 {
                     setting.boxedValue = newValue;
-                    _serializedSettings[i] = setting;
                     SaveSettings();
                 }
                 return;
@@ -93,7 +91,7 @@ namespace RoR2.Editor
 
         private object CreateSetting(object defaultValueForSetting, string settingName)
         {
-            _serializedSettings.Add(new SettingValue
+            ArrayUtility.Add(ref _serializedSettings, new SettingValue
             {
                 boxedValue = defaultValueForSetting,
                 _settingID = settingName.GetHashCode(),

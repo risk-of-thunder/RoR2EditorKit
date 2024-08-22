@@ -35,6 +35,11 @@ namespace RoR2.Editor
                 name = VisualElementUtil.NormalizeNameForUXMLTrait(nameof(messageIsExplicit)),
                 defaultValue = true
             };
+            private UxmlBoolAttributeDescription m_Dismissable = new UxmlBoolAttributeDescription
+            {
+                name = VisualElementUtil.NormalizeNameForUXMLTrait(nameof(isDismissable)),
+                defaultValue = false
+            };
 
             public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc)
             {
@@ -43,6 +48,7 @@ namespace RoR2.Editor
                 helpBox.message = m_Message.GetValueFromBag(bag, cc);
                 helpBox.messageIsExplicit = m_MessageIsExplicit.GetValueFromBag(bag, cc);
                 helpBox.messageType = m_MessageType.GetValueFromBag(bag, cc);
+                helpBox.isDismissable = m_Dismissable.GetValueFromBag(bag, cc);
             }
         }
 
@@ -60,7 +66,7 @@ namespace RoR2.Editor
                 _message = value;
                 if (messageIsExplicit)
                 {
-                    Label.text = _message;
+                    label.text = _message;
                 }
                 else
                 {
@@ -86,22 +92,22 @@ namespace RoR2.Editor
             set
             {
                 _messageType = value;
-                if (Icon == null)
+                if (icon == null)
                     return;
 
                 switch (_messageType)
                 {
                     case MessageType.None:
-                        Icon.style.backgroundImage = null;
+                        icon.style.backgroundImage = null;
                         break;
                     case MessageType.Info:
-                        Icon.style.backgroundImage = (Texture2D)EditorGUIUtility.IconContent("console.infoicon.sml@2x").image;
+                        icon.style.backgroundImage = (Texture2D)EditorGUIUtility.IconContent("console.infoicon.sml@2x").image;
                         break;
                     case MessageType.Warning:
-                        Icon.style.backgroundImage = (Texture2D)EditorGUIUtility.IconContent("console.warnicon.sml@2x").image;
+                        icon.style.backgroundImage = (Texture2D)EditorGUIUtility.IconContent("console.warnicon.sml@2x").image;
                         break;
                     case MessageType.Error:
-                        Icon.style.backgroundImage = (Texture2D)EditorGUIUtility.IconContent("console.erroricon.sml@2x").image;
+                        icon.style.backgroundImage = (Texture2D)EditorGUIUtility.IconContent("console.erroricon.sml@2x").image;
                         break;
                 }
             }
@@ -123,20 +129,31 @@ namespace RoR2.Editor
                 _messageIsExplicit = value;
                 if (_messageIsExplicit)
                 {
-                    Container.style.width = StyleKeyword.Auto;
+                    contentContainer.style.width = StyleKeyword.Auto;
                 }
                 else
                 {
-                    Container.style.width = new StyleLength(new Length(32f, LengthUnit.Pixel));
+                    contentContainer.style.width = new StyleLength(new Length(32f, LengthUnit.Pixel));
                 }
 
-                Icon.tooltip = _messageIsExplicit ? String.Empty : message;
-                Label.text = _messageIsExplicit ? message : String.Empty;
-                Label.SetDisplay(_messageIsExplicit);
-                Label.SetEnabled(_messageIsExplicit);
+                icon.tooltip = _messageIsExplicit ? String.Empty : message;
+                label.text = _messageIsExplicit ? message : String.Empty;
+                label.SetDisplay(_messageIsExplicit);
+                label.SetEnabled(_messageIsExplicit);
             }
         }
         private bool _messageIsExplicit;
+
+        public bool isDismissable
+        {
+            get => _isDismissable;
+            set
+            {
+                _isDismissable = value;
+                dismissButton.parent.SetDisplay(value);
+            }
+        }
+        private bool _isDismissable;
         /// <summary>
         /// An Acton to populate a context menu when the HelpBox is clicked
         /// </summary>
@@ -162,15 +179,30 @@ namespace RoR2.Editor
         /// <summary>
         /// The Icon visual element
         /// </summary>
-        public VisualElement Icon { get; }
+        public VisualElement icon { get; }
         /// <summary>
         /// A Container element, this element gets resized whenever <see cref="messageIsExplicit"/> changes value
         /// </summary>
-        public VisualElement Container { get; }
+        public override VisualElement contentContainer { get; }
         /// <summary>
         /// The Label of the HelpBox
         /// </summary>
-        public Label Label { get; }
+        public Label label { get; }
+
+        /// <summary>
+        /// A button that can be clicked to dismiss this helpbox.
+        /// </summary>
+        public Button dismissButton { get; }
+        
+        private void Init(AttachToPanelEvent evt)
+        {
+            dismissButton.clicked += Detach;
+        }
+
+        private void Detach()
+        {
+            parent.Remove(this);
+        }
 
         /// <summary>
         /// Constructor for HelpBox
@@ -179,10 +211,19 @@ namespace RoR2.Editor
         {
             VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(HelpBox), this);
 
-            Container = this.Q<VisualElement>(nameof(Container));
-            Icon = this.Q<VisualElement>(nameof(Icon));
-            Label = this.Q<Label>(nameof(Label));
+            contentContainer = this.Q<VisualElement>("Container");
+            icon = this.Q<VisualElement>("Icon");
+            label = this.Q<Label>("Label");
+            dismissButton = this.Q<Button>();
+
+            RegisterCallback<AttachToPanelEvent>(Init);
         }
+
+        ~HelpBox()
+        {
+            UnregisterCallback<AttachToPanelEvent>(Init);
+        }
+
 
         /// <summary>
         /// Constructor for HelpBox
@@ -191,44 +232,52 @@ namespace RoR2.Editor
         {
             VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(HelpBox), this);
 
-            Container = this.Q<VisualElement>(nameof(Container));
-            Icon = this.Q<VisualElement>(nameof(Icon));
-            Label = this.Q<Label>(nameof(Label));
+            contentContainer = this.Q<VisualElement>("Container");
+            icon = this.Q<VisualElement>("Icon");
+            label = this.Q<Label>("Label");
+            dismissButton = this.Q<Button>();
 
             ContextualMenuPopulateEvent = contextMenuPopulateEvent;
+            RegisterCallback<AttachToPanelEvent>(Init);
         }
 
         /// <summary>
         /// Constructor for HelpBox
         /// </summary>
-        public HelpBox(string message, MessageType messageType, bool messageIsExplicit)
+        public HelpBox(string message, MessageType messageType, bool messageIsExplicit, bool canBeDismissed)
         {
             VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(HelpBox), this);
 
-            Container = this.Q<VisualElement>(nameof(Container));
-            Icon = this.Q<VisualElement>(nameof(Icon));
-            Label = this.Q<Label>(nameof(Label));
+            contentContainer = this.Q<VisualElement>("Container");
+            icon = this.Q<VisualElement>("Icon");
+            label = this.Q<Label>("Label");
+            dismissButton = this.Q<Button>();
 
             this.message = message;
             this.messageType = messageType;
             this.messageIsExplicit = messageIsExplicit;
+            this.isDismissable = canBeDismissed;
+            RegisterCallback<AttachToPanelEvent>(Init);
         }
 
         /// <summary>
         /// Constructor for HelpBox
         /// </summary>
-        public HelpBox(string message, MessageType messageType, bool messageIsExplicit, Action<ContextualMenuPopulateEvent> contextMenuPopulateEvent)
+        public HelpBox(string message, MessageType messageType, bool messageIsExplicit, bool canBeDismissed, Action<ContextualMenuPopulateEvent> contextMenuPopulateEvent)
         {
             VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(HelpBox), this);
 
-            Container = this.Q<VisualElement>(nameof(Container));
-            Icon = this.Q<VisualElement>(nameof(Icon));
-            Label = this.Q<Label>(nameof(Label));
+            contentContainer = this.Q<VisualElement>("Container");
+            icon = this.Q<VisualElement>("Icon");
+            label = this.Q<Label>("Label");
+            dismissButton = this.Q<Button>();
 
             this.message = message;
             this.messageType = messageType;
             this.messageIsExplicit = messageIsExplicit;
+            this.isDismissable = canBeDismissed;
             ContextualMenuPopulateEvent = contextMenuPopulateEvent;
+            RegisterCallback<AttachToPanelEvent>(Init);
         }
     }
 }

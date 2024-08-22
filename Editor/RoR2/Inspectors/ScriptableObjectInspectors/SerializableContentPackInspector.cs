@@ -11,7 +11,7 @@ namespace RoR2.Editor.Inspectors
         public void OnEnable()
         {
             _helpBox = new HelpBox("The vanilla SerializableContentPack is no longer supported as it lacks the new fields added to ContentPacks in the DLC Updates.\n\n" +
-                "While RiskofThunder recommends utilizing the regular ContentPack's capabilities instead of a SerializableContentPack, one can also Subclass SerializableContentPack to add the new required fields.", MessageType.Info, true);
+                "While RiskofThunder recommends utilizing the regular ContentPack's capabilities instead of a SerializableContentPack, one can also Subclass SerializableContentPack to add the new required fields.", MessageType.Info, true, false);
 
             onRootElementCleared += () =>
             {

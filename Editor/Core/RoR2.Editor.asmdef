@@ -8,10 +8,7 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "PublicFilePath.dll",
-        "RoR2.dll",
-        "HGCSharpUtils.dll",
-        "HGUnityUtils.dll"
+        "PublicFilePath.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

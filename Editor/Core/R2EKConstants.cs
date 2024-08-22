@@ -17,6 +17,12 @@ namespace RoR2.Editor
         public const string R2EK_CONTEXT_ROOT = "Assets/Create/RoR2EditorKit";
         public const string ROR2EK_MENU_ROOT = "Tools/RoR2EditorKit";
 
+        public static class AssetGUIDs
+        {
+            public static readonly AssetGUID<TextAsset> gizmosReadme = "69c8ad553a081794c9c0a6985bbb84d3";
+            public static readonly string ror2IconsForScriptsGUID = "87985f697aee81b48922b790035e73e1";
+        }
+
         public static class FolderPaths
         {
             private const string ASSETS = "Assets";

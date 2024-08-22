@@ -1,4 +1,5 @@
 ﻿using RoR2;
+using RoR2.Editor;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -6,9 +7,9 @@ using UnityEngine;
 namespace RoR2EditorKit.RoR2Related.Inspectors
 {
     [CustomPropertyDrawer(typeof(TypeRestrictedReferenceAttribute))]
-    public class TypeRestrictedReferenceAttributeDrawer : PropertyDrawer
+    public class TypeRestrictedReferenceAttributeDrawer : IMGUIPropertyDrawer<TypeRestrictedReferenceAttribute>
     {
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             if (property.propertyType != SerializedPropertyType.ObjectReference)
             {

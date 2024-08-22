@@ -9,9 +9,9 @@ using UnityEngine;
 namespace RoR2.Editor
 {
     [CustomPropertyDrawer(typeof(KinematicCharacterController.ReadOnlyAttribute))]
-    public class KCCReadOnlyDrawer : PropertyDrawer
+    public class KCCReadOnlyDrawer : IMGUIPropertyDrawer<KinematicCharacterController.ReadOnlyAttribute>
     {
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             EditorGUI.BeginProperty(position, label, property);
             EditorGUI.BeginDisabledGroup(true);
@@ -28,9 +28,9 @@ namespace RoR2.Editor
     }
 
     [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
-    public class ReadOnlyDrawer : PropertyDrawer
+    public class ReadOnlyDrawer : IMGUIPropertyDrawer<ReadOnlyAttribute>
     {
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             EditorGUI.BeginProperty(position, label, property);
             EditorGUI.BeginDisabledGroup(true);

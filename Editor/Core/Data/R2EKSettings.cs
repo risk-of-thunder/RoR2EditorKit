@@ -11,9 +11,17 @@ namespace RoR2.Editor
     {
         public bool tokenExists => string.IsNullOrEmpty(_tokenPrefix) || string.IsNullOrWhiteSpace(_tokenPrefix);
         public bool enableNamingConventions => _enableNamingConventions;
+        public bool isFirstTimeBoot { get => _isFirstTimeBoot; set => _isFirstTimeBoot = value; }
         public string tokenPrefix => _tokenPrefix;
         [SerializeField] private string _tokenPrefix;
         [SerializeField] private bool _enableNamingConventions;
+        [SerializeField] private bool _isFirstTimeBoot = true;
+
+        [InitializeOnLoadMethod]
+        public static void InitializeOnLoad()
+        {
+            EditorApplication.update += ShowSettingsWindow;
+        }
 
         public string GetTokenAllUpperCase()
         {
@@ -62,5 +70,16 @@ namespace RoR2.Editor
         {
             Save(true);
         }
+
+        private static void ShowSettingsWindow()
+        {
+            EditorApplication.update -= ShowSettingsWindow;
+            if(instance._isFirstTimeBoot)
+            {
+                Debug.Log("Showing ror2ek settings.");
+                SettingsService.OpenProjectSettings("Project/RoR2EditorKit");
+            }
+        }
+
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Collections;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,7 +13,7 @@ namespace RoR2.Editor
     public sealed class R2EKEditorPreferenceSettings : ScriptableSingleton<R2EKEditorPreferenceSettings>, EditorSettingManager.IEditorSettingProvider
     {
 
-        [ReadOnly, SerializeField]
+        [SerializeField]
         private List<EditorSetting> _projectSettings = new List<EditorSetting>();
 
         List<EditorSetting> EditorSettingManager.IEditorSettingProvider.editorSettings => _projectSettings;
