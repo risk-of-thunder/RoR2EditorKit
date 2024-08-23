@@ -53,6 +53,8 @@ namespace RoR2.Editor
         }
         private float _labelRightPadding;
 
+        public Func<AlignedControlElement, Label, bool> labelPredicate = DefaultWhereCheck;
+
         private int _previousHierarchyCount;
         private List<LabelWidth> _labelsAndWidths = new List<LabelWidth>();
         private float _largestLabelWidth;
@@ -105,24 +107,7 @@ namespace RoR2.Editor
             _labelsAndWidths.Clear();
 
             var collection = this.Query<Label>(null, "unity-base-field__label")
-                .Where(label =>
-                {
-                    var labelParent = label.parent;
-                    if (labelParent == null) //Control (IE: ObjectField) exists
-                        return false;
-
-                    //Checks if the control itself was created by a PropertyField.
-                    PropertyField propField = null;
-                    bool isLabelParentsParentAPropertyField = false;
-                    if (labelParent.parent is PropertyField pField)
-                    {
-                        propField = pField;
-                        isLabelParentsParentAPropertyField = true;
-                    }
-
-                    //Only use labels who are from controls that are direct descendants of this VisualElement.
-                    return isLabelParentsParentAPropertyField ? propField.parent == this : label.parent.parent == this;
-                })
+                .Where(label => labelPredicate(this, label))
                 .ToList()
                 .Select(ve => new LabelWidth
                 {
@@ -136,6 +121,23 @@ namespace RoR2.Editor
                 labelWidth.label.style.overflow = Overflow.Hidden;
                 _labelsAndWidths.Add(labelWidth);
             }
+        }
+
+        public static bool DefaultWhereCheck(AlignedControlElement instance, Label label)
+        {
+            VisualElement currentElement = label;
+            while(currentElement.parent != null)
+            {
+                //parent is aligned control element
+                if(currentElement.parent is AlignedControlElement alignedControlElement)
+                {
+                    //element is being controled by this instance, if it is another instance it shouldnt control it.
+                    if (alignedControlElement == instance)
+                        return true;
+                }
+                currentElement = currentElement.parent;
+            }
+            return false;
         }
 
         public AlignedControlElement()

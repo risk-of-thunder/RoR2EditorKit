@@ -44,6 +44,7 @@ namespace RoR2.Editor
             }
 
             SetupNonFieldControls(rootElement);
+            rootElement.Bind(serializedObject);
         }
 
         private void SetupNonFieldControls(VisualElement root)

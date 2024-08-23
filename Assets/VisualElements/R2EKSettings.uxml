@@ -7,8 +7,8 @@
         <Style src="R2EKGlobalStlye.uss" />
         <ui:VisualElement style="flex-direction: row;">
             <RoR2.Editor.AlignedControlElement style="flex-direction: column; flex-grow: 1;">
-                <ui:TextField picking-mode="Ignore" label="Language Token Prefix" />
-                <ui:Toggle label="Enable RiskOfThunder Naming Conventions" name="EnableNamingConventions" />
+                <ui:TextField picking-mode="Ignore" label="Language Token Prefix" binding-path="_tokenPrefix" />
+                <ui:Toggle label="Enable RiskOfThunder Naming Conventions" name="EnableNamingConventions" binding-path="_enableNamingConventions" />
             </RoR2.Editor.AlignedControlElement>
             <ui:VisualElement>
                 <ui:Button text="Import Script Icons for RoR2 Classes" name="ImportIconButton" />

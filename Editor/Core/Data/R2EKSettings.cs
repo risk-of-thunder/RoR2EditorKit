@@ -9,7 +9,7 @@ namespace RoR2.Editor
     [PublicFilePath("ProjectSettings/RoR2EditorKit/R2EKSettings.asset", PublicFilePathAttribute.Location.ProjectFolder)]
     public sealed class R2EKSettings : ScriptableSingleton<R2EKSettings>
     {
-        public bool tokenExists => string.IsNullOrEmpty(_tokenPrefix) || string.IsNullOrWhiteSpace(_tokenPrefix);
+        public bool tokenExists => !string.IsNullOrEmpty(_tokenPrefix) || !string.IsNullOrWhiteSpace(_tokenPrefix);
         public bool enableNamingConventions => _enableNamingConventions;
         public bool isFirstTimeBoot { get => _isFirstTimeBoot; set => _isFirstTimeBoot = value; }
         public string tokenPrefix => _tokenPrefix;

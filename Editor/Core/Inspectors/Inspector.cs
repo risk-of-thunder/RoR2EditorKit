@@ -102,6 +102,11 @@ namespace RoR2.Editor
             return rootVisualElement;
         }
 
+        protected virtual void OnDisable()
+        {
+            serializedObject.ApplyModifiedProperties();
+        }
+
         protected abstract VisualElement CreateInspectorUI();
 
         protected T1 GetOrCreateSetting<T1>(string settingName, T1 defaultValue, EditorSettingManager.SettingType settingType)

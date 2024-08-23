@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:VisualElement name="content" style="flex-direction: row; width: auto; flex-shrink: 0; flex-grow: 1;" />
+    <ui:VisualElement name="icon" style="background-image: url(&apos;/Packages/riskofthunder-ror2editorkit/Assets/R2EKIcon.png&apos;); width: 25px; height: 25px;" />
+</ui:UXML>
