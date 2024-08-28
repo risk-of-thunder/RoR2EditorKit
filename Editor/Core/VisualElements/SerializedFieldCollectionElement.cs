@@ -33,7 +33,7 @@ namespace RoR2.Editor
             }
         }
         private Type _typeBeingSerialized;
-        public UnityEngine.UIElements.HelpBox helpBox { get; private set; }
+        public ExtendedHelpBox helpBox { get; private set; }
         public VisualElement container { get; private set; }
         public Foldout staticFieldsFoldout { get; private set; }
         public Foldout instanceFieldsFoldout { get; private set; }
@@ -276,7 +276,7 @@ namespace RoR2.Editor
 
             RegisterCallback<AttachToPanelEvent>(OnAttached);
 
-            helpBox = new UnityEngine.UIElements.HelpBox("No Type is being serialized.", MessageType.Info, true, false);
+            helpBox = new ExtendedHelpBox("No Type is being serialized.", MessageType.Info, true, false);
             Add(helpBox);
             helpBox.SendToBack();
 

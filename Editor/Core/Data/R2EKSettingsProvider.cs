@@ -36,7 +36,7 @@ namespace RoR2.Editor
             if(settings.isFirstTimeBoot)
             {
                 var center = rootElement.Q<VisualElement>("Center");
-                var welcome = new UnityEngine.UIElements.HelpBox("Thanks for downloading and using Risk of Rain 2 EditorKit. Inside this window you can see the settings to modify how RoR2EditorKit functions inside your project.\nRoR2EditorKit is a team effort by the community, mostly developed by Nebby1999 on discord. Consider donating to him for his dedication.\n\nThis window will only open once when installed, and this HelpBox will only show this time.", MessageType.Info, true, true);
+                var welcome = new ExtendedHelpBox("Thanks for downloading and using Risk of Rain 2 EditorKit. Inside this window you can see the settings to modify how RoR2EditorKit functions inside your project.\nRoR2EditorKit is a team effort by the community, mostly developed by Nebby1999 on discord. Consider donating to him for his dedication.\n\nThis window will only open once when installed, and this HelpBox will only show this time.", MessageType.Info, true, true);
                 center.Add(welcome);
                 welcome.SendToBack();
                 settings.isFirstTimeBoot = false;
