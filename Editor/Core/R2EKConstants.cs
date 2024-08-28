@@ -20,6 +20,7 @@ namespace RoR2.Editor
         public static class AssetGUIDs
         {
             public static readonly AssetGUID<TextAsset> gizmosReadme = "69c8ad553a081794c9c0a6985bbb84d3";
+            public static readonly AssetGUID<Texture> r2ekIcon = "62cd962c0bfb78f4b974cf3b550e754e";
             public static readonly string ror2IconsForScriptsGUID = "87985f697aee81b48922b790035e73e1";
         }
 

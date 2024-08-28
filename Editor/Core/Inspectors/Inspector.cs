@@ -66,6 +66,8 @@ namespace RoR2.Editor
         }
         private VisualElement _rootVisualElement;
 
+        public T targetType => (T)target;
+
         protected bool hasDoneFirstDrawing { get; private set; }
         protected event Action onRootElementCleared;
 
@@ -79,6 +81,7 @@ namespace RoR2.Editor
                 var imguiContainer = new IMGUIContainer(DoDrawDefaultInspector);
                 imguiContainer.name = $"{typeof(T).Name}_DefaultInspector";
                 rootVisualElement.Add(imguiContainer);
+                OnInspectorDisabled();
             }
             else
             {
@@ -86,6 +89,7 @@ namespace RoR2.Editor
                 rootVisualElement.Add(inspectorElement);
                 if (hasDoneFirstDrawing)
                     rootVisualElement.Bind(serializedObject);
+                OnInspectorEnabled();
             }
 
             serializedObject.ApplyModifiedProperties();
@@ -102,8 +106,19 @@ namespace RoR2.Editor
             return rootVisualElement;
         }
 
+        protected virtual void OnInspectorEnabled() { }
+        protected virtual void OnInspectorDisabled() { }
+
+        protected virtual void OnEnable()
+        {
+            OnInspectorEnabled();
+        }
         protected virtual void OnDisable()
         {
+            OnInspectorDisabled();
+            if (serializedObject.targetObject == null)
+                return;
+
             serializedObject.ApplyModifiedProperties();
         }
 

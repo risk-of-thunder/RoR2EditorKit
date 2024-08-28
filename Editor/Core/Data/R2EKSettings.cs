@@ -6,16 +6,19 @@ using UnityEngine;
 
 namespace RoR2.Editor
 {
-    [PublicFilePath("ProjectSettings/RoR2EditorKit/R2EKSettings.asset", PublicFilePathAttribute.Location.ProjectFolder)]
+    [FilePath("ProjectSettings/RoR2EditorKit/R2EKSettings.asset", FilePathAttribute.Location.ProjectFolder)]
     public sealed class R2EKSettings : ScriptableSingleton<R2EKSettings>
     {
-        public bool tokenExists => !string.IsNullOrEmpty(_tokenPrefix) || !string.IsNullOrWhiteSpace(_tokenPrefix);
-        public bool enableNamingConventions => _enableNamingConventions;
-        public bool isFirstTimeBoot { get => _isFirstTimeBoot; set => _isFirstTimeBoot = value; }
         public string tokenPrefix => _tokenPrefix;
         [SerializeField] private string _tokenPrefix;
+        public bool tokenExists => !string.IsNullOrEmpty(_tokenPrefix) || !string.IsNullOrWhiteSpace(_tokenPrefix);
+        public bool enableNamingConventions => _enableNamingConventions;
         [SerializeField] private bool _enableNamingConventions;
+        public bool isFirstTimeBoot { get => _isFirstTimeBoot; set => _isFirstTimeBoot = value; }
         [SerializeField] private bool _isFirstTimeBoot = true;
+
+        public int callsBetweenCheckablePropertyChecks => _callsBetweenCheckablePropertyChecks;
+        [SerializeField] private int _callsBetweenCheckablePropertyChecks = 500;
 
         [InitializeOnLoadMethod]
         public static void InitializeOnLoad()

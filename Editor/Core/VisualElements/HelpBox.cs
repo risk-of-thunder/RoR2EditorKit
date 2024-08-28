@@ -17,41 +17,6 @@ namespace RoR2.Editor
     /// </summary>
     public class HelpBox : VisualElement
     {
-        public new class UxmlFactory : UxmlFactory<HelpBox, UxmlTraits> { }
-        public new class UxmlTraits : VisualElement.UxmlTraits
-        {
-            private UxmlStringAttributeDescription m_Message = new UxmlStringAttributeDescription
-            {
-                name = VisualElementUtil.NormalizeNameForUXMLTrait(nameof(message)),
-                defaultValue = string.Empty
-            };
-            private UxmlEnumAttributeDescription<MessageType> m_MessageType = new UxmlEnumAttributeDescription<MessageType>
-            {
-                name = VisualElementUtil.NormalizeNameForUXMLTrait(nameof(messageType)),
-                defaultValue = MessageType.None
-            };
-            private UxmlBoolAttributeDescription m_MessageIsExplicit = new UxmlBoolAttributeDescription
-            {
-                name = VisualElementUtil.NormalizeNameForUXMLTrait(nameof(messageIsExplicit)),
-                defaultValue = true
-            };
-            private UxmlBoolAttributeDescription m_Dismissable = new UxmlBoolAttributeDescription
-            {
-                name = VisualElementUtil.NormalizeNameForUXMLTrait(nameof(isDismissable)),
-                defaultValue = false
-            };
-
-            public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc)
-            {
-                base.Init(ve, bag, cc);
-                var helpBox = (HelpBox)ve;
-                helpBox.message = m_Message.GetValueFromBag(bag, cc);
-                helpBox.messageIsExplicit = m_MessageIsExplicit.GetValueFromBag(bag, cc);
-                helpBox.messageType = m_MessageType.GetValueFromBag(bag, cc);
-                helpBox.isDismissable = m_Dismissable.GetValueFromBag(bag, cc);
-            }
-        }
-
         /// <summary>
         /// The Message that this HelpBox displays
         /// </summary>
@@ -278,6 +243,41 @@ namespace RoR2.Editor
             this.isDismissable = canBeDismissed;
             ContextualMenuPopulateEvent = contextMenuPopulateEvent;
             RegisterCallback<AttachToPanelEvent>(Init);
+        }
+
+        public new class UxmlFactory : UxmlFactory<HelpBox, UxmlTraits> { }
+        public new class UxmlTraits : VisualElement.UxmlTraits
+        {
+            private UxmlStringAttributeDescription m_Message = new UxmlStringAttributeDescription
+            {
+                name = VisualElementUtil.NormalizeNameForUXMLTrait(nameof(message)),
+                defaultValue = string.Empty
+            };
+            private UxmlEnumAttributeDescription<MessageType> m_MessageType = new UxmlEnumAttributeDescription<MessageType>
+            {
+                name = VisualElementUtil.NormalizeNameForUXMLTrait(nameof(messageType)),
+                defaultValue = MessageType.None
+            };
+            private UxmlBoolAttributeDescription m_MessageIsExplicit = new UxmlBoolAttributeDescription
+            {
+                name = VisualElementUtil.NormalizeNameForUXMLTrait(nameof(messageIsExplicit)),
+                defaultValue = true
+            };
+            private UxmlBoolAttributeDescription m_Dismissable = new UxmlBoolAttributeDescription
+            {
+                name = VisualElementUtil.NormalizeNameForUXMLTrait(nameof(isDismissable)),
+                defaultValue = false
+            };
+
+            public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc)
+            {
+                base.Init(ve, bag, cc);
+                var helpBox = (HelpBox)ve;
+                helpBox.message = m_Message.GetValueFromBag(bag, cc);
+                helpBox.messageIsExplicit = m_MessageIsExplicit.GetValueFromBag(bag, cc);
+                helpBox.messageType = m_MessageType.GetValueFromBag(bag, cc);
+                helpBox.isDismissable = m_Dismissable.GetValueFromBag(bag, cc);
+            }
         }
     }
 }

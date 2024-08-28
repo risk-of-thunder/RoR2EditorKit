@@ -3,12 +3,13 @@ using UnityEngine;
 using System.Collections.Generic;
 using Debug = UnityEngine.Debug;
 using System.Globalization;
+using System.Linq;
 
 namespace RoR2.Editor
 {
-    public static class EditorStringSerializer
+    internal static class EditorStringSerializer
     {
-        private static readonly Dictionary<Type, SerializationHandler> _typeToSerializationHandlers = new Dictionary<Type, SerializationHandler>();
+        internal static readonly Dictionary<Type, SerializationHandler> _typeToSerializationHandlers = new Dictionary<Type, SerializationHandler>();
         private static SerializationHandler _enumHandler;
 
         public static bool CanSerializeType<T>() => CanSerializeType(typeof(T));
@@ -77,6 +78,16 @@ namespace RoR2.Editor
         static EditorStringSerializer()
         {
             CultureInfo culture = CultureInfo.InvariantCulture;
+            AddSerializationHandler<short>(new SerializationHandler
+            {
+                deserializer = (txt) => short.Parse(txt, culture),
+                serializer = (obj) => ((short)obj).ToString(culture)
+            });
+            AddSerializationHandler<ushort>(new SerializationHandler
+            {
+                deserializer = (txt) => short.Parse(txt, culture),
+                serializer = (obj) => ((ushort)obj).ToString(culture)
+            });
             AddSerializationHandler<int>(new SerializationHandler
             {
                 deserializer = (txt) => int.Parse(txt, culture),
@@ -265,8 +276,8 @@ namespace RoR2.Editor
                         {
                             x = float.Parse(output[0], culture),
                             y = float.Parse(output[1], culture),
-                            height = float.Parse(output[2], culture),
-                            width = float.Parse(output[3], culture)
+                            width = float.Parse(output[2], culture),
+                            height = float.Parse(output[3], culture)
                         };
                     }
                     return Rect.zero;
@@ -274,7 +285,7 @@ namespace RoR2.Editor
                 serializer = obj =>
                 {
                     var rect = (Rect)obj;
-                    return $"{rect.x.ToString(culture)}, {rect.y.ToString(culture)}, {rect.height.ToString(culture)}, {rect.width.ToString(culture)}";
+                    return $"{rect.x.ToString(culture)}, {rect.y.ToString(culture)}, {rect.width.ToString(culture)}, {rect.height.ToString(culture)}";
                 }
             });
             AddSerializationHandler<RectInt>(new SerializationHandler
@@ -287,8 +298,8 @@ namespace RoR2.Editor
                         {
                             x = int.Parse(output[0], culture),
                             y = int.Parse(output[1], culture),
-                            height = int.Parse(output[2], culture),
-                            width = int.Parse(output[3], culture)
+                            width = int.Parse(output[2], culture),
+                            height = int.Parse(output[3], culture)
                         };
                     }
                     return new RectInt(0, 0, 0, 0);
@@ -296,12 +307,12 @@ namespace RoR2.Editor
                 serializer = obj =>
                 {
                     var rect = (RectInt)obj;
-                    return $"{rect.x.ToString(culture)}, {rect.y.ToString(culture)}, {rect.height.ToString(culture)}, {rect.width.ToString(culture)}";
+                    return $"{rect.x.ToString(culture)}, {rect.y.ToString(culture)}, {rect.width.ToString(culture)}, {rect.height.ToString(culture)}";
                 }
             });
             AddSerializationHandler<char>(new SerializationHandler
             {
-                deserializer = txt => char.Parse(txt),
+                deserializer = txt => txt.ToCharArray().FirstOrDefault(),
                 serializer = obj =>
                 {
                     if (obj is string @string)
@@ -375,28 +386,23 @@ namespace RoR2.Editor
             {
                 deserializer = txt =>
                 {
-                    if (TrySplit<Quaternion>(txt, 3, out var output))
+                    if(TrySplit<Quaternion>(txt, 4, out var output))
                     {
-                        Vector3 euler = new Vector3
+                        Quaternion quat = new Quaternion
                         {
                             x = float.Parse(output[0], culture),
                             y = float.Parse(output[1], culture),
-                            z = float.Parse(output[2], culture)
+                            z = float.Parse(output[2], culture),
+                            w = float.Parse(output[3], culture),
                         };
-                        return Quaternion.Euler(euler);
+                        return quat;
                     }
                     return Quaternion.identity;
                 },
                 serializer = obj =>
                 {
-                    Vector3 euler = Vector3.zero;
-                    if (obj is Quaternion quat)
-                    {
-                        euler = quat.eulerAngles;
-                        return $"{euler.x.ToString(culture)}, {euler.y.ToString(culture)}, {euler.z.ToString(culture)}";
-                    }
-                    euler = (Vector3)obj;
-                    return $"{euler.x.ToString(culture)}, {euler.y.ToString(culture)}, {euler.z.ToString(culture)}";
+                    Quaternion quat = (Quaternion)obj;
+                    return $"{quat.x.ToString(culture)}, {quat.y.ToString(culture)}, {quat.z.ToString(culture)}, {quat.w.ToString(culture)}";
                 }
             });
             AddSerializationHandler<AnimationCurve>(new SerializationHandler

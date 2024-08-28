@@ -11,7 +11,7 @@ using UnityEngine.UIElements;
 
 namespace RoR2.Editor
 {
-    [PublicFilePath("ProjectSettings/RoR2EditorKit/VisualElementTemplateDictionary.asset", PublicFilePathAttribute.Location.ProjectFolder)]
+    [FilePath("ProjectSettings/RoR2EditorKit/VisualElementTemplateDictionary.asset", FilePathAttribute.Location.ProjectFolder)]
     public class VisualElementTemplateDictionary : ScriptableSingleton<VisualElementTemplateDictionary>
     {
         private static Dictionary<string, VisualTreeAsset> _templateTreeDictionary = new Dictionary<string, VisualTreeAsset>();

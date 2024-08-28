@@ -8,7 +8,7 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "PublicFilePath.dll"
+        "FilePath.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

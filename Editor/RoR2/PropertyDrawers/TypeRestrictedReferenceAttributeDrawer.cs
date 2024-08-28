@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace RoR2EditorKit.RoR2Related.Inspectors
+namespace RoR2.Editor.PropertyDrawers
 {
     [CustomPropertyDrawer(typeof(TypeRestrictedReferenceAttribute))]
     public class TypeRestrictedReferenceAttributeDrawer : IMGUIPropertyDrawer<TypeRestrictedReferenceAttribute>

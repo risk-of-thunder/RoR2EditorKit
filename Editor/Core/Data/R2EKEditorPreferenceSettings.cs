@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace RoR2.Editor
 {
-    [PublicFilePath("RoR2EditorKit/R2EKEditorPreferenceSettings.asset", PublicFilePathAttribute.Location.PreferencesFolder)]
+    [FilePath("RoR2EditorKit/R2EKEditorPreferenceSettings.asset", FilePathAttribute.Location.PreferencesFolder)]
     public sealed class R2EKEditorPreferenceSettings : ScriptableSingleton<R2EKEditorPreferenceSettings>, EditorSettingManager.IEditorSettingProvider
     {
 

@@ -5,20 +5,20 @@ namespace RoR2.Editor
 {
     public abstract class VisualElementScriptableObjectInspector<T> : ScriptableObjectInspector<T> where T : ScriptableObject
     {
-        VisualElement templateInstance;
+        private VisualElement _templateInstance;
         public virtual bool canReuseInstance { get; }
         private bool _hasAlreadyInitialized = false;
         protected sealed override VisualElement CreateInspectorUI()
         {
-            if(canReuseInstance && templateInstance == null)
+            if(canReuseInstance && _templateInstance == null)
             {
-                templateInstance = VisualElementTemplateDictionary.instance.GetTemplateInstance(GetType().Name, null, ValidatePath);
+                _templateInstance = VisualElementTemplateDictionary.instance.GetTemplateInstance(GetType().Name, null, ValidatePath);
                 if(!_hasAlreadyInitialized)
                 {
                     _hasAlreadyInitialized = true;
-                    InitializeVisualElement(templateInstance);
+                    InitializeVisualElement(_templateInstance);
                 }
-                return templateInstance;
+                return _templateInstance;
             }
 
             var visualElement = VisualElementTemplateDictionary.instance.GetTemplateInstance(GetType().Name, null, ValidatePath);

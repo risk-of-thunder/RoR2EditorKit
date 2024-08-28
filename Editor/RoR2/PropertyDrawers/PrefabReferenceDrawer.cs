@@ -1,6 +1,7 @@
 ﻿using RoR2;
 using UnityEditor;
 using UnityEditor.Experimental.SceneManagement;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 
@@ -22,7 +23,7 @@ namespace RoR2.Editor.PropertyDrawers
             }
 
             string relativePath = RoR2.Util.BuildPrefabTransformPath(sceneObject.transform.root, sceneObject.transform, false);
-            string assetPath = prefabStage.prefabAssetPath;
+            string assetPath = prefabStage.assetPath;
             if (assetPath != null)
             {
                 GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);

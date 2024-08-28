@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace RoR2.Editor
 {
-    [PublicFilePath("ProjectSettings/RoR2EditorKit/R2EKEditorProjectSettings.asset", PublicFilePathAttribute.Location.ProjectFolder)]
+    [FilePath("ProjectSettings/RoR2EditorKit/R2EKEditorProjectSettings.asset", FilePathAttribute.Location.ProjectFolder)]
     public sealed class R2EKEditorProjectSettings : ScriptableSingleton<R2EKEditorProjectSettings>, EditorSettingManager.IEditorSettingProvider
     {
         [SerializeField]
