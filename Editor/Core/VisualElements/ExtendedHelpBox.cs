@@ -15,7 +15,7 @@ namespace RoR2.Editor
     /// A HelpBox is a custom VisualElement that works as a replacement for creating <see cref="IMGUIContainer"/> and calling <see cref="EditorGUILayout.HelpBox(GUIContent, bool)"/>
     /// <para>The HelpBox element works by imitating the behaviour of the EditorGUILayout method, but with a few extra utilities, such as making messages implicit (showing in the icon's tooltip), and allowing for easy creation of ContextualMenus</para>
     /// </summary>
-    public class HelpBox : VisualElement
+    public class ExtendedHelpBox : VisualElement
     {
         /// <summary>
         /// The Message that this HelpBox displays
@@ -172,9 +172,9 @@ namespace RoR2.Editor
         /// <summary>
         /// Constructor for HelpBox
         /// </summary>
-        public HelpBox()
+        public ExtendedHelpBox()
         {
-            VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(HelpBox), this);
+            VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(ExtendedHelpBox), this);
 
             contentContainer = this.Q<VisualElement>("Container");
             icon = this.Q<VisualElement>("Icon");
@@ -184,7 +184,7 @@ namespace RoR2.Editor
             RegisterCallback<AttachToPanelEvent>(Init);
         }
 
-        ~HelpBox()
+        ~ExtendedHelpBox()
         {
             UnregisterCallback<AttachToPanelEvent>(Init);
         }
@@ -193,9 +193,9 @@ namespace RoR2.Editor
         /// <summary>
         /// Constructor for HelpBox
         /// </summary>
-        public HelpBox(Action<ContextualMenuPopulateEvent> contextMenuPopulateEvent)
+        public ExtendedHelpBox(Action<ContextualMenuPopulateEvent> contextMenuPopulateEvent)
         {
-            VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(HelpBox), this);
+            VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(ExtendedHelpBox), this);
 
             contentContainer = this.Q<VisualElement>("Container");
             icon = this.Q<VisualElement>("Icon");
@@ -209,9 +209,9 @@ namespace RoR2.Editor
         /// <summary>
         /// Constructor for HelpBox
         /// </summary>
-        public HelpBox(string message, MessageType messageType, bool messageIsExplicit, bool canBeDismissed)
+        public ExtendedHelpBox(string message, MessageType messageType, bool messageIsExplicit, bool canBeDismissed)
         {
-            VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(HelpBox), this);
+            VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(ExtendedHelpBox), this);
 
             contentContainer = this.Q<VisualElement>("Container");
             icon = this.Q<VisualElement>("Icon");
@@ -228,9 +228,9 @@ namespace RoR2.Editor
         /// <summary>
         /// Constructor for HelpBox
         /// </summary>
-        public HelpBox(string message, MessageType messageType, bool messageIsExplicit, bool canBeDismissed, Action<ContextualMenuPopulateEvent> contextMenuPopulateEvent)
+        public ExtendedHelpBox(string message, MessageType messageType, bool messageIsExplicit, bool canBeDismissed, Action<ContextualMenuPopulateEvent> contextMenuPopulateEvent)
         {
-            VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(HelpBox), this);
+            VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(ExtendedHelpBox), this);
 
             contentContainer = this.Q<VisualElement>("Container");
             icon = this.Q<VisualElement>("Icon");
@@ -245,7 +245,7 @@ namespace RoR2.Editor
             RegisterCallback<AttachToPanelEvent>(Init);
         }
 
-        public new class UxmlFactory : UxmlFactory<HelpBox, UxmlTraits> { }
+        public new class UxmlFactory : UxmlFactory<ExtendedHelpBox, UxmlTraits> { }
         public new class UxmlTraits : VisualElement.UxmlTraits
         {
             private UxmlStringAttributeDescription m_Message = new UxmlStringAttributeDescription
@@ -272,7 +272,7 @@ namespace RoR2.Editor
             public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc)
             {
                 base.Init(ve, bag, cc);
-                var helpBox = (HelpBox)ve;
+                var helpBox = (ExtendedHelpBox)ve;
                 helpBox.message = m_Message.GetValueFromBag(bag, cc);
                 helpBox.messageIsExplicit = m_MessageIsExplicit.GetValueFromBag(bag, cc);
                 helpBox.messageType = m_MessageType.GetValueFromBag(bag, cc);
