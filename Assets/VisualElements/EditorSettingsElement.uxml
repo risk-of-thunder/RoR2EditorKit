@@ -1,0 +1,21 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Packages/riskofthunder-ror2editorkit/Assets/VisualElements/R2EKGlobalStlye.uss?fileID=7433441132597879392&amp;guid=81861b4c6318b874391de872e1793059&amp;type=3#R2EKGlobalStlye" />
+    <ui:VisualElement name="Header">
+        <ui:Label text="Select Setting From List View" display-tooltip-when-elided="true" class="r2ek-text_header r2ek-bombardier r2ek-text_center_aligned" style="-unity-font-definition: initial; white-space: normal;" />
+    </ui:VisualElement>
+    <ui:VisualElement name="Center" style="flex-grow: 1;">
+        <ui:VisualElement name="HorizontalLayout" class="r2ek-horizontal_layout" style="height: 100%;">
+            <ui:VisualElement name="EditorSettingSelection" style="border-right-width: 3px; border-left-color: rgb(47, 47, 47); border-right-color: rgb(47, 47, 47); border-top-color: rgb(47, 47, 47); border-bottom-color: rgb(47, 47, 47);">
+                <ui:Label text="Available Settings Collections" display-tooltip-when-elided="true" />
+                <ui:ListView focusable="true" name="EditorSettingSelectionListView" virtualization-method="DynamicHeight" show-border="true" header-title="Available Settings Collections" show-bound-collection-size="false" style="height: 100%;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="EditorSettingValueSelection" style="flex-grow: 1;">
+                <ui:Label text="{0}&apos;s Settings" display-tooltip-when-elided="true" />
+                <ui:ListView focusable="true" header-title="{0}&apos;s Settings" show-bound-collection-size="false" show-border="true" name="EditorSettingValueSelectionListView" virtualization-method="DynamicHeight" style="height: 100%;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="Footer" style="border-top-width: 3px; border-left-color: rgb(47, 47, 47); border-right-color: rgb(47, 47, 47); border-top-color: rgb(47, 47, 47); border-bottom-color: rgb(47, 47, 47);">
+        <ui:Button text="Save Settings" display-tooltip-when-elided="true" tooltip="Saves any changes to the settings to disk." name="SaveSettings" />
+    </ui:VisualElement>
+</ui:UXML>

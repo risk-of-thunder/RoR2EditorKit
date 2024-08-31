@@ -76,14 +76,18 @@ namespace RoR2.Editor
         public static void PurgeOrphanedSettings(SettingType settingType)
         {
             IEditorSettingProvider provider = GetEditorSettingProvider(settingType);
+            PurgeOrphanedSettings(provider);
+        }
 
+        public static void PurgeOrphanedSettings(IEditorSettingProvider provider)
+        {
             var settings = provider.editorSettings;
 
-            for(int i = settings.Count - 1; i >= 0; i--)
+            for (int i = settings.Count - 1; i >= 0; i--)
             {
                 var setting = settings[i];
 
-                if(setting.ownerType == null)
+                if (setting.ownerType == null)
                 {
                     Debug.Log($"Removing settings for type {setting._typeName} as these settings are orphaned.");
                     settings.RemoveAt(i);

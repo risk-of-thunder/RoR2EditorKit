@@ -14,7 +14,7 @@ namespace RoR2.Editor.Inspectors
     [CustomEditor(typeof(ItemDef))]
     public class ItemDefInspector : VisualElementScriptableObjectInspector<ItemDef>
     {
-        public override bool canReuseInstance => true;
+        
 
         private SerializedProperty deprecatedTierEnumProperty;
         private SerializedProperty nameTokenProperty;

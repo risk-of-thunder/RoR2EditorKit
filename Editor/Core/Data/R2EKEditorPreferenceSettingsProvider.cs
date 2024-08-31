@@ -19,6 +19,7 @@ namespace RoR2.Editor
             var keywords = new[] { "RoR2EditorKit", "RoR2EK" };
             VisualElementTemplateDictionary.instance.DoSave();
             var settings = R2EKEditorPreferenceSettings.instance;
+            EditorSettingManager.PurgeOrphanedSettings(settings);
             settings.hideFlags = HideFlags.DontSave | HideFlags.HideInHierarchy;
             settings.SaveSettings();
             return new R2EKEditorPreferenceSettingsProvider("Preferences/RoR2EditorKit Editor Preferences", SettingsScope.User, keywords)
@@ -30,6 +31,7 @@ namespace RoR2.Editor
 
         public override void OnActivate(string searchContext, VisualElement rootElement)
         {
+            rootElement.Add(new EditorSettingsElement((EditorSettingManager.IEditorSettingProvider)settings));
         }
 
         public override void OnDeactivate()
@@ -40,6 +42,7 @@ namespace RoR2.Editor
 
         private void Save()
         {
+            settings.SaveSettings();
         }
 
         public R2EKEditorPreferenceSettingsProvider(string path, SettingsScope scopes, IEnumerable<string> keywords = null) : base(path, scopes, keywords)

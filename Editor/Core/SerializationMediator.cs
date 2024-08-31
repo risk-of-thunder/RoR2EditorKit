@@ -5,7 +5,6 @@ using UnityEngine;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
-using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace RoR2.Editor
@@ -108,21 +107,21 @@ namespace RoR2.Editor
 
         static SerializationMediator()
         {
-            //No ror2 installed? utilize the editor string serializer directly.
 #if !RISKOFRAIN2
+            //No ror2 installed? utilize the editor string serializer directly.
             foreach(var type in EditorStringSerializer._typeToSerializationHandlers.Keys)
             {
                 _typesWeShouldSerialize.Add(type);
             }
 #else
-            //String serializer extensions is installed, EditorStringSerializer handles everything from there. so also use these
 #if RISKOFTHUNDER_R2API_STRINGSERIALIZEREXTENSIONS
+            //String serializer extensions is installed, EditorStringSerializer handles everything from there. so also use these
             foreach (var type in EditorStringSerializer._typeToSerializationHandlers.Keys)
             {
                 _typesWeShouldSerialize.Add(type);
             }
-            //Only utilize the officially supported types
 #else
+            //Only utilize the officially supported types
             Add<bool>();
             Add<long>();
             Add<ulong>();

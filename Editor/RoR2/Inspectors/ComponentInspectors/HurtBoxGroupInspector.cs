@@ -10,7 +10,7 @@ namespace RoR2.Editor.Inspectors
     [CustomEditor(typeof(HurtBoxGroup))]
     public class HurtBoxGroupInspector : VisualElementComponentInspector<HurtBoxGroup>
     {
-        public override bool canReuseInstance => true;
+        
         private SerializedProperty _hurtBoxesProperty;
         protected override void InitializeVisualElement(VisualElement templateInstanceRoot)
         {

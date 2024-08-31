@@ -6,13 +6,14 @@ namespace RoR2.Editor.Inspectors
     [CustomEditor(typeof(EntityStateMachine))]
     public class EntityStateMachineInspector : VisualElementComponentInspector<EntityStateMachine>
     {
-        public override bool canReuseInstance => true;
+        
         private SerializedProperty _customNameProperty;
         private SerializedProperty _initialStateTypeProperty;
         private SerializedProperty _mainStateTypeProperty;
 
         protected override void OnEnable()
         {
+
             base.OnEnable();
             _customNameProperty = serializedObject.FindProperty(nameof(EntityStateMachine.customName));
             _initialStateTypeProperty = serializedObject.FindProperty(nameof(EntityStateMachine.initialStateType));

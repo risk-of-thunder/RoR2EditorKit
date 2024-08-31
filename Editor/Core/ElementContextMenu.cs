@@ -9,17 +9,24 @@ namespace RoR2.Editor
 {
     public static class ElementContextMenu
     {
-        private static Dictionary<ContextMenuWrapperElement, List<ContextMenuData>> _wrapperToData = new Dictionary<ContextMenuWrapperElement, List<ContextMenuData>>();
+        private static FixedConditionalWeakTable<ContextMenuWrapperElement, List<ContextMenuData>> _wrapperToData = new FixedConditionalWeakTable<ContextMenuWrapperElement, List<ContextMenuData>>();
         private static DropdownMenuAction.Status DefaultStatusCheck(DropdownMenuAction action) => DropdownMenuAction.Status.Normal;
 
         public static void AddSimpleContextMenu(this VisualElement element, ContextMenuData data)
         {
             ContextMenuWrapperElement wrapper = WrapElement(element, data);
-            var datas = GetDatasFromWrapper(wrapper);
+            var datas = _wrapperToData.GetValue(wrapper, CreateNewEntry);
             if (!datas.Contains(data))
             {
                 datas.Add(data);
             }
+        }
+
+        private static List<ContextMenuData> CreateNewEntry(ContextMenuWrapperElement element)
+        {
+            var manipulator = new ContextualMenuManipulator(x => CreateMenu(element, x));
+            element.iconElement.AddManipulator(manipulator);
+            return new List<ContextMenuData>();
         }
 
         internal static void OnContextualMenuWrapperElementDestroyed(ContextMenuWrapperElement element) => _wrapperToData.Remove(element); 
@@ -72,20 +79,6 @@ namespace RoR2.Editor
             }
             wrapper = null;
             return false;
-        }
-
-        private static List<ContextMenuData> GetDatasFromWrapper(ContextMenuWrapperElement element)
-        {
-            if(_wrapperToData.TryGetValue(element, out var result))
-            {
-                return result;
-            }
-
-            var manipulator = new ContextualMenuManipulator(x => CreateMenu(element, x));
-            element.iconElement.AddManipulator(manipulator);
-            var list = new List<ContextMenuData>();
-            _wrapperToData[element] = list;
-            return list;
         }
 
         private static void CreateMenu(ContextMenuWrapperElement wrapperElement, ContextualMenuPopulateEvent evt)

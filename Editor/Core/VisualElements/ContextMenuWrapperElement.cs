@@ -34,10 +34,5 @@ namespace RoR2.Editor
             iconElement = this.Q<VisualElement>("icon");
             style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Row);
         }
-
-        ~ContextMenuWrapperElement()
-        {
-            ElementContextMenu.OnContextualMenuWrapperElementDestroyed(this);
-        }
     }
 }

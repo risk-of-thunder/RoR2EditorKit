@@ -28,5 +28,10 @@ namespace RoR2.Editor
         {
             Save(true);
         }
+
+        private void OnDestroy()
+        {
+            EditorApplication.quitting -= EditorApplication_quitting;
+        }
     }
 }

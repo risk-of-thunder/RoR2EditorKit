@@ -104,7 +104,7 @@ namespace RoR2.Editor
         [Serializable]
         internal struct SettingValue
         {
-            internal object boxedValue
+            public object boxedValue
             {
                 get
                 {
@@ -133,6 +133,7 @@ namespace RoR2.Editor
             [SerializeField]
             internal int _settingID;
 
+            public Type settingType => Type.GetType(_valueTypeQualifiedName);
             [SerializeField]
             private string _valueTypeQualifiedName;
             [SerializeField]

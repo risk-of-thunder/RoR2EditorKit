@@ -1,17 +1,66 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace RoR2.Editor
 {
     public static class VisualElementUtil
     {
+        private static Dictionary<Type, ControlBuilder> _typeToControlBuilder = new Dictionary<Type, ControlBuilder>();
+        private static ControlBuilder _enumFlagsControlBuilder;
+        private static ControlBuilder _enumIndexControlBuilder;
+
+        public static bool CanBuildControlForType(Type type)
+        {
+            return typeof(UnityEngine.Object).IsAssignableFrom(type) || type.IsEnum || _typeToControlBuilder.ContainsKey(type);
+        }
+
+        public static INotifyValueChanged<T> CreateControlFromType<T>(string label, Func<object> valueGetter, DeconstructedChangeEvent changeEvent)
+        {
+            return (INotifyValueChanged<T>)CreateControlFromType(typeof(T), label, valueGetter, changeEvent);
+        }
+
+        public static VisualElement CreateControlFromType(Type type, string label, Func<object> valueGetter, DeconstructedChangeEvent changeEvent)
+        {
+            if(typeof(UnityEngine.Object).IsAssignableFrom(type))
+            {
+                var objectField = new ObjectField(label);
+                objectField.objectType = type;
+                objectField.value = (UnityEngine.Object)valueGetter();
+                objectField.RegisterValueChangedCallback(evt => changeEvent(new DeconstructedChangeEventData
+                {
+                    eventBase = evt,
+                    newValue = evt.newValue,
+                    previousValue = evt.previousValue
+                }));
+                return objectField;
+            }
+
+            if(type.IsEnum)
+            {
+                if(type.GetCustomAttribute<FlagsAttribute>() != null)
+                {
+                    return _enumFlagsControlBuilder(label, valueGetter, changeEvent);
+                }
+                return _enumIndexControlBuilder(label, valueGetter, changeEvent);
+            }
+            if(_typeToControlBuilder.TryGetValue(type, out var builder))
+            {
+                return builder(label, valueGetter, changeEvent);
+            }
+
+            return new Label($"Creation of control for type {type.Name} is not implemented.");
+        }
+
+
         public static void SetObjectType<T>(this ObjectField objField) where T : UnityEngine.Object
         {
             objField.objectType = typeof(T);
@@ -38,5 +87,321 @@ namespace RoR2.Editor
         /// <param name="nameofProperty"></param>
         /// <returns>A normalized string for an UXML trait</returns>
         public static string NormalizeNameForUXMLTrait(string nameofProperty) => ObjectNames.NicifyVariableName(nameofProperty).ToLower().Replace(" ", "-");
+
+        private delegate VisualElement ControlBuilder(string label, Func<object> valueGetter, DeconstructedChangeEvent changeEvent);
+
+        public delegate void DeconstructedChangeEvent(DeconstructedChangeEventData deconstructedChangeEvent);
+
+        public struct DeconstructedChangeEventData
+        {
+            public EventBase eventBase;
+            public object newValue;
+            public object previousValue;
+        }
+
+        static VisualElementUtil()
+        {
+            Add<short>((label, valueGetter, changeEvent) =>
+            {
+                var field = new IntegerField(label);
+                field.value = (short)valueGetter();
+                field.RegisterValueChangedCallback(e =>
+                {
+                    int newValueAsInt = e.newValue;
+                    if (newValueAsInt > short.MaxValue)
+                    {
+                        newValueAsInt = short.MaxValue;
+                    }
+                    else if (newValueAsInt < short.MinValue)
+                    {
+                        newValueAsInt = short.MinValue;
+                    }
+                    field.SetValueWithoutNotify(newValueAsInt);
+                    short casted = Convert.ToInt16(newValueAsInt);
+
+                    changeEvent(new DeconstructedChangeEventData
+                    {
+                        eventBase = e,
+                        newValue = casted,
+                        previousValue = (short)e.previousValue
+                    });
+                });
+                return field;
+            });
+            Add<ushort>((label, valueGetter, changeEvent) =>
+            {
+                var field = new IntegerField(label);
+                field.value = (ushort)valueGetter();
+                field.RegisterValueChangedCallback(e =>
+                {
+                    int newValueAsInt = e.newValue;
+                    if (newValueAsInt < 0)
+                    {
+                        newValueAsInt = 0;
+                    }
+                    else if (newValueAsInt > ushort.MaxValue)
+                    {
+                        newValueAsInt = ushort.MaxValue;
+                    }
+                    field.SetValueWithoutNotify(newValueAsInt);
+                    ushort casted = Convert.ToUInt16(newValueAsInt);
+
+                    changeEvent(new DeconstructedChangeEventData
+                    {
+                        eventBase = e,
+                        newValue = casted,
+                        previousValue = (ushort)e.previousValue
+                    });
+                });
+                return field;
+            });
+            Add<int>((label, valueGetter, changeEvent) =>
+            {
+                var field = new IntegerField(label);
+                field.value = (int)valueGetter();
+                field.RegisterValueChangedCallback(e =>
+                {
+                    changeEvent(new DeconstructedChangeEventData
+                    {
+                        eventBase = e,
+                        newValue = e.newValue,
+                        previousValue = e.previousValue
+                    });
+                });
+                return field;
+            });
+            Add<uint>((label, valueGetter, changeEvent) =>
+            {
+                var field = new LongField(label);
+                field.value = (uint)valueGetter();
+                field.RegisterValueChangedCallback(e =>
+                {
+                    long newValueAsLong = e.newValue;
+                    if (newValueAsLong < 0)
+                    {
+                        newValueAsLong = 0;
+                    }
+                    else if (newValueAsLong > uint.MaxValue)
+                    {
+                        newValueAsLong = uint.MaxValue;
+                    }
+
+                    field.SetValueWithoutNotify(newValueAsLong);
+                    uint casted = Convert.ToUInt32(newValueAsLong);
+
+                    changeEvent(new DeconstructedChangeEventData
+                    {
+                        eventBase = e,
+                        newValue = casted,
+                        previousValue = (uint)e.previousValue
+                    });
+                });
+                return field;
+            });
+            Add<long>((label, valueGetter, changeEvent) =>
+            {
+                var field = new LongField(label);
+                field.value = (long)valueGetter();
+                field.RegisterValueChangedCallback(e =>
+                {
+                    changeEvent(new DeconstructedChangeEventData
+                    {
+                        eventBase = e,
+                        newValue = e.newValue,
+                        previousValue = e.previousValue
+                    });
+                });
+                return field;
+            });
+            Add<ulong>((label, valueGetter, changeEvent) =>
+            {
+                var field = new LongField(label);
+                field.value = (long)(ulong)valueGetter();
+                field.RegisterValueChangedCallback(e =>
+                {
+                    var valueAsLong = e.newValue;
+                    if (valueAsLong < 0)
+                    {
+                        valueAsLong = 0;
+                    }
+
+                    field.SetValueWithoutNotify(valueAsLong);
+                    var casted = (ulong)valueAsLong;
+
+                    changeEvent(new DeconstructedChangeEventData
+                    {
+                        eventBase = e,
+                        newValue = casted,
+                        previousValue = (ulong)e.previousValue
+                    });
+                });
+                return field;
+            });
+            Add<bool>((label, valueGetter, changeEvent) =>
+            {
+                var toggle = new Toggle(label);
+                GenericSetup(toggle, valueGetter, changeEvent);
+                return toggle;
+            });
+            Add<float>((label, valueGetter, changeEvent) =>
+            {
+                var field = new FloatField(label);
+                GenericSetup(field, valueGetter, changeEvent);
+                return field;
+            });
+            Add<double>((label, valueGetter, changeEvent) =>
+            {
+                var field = new DoubleField(label);
+                GenericSetup(field, valueGetter, changeEvent);
+                return field;
+            });
+            Add<string>((label, valueGetter, changeEvent) =>
+            {
+                var field = new TextField(label);
+                GenericSetup(field, valueGetter, changeEvent);
+                return field;
+            });
+            Add<Color>((label, valueGetter, changeEvent) =>
+            {
+                var field = new ColorField(label);
+                GenericSetup(field, valueGetter, changeEvent);
+                return field;
+            });
+            Add<LayerMask>((label, valueGetter, changeEvent) =>
+            {
+                var field = new LayerMaskField(label);
+                field.value = ((LayerMask)valueGetter()).value;
+                field.RegisterValueChangedCallback(evt =>
+                {
+                    changeEvent(new DeconstructedChangeEventData
+                    {
+                        eventBase = evt,
+                        newValue = (LayerMask)evt.newValue,
+                        previousValue = (LayerMask)evt.previousValue
+                    });
+                });
+                return field;
+            });
+            Add<Vector2>((label, valueGetter, changeEvent) =>
+            {
+                var field = new Vector2Field(label);
+                GenericSetup(field, valueGetter, changeEvent);
+                return field;
+            });
+            Add<Vector3>((label, valueGetter, changeEvent) =>
+            {
+                var field = new Vector3Field(label);
+                GenericSetup(field, valueGetter, changeEvent);
+                return field;
+            });
+            Add<Vector4>((label, valueGetter, changeEvent) =>
+            {
+                var field = new Vector4Field(label);
+                GenericSetup(field, valueGetter, changeEvent);
+                return field;
+            });
+            Add<Vector2Int>((label, valueGetter, changeEvent) =>
+            {
+                var field = new Vector2IntField(label);
+                GenericSetup(field, valueGetter, changeEvent);
+                return field;
+            });
+            Add<Vector3Int>((label, valueGetter, changeEvent) =>
+            {
+                var field = new Vector3IntField(label);
+                GenericSetup(field, valueGetter, changeEvent);
+                return field;
+            });
+            Add<Rect>((label, valueGetter, changeEvent) =>
+            {
+                var field = new RectField(label);
+                GenericSetup(field, valueGetter, changeEvent);
+                return field;
+            });
+            Add<RectInt>((label, valueGetter, changeEvent) =>
+            {
+                var field = new RectIntField(label);
+                GenericSetup(field, valueGetter, changeEvent);
+                return field;
+            });
+            Add<char>((label, valueGetter, changeEvent) =>
+            {
+                var field = new TextField(label, 1, false, false, '*');
+                field.value = char.ToString((char)valueGetter());
+                field.RegisterValueChangedCallback(evt => changeEvent(new DeconstructedChangeEventData
+                {
+                    eventBase = evt,
+                    newValue = evt.newValue,
+                    previousValue = evt.previousValue
+                }));
+                return field;
+            });
+            Add<Bounds>((label, valueGetter, changeEvent) =>
+            {
+                var field = new BoundsField(label);
+                GenericSetup(field, valueGetter, changeEvent);
+                return field;
+            });
+            Add<BoundsInt>((label, valueGetter, changeEvent) =>
+            {
+                var field = new BoundsIntField(label);
+                GenericSetup(field, valueGetter, changeEvent);
+                return field;
+            });
+            Add<Quaternion>((label, valueGetter, changeEvent) =>
+            {
+                var field = new Vector3Field(label);
+                field.value = ((Quaternion)valueGetter()).eulerAngles;
+                field.RegisterValueChangedCallback(evt =>
+                {
+                    var newQuat = Quaternion.Euler(evt.newValue);
+                    var previousQuat = Quaternion.Euler(evt.previousValue);
+
+                    changeEvent(new DeconstructedChangeEventData
+                    {
+                        newValue = newQuat,
+                        previousValue = previousQuat,
+                        eventBase = evt
+                    });
+                });
+                return field;
+            });
+            Add<AnimationCurve>((label, valueGetter, changeEvent) =>
+            {
+                var field = new CurveField(label);
+                GenericSetup(field, valueGetter, changeEvent);
+                return field;
+            });
+
+            _enumFlagsControlBuilder = (label, valueGetter, changeEvent) =>
+            {
+                var enumFlagsField = new EnumFlagsField(label, (Enum)valueGetter());
+                GenericSetup(enumFlagsField, valueGetter, changeEvent);
+                return enumFlagsField;
+            };
+
+            _enumIndexControlBuilder = (label, valueGetter, changeEvent) =>
+            {
+                var enumField = new EnumField(label, (Enum)valueGetter());
+                GenericSetup(enumField, valueGetter, changeEvent);
+                return enumField;
+            };
+
+            void Add<T>(ControlBuilder func)
+            {
+                _typeToControlBuilder.Add(typeof(T), func);
+            }
+
+            void GenericSetup<T>(BaseField<T> field, Func<object> getter, DeconstructedChangeEvent changeEvent)
+            {
+                field.value = (T)getter();
+                field.RegisterValueChangedCallback(evt => changeEvent(new DeconstructedChangeEventData
+                {
+                    eventBase = evt,
+                    newValue = evt.newValue,
+                    previousValue = evt.previousValue
+                }));
+            }
+        }
     }
 }

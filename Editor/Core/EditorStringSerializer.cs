@@ -85,7 +85,7 @@ namespace RoR2.Editor
             });
             AddSerializationHandler<ushort>(new SerializationHandler
             {
-                deserializer = (txt) => short.Parse(txt, culture),
+                deserializer = (txt) => ushort.Parse(txt, culture),
                 serializer = (obj) => ((ushort)obj).ToString(culture)
             });
             AddSerializationHandler<int>(new SerializationHandler

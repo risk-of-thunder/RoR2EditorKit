@@ -300,16 +300,15 @@ namespace RoR2.Editor
                 return unrecognizedField;
             }
 
-            string nicifiedName = ObjectNames.NicifyVariableName(fieldInfo.Name);
-            if (fieldType.IsEnum)
+            string label = ObjectNames.NicifyVariableName(fieldInfo.Name);
+            Func<object> valueGetter = () => SerializationMediator.Deserialize(fieldType, serializedValue);
+            VisualElementUtil.DeconstructedChangeEvent changeEvent = data =>
             {
-                var flagsAttribute = fieldType.GetCustomAttribute<FlagsAttribute>();
-                var element = flagsAttribute != null ? _enumFlagsControlBuilder(nicifiedName, stringValue, serializedValue, fieldInfo) : _enumControlBuilder(nicifiedName, stringValue, serializedValue, fieldInfo);
-
-                return element;
-            }
-
-            return _typeToControlBuilder[fieldType](nicifiedName, stringValue, serializedValue, fieldInfo);
+                SerializationMediator.SerializeFromFieldInfo(fieldInfo, data.newValue, out var result);
+                stringValue.stringValue = result.serializedString;
+                stringValue.serializedObject.ApplyModifiedProperties();
+            };
+            return VisualElementUtil.CreateControlFromType(fieldType, label, valueGetter, changeEvent);
         }
 
         private static bool CanBuildControlFromFieldInfo(FieldInfo fInfo) => CanBuildControlFromType(fInfo.FieldType);
@@ -327,13 +326,52 @@ namespace RoR2.Editor
 
         static SerializedFieldCollectionElement()
         {
+            //Short, UShort, UInt and ULong fields dont exist yet, we need to do this as a compromise.
             Add<short>((l, sp, sv, fi) =>
             {
-                return new Label($"Short Field is Not implemented yet");
+                var field = new IntegerField(l);
+                field.value = (short)SerializationMediator.Deserialize(fi.FieldType, sv);
+                field.RegisterValueChangedCallback((e) =>
+                {
+                    int newValueAsInt = e.newValue;
+                    if(newValueAsInt > short.MaxValue)
+                    {
+                        newValueAsInt = short.MaxValue;
+                    }
+                    else if(newValueAsInt < short.MinValue)
+                    {
+                        newValueAsInt = short.MinValue;
+                    }
+                    short casted = Convert.ToInt16(newValueAsInt);
+                    field.SetValueWithoutNotify(casted);
+                    SerializationMediator.SerializeFromFieldInfo(fi, casted, out var result);
+                    sp.stringValue = result.serializedString;
+                    sp.serializedObject.ApplyModifiedProperties();
+                });
+                return field;
             });
             Add<ushort>((l, sp, sv, fi) =>
             {
-                return new Label($"UShort Field is Not implemented yet");
+                var field = new IntegerField(l);
+                field.value = (ushort)SerializationMediator.Deserialize(fi.FieldType, sv);
+                field.RegisterValueChangedCallback((e) =>
+                {
+                    int newValueAsInt = e.newValue;
+                    if (newValueAsInt > ushort.MaxValue)
+                    {
+                        newValueAsInt = ushort.MaxValue;
+                    }
+                    else if (newValueAsInt < ushort.MinValue)
+                    {
+                        newValueAsInt = ushort.MinValue;
+                    }
+                    ushort casted = Convert.ToUInt16(newValueAsInt);
+                    field.SetValueWithoutNotify(casted);
+                    SerializationMediator.SerializeFromFieldInfo(fi, casted, out var result);
+                    sp.stringValue = result.serializedString;
+                    sp.serializedObject.ApplyModifiedProperties();
+                });
+                return field;
             });
             Add<int>((l, sp, sv, fi) =>
             {
@@ -343,7 +381,26 @@ namespace RoR2.Editor
             });
             Add<uint>((l, sp, sv, fi) =>
             {
-                return new Label($"UInt field is Not implemented yet");
+                var field = new LongField(l);
+                field.value = (uint)SerializationMediator.Deserialize(fi.FieldType, sv);
+                field.RegisterValueChangedCallback((e) =>
+                {
+                    long newValueAsLong = e.newValue;
+                    if (newValueAsLong > uint.MaxValue)
+                    {
+                        newValueAsLong = uint.MaxValue;
+                    }
+                    else if (newValueAsLong < uint.MinValue)
+                    {
+                        newValueAsLong = uint.MinValue;
+                    }
+                    uint casted = Convert.ToUInt32(newValueAsLong);
+                    field.SetValueWithoutNotify(casted);
+                    SerializationMediator.SerializeFromFieldInfo(fi, casted, out var result);
+                    sp.stringValue = result.serializedString;
+                    sp.serializedObject.ApplyModifiedProperties();
+                });
+                return field;
             });
             Add<long>((l, sp, sv, fi) =>
             {
@@ -353,7 +410,22 @@ namespace RoR2.Editor
             });
             Add<ulong>((l, sp, sv, fi) =>
             {
-                return new Label($"ULong field is Not implemented yet");
+                var field = new LongField(l);
+                field.value = (long)(ulong)SerializationMediator.Deserialize(fi.FieldType, sv);
+                field.RegisterValueChangedCallback((e) =>
+                {
+                    var asLong = e.newValue;
+                    if(asLong < 0)
+                    {
+                        asLong = 0;
+                    }
+                    ulong casted = (ulong)asLong;
+                    field.SetValueWithoutNotify((long)casted);
+                    SerializationMediator.SerializeFromFieldInfo(fi, casted, out var result);
+                    sp.stringValue = result.serializedString;
+                    sp.serializedObject.ApplyModifiedProperties();
+                });
+                return field;
             });
             Add<bool>((l, sp, sv, fi) =>
             {
