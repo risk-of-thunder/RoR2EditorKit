@@ -21,6 +21,11 @@ namespace RoR2.Editor
         {
             public static readonly AssetGUID<TextAsset> gizmosReadme = "69c8ad553a081794c9c0a6985bbb84d3";
             public static readonly AssetGUID<Texture> r2ekIcon = "62cd962c0bfb78f4b974cf3b550e754e";
+            public static readonly AssetGUID<GameObject> standingTemplateBody = "eb0611eeb0578544ea4dd28f74b66ba8";
+            public static readonly AssetGUID<GameObject> flyingTemplateBody = "bc5eaa02f0e93b04b95ba670fbdf2504";
+            public static readonly AssetGUID<GameObject> stationaryTemplateBody = "ba7ba725a07707b4a912445ffceffc8c";
+            public static readonly AssetGUID<GameObject> bossTemplateBody = "7c254df95d6214e40a7a0198c27f7dad";
+
             public static readonly string ror2IconsForScriptsGUID = "87985f697aee81b48922b790035e73e1";
         }
 

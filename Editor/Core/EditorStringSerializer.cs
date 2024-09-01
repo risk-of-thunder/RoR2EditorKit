@@ -13,7 +13,7 @@ namespace RoR2.Editor
         private static SerializationHandler _enumHandler;
 
         public static bool CanSerializeType<T>() => CanSerializeType(typeof(T));
-        public static bool CanSerializeType(Type t) => t.IsEnum || _typeToSerializationHandlers.ContainsKey(t);
+        public static bool CanSerializeType(Type t) => t == typeof(Enum) || t.IsEnum || _typeToSerializationHandlers.ContainsKey(t);
         public static string Serialize<T>(T value)
         {
             var type = typeof(T);

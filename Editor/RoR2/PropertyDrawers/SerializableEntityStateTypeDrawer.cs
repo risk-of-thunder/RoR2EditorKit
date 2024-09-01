@@ -14,11 +14,19 @@ namespace RoR2.Editor.PropertyDrawers
     [CustomPropertyDrawer(typeof(SerializableEntityStateType))]
     internal sealed class SerializableEntityStateTypePropertyDrawer : IMGUIPropertyDrawer<SerializableEntityStateType>
     {
+        private bool _triedToFullyQualify = false;
         private SerializableEntityStateTypeDrawer _drawer;
 
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            _drawer = new SerializableEntityStateTypeDrawer();
+            if(!_triedToFullyQualify)
+            {
+                _triedToFullyQualify = true;
+                FullyQualify(property);
+                return;
+            }
+
+            _drawer = _drawer ?? new SerializableEntityStateTypeDrawer();
 
             _drawer.onTypeSelectedHandler += (item) =>
             {
@@ -26,6 +34,24 @@ namespace RoR2.Editor.PropertyDrawers
                 property.serializedObject.ApplyModifiedProperties();
             };
             _drawer.DoEditorGUI(position, property.FindPropertyRelative("_typeName").stringValue, label);
+        }
+
+        private void FullyQualify(SerializedProperty property)
+        {
+            var p = property.FindPropertyRelative("_typeName");
+            var typeName = p.stringValue;
+            Type t = Type.GetType(typeName);
+
+            if (t != null) //Fully qualified, we good.
+                return;
+            else //Try obtaining the type by specifying the ror2 assembly.
+                t = Type.GetType($"{typeName}, RoR2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null"); 
+
+            if (t != null) //Type found, fully qualify it.
+            {
+                p.stringValue = t.AssemblyQualifiedName;
+                p.serializedObject.ApplyModifiedProperties();
+            }
         }
     }
 

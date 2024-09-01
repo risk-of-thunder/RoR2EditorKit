@@ -11,11 +11,11 @@ namespace RoR2.Editor
         private string rootItemKey;
         public event Action<Item> onItemSelected;
 
-        public Type requiredBaseType { get; private set; }
+        public Type requiredBaseType { get; set; }
 
         protected override AdvancedDropdownItem BuildRoot()
         {
-            var types = TypeCache.GetTypesDerivedFrom(requiredBaseType);
+            IEnumerable<Type> types = requiredBaseType != null ? TypeCache.GetTypesDerivedFrom(requiredBaseType) : ReflectionUtils.allTypes;
 
 
             var items = new Dictionary<string, Item>();
@@ -68,7 +68,7 @@ namespace RoR2.Editor
             onItemSelected?.Invoke((Item)item);
         }
 
-
+        public InheritingTypeSelectDropdown(AdvancedDropdownState state) : this(state, null) { }
         public InheritingTypeSelectDropdown(AdvancedDropdownState state, Type requiredBaseType) : base(state)
         {
             this.requiredBaseType = requiredBaseType;

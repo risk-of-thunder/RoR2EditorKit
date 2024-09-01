@@ -43,6 +43,7 @@ namespace RoR2.Editor
             editorSettingValueSelectionListView.itemsSource = currentlyInspectedSetting?._serializedSettings ?? null;
             _editorSettingValueSelectionContainer.SetDisplay(currentlyInspectedSetting != null);
             _editorSettingValueSelectionLabel.text = currentlyInspectedSetting != null ? $"{ObjectNames.NicifyVariableName(currentlyInspectedSetting._typeName)}'s Settings" : string.Empty;
+            editorSettingValueSelectionListView.Rebuild();
         }
 
         private void BindEditorSettingButton(VisualElement element, int arg2)

@@ -1,15 +1,45 @@
-﻿using UnityEngine;
+﻿using System.Reflection;
+using UnityEngine;
 
 namespace RoR2.Editor
 {
     public static class R2EKMath
     {
+        private static MethodInfo _gridSizeGetMethod;
+        public static Vector3 RoundToNearestGrid(Vector3 position, Vector3? gridSize = null)
+        {
+            gridSize = gridSize ?? (Vector3)_gridSizeGetMethod.Invoke(null, null);
+
+            var x = RoundToNearestGridValue(position.x, gridSize.Value.x);
+            var y = RoundToNearestGridValue(position.y, gridSize.Value.y);
+            var z = RoundToNearestGridValue(position.z, gridSize.Value.z);
+
+            return new Vector3(x, y, z);
+        }
+
+        public static float RoundToNearestGridValue(float pos, float gridValue)
+        {
+            float diff = pos % gridValue;
+            bool isPositive = pos > 0 ? true : false;
+            pos -= diff;
+            if (Mathf.Abs(diff) > (gridValue / 2))
+            {
+                if (isPositive)
+                {
+                    pos += gridValue;
+                }
+                else
+                {
+                    pos -= gridValue;
+                }
+            }
+            return pos;
+        }
+
         public static float GetAverage(Vector3 vector)
         {
             return (vector.x + vector.y + vector.z) / 3;
         }
-
-
         public static float GetAverage(Vector2 vector)
         {
             return (vector.x + vector.y) / 2;
@@ -71,6 +101,11 @@ namespace RoR2.Editor
         public static float InverseHyperbolicScaling(float baseValue, float additionalValue, float maxValue, int count)
         {
             return baseValue + maxValue - baseValue * (1 - 1 / (1 + additionalValue * (count - 1)));
+        }
+
+        static R2EKMath()
+        {
+            _gridSizeGetMethod = Assembly.Load("UnityEditor.dll").GetType("UnityEditor.GridSettings").GetProperty("size").GetGetMethod();
         }
     }
 }

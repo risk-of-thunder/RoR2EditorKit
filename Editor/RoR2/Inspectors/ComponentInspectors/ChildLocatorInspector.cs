@@ -17,11 +17,13 @@ namespace RoR2.Editor.Inspectors
         protected override void DrawIMGUI()
         {
             collectionProp = serializedObject.FindProperty("transformPairs");
-            EditorGUILayout.PropertyField(collectionProp, false);
+            EditorGUILayout.BeginHorizontal();
+            collectionProp.isExpanded = EditorGUILayout.Foldout(collectionProp.isExpanded, collectionProp.displayName, true);
+            collectionProp.arraySize = EditorGUILayout.IntField("", collectionProp.arraySize);
+            EditorGUILayout.EndHorizontal();
             if(collectionProp.isExpanded)
             {
                 EditorGUI.indentLevel++;
-                collectionProp.arraySize = EditorGUILayout.DelayedIntField("Array Size", collectionProp.arraySize);
                 for(int i = 0; i < collectionProp.arraySize; i++)
                 {
                     var element = collectionProp.GetArrayElementAtIndex(i);

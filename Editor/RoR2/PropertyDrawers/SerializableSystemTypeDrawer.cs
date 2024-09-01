@@ -14,10 +14,18 @@ namespace RoR2.Editor.PropertyDrawers
     [CustomPropertyDrawer(typeof(SerializableSystemType))]
     internal sealed class SerializableSystemTypePropertyDrawer : IMGUIPropertyDrawer<SerializableSystemType>
     {
+        private bool _triedToFullyQualify = false;
         private SerializableSystemTypeDrawer _drawer;
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            _drawer = new SerializableSystemTypeDrawer(GetBaseType());
+            if (!_triedToFullyQualify)
+            {
+                _triedToFullyQualify = true;
+                FullyQualify(property);
+                return;
+            }
+
+            _drawer = _drawer ?? new SerializableSystemTypeDrawer(GetBaseType());
 
             _drawer.onTypeSelectedHandler += (item) =>
             {
@@ -36,6 +44,24 @@ namespace RoR2.Editor.PropertyDrawers
             }
             return null;
         }
+
+        private void FullyQualify(SerializedProperty property)
+        {
+            var assemblyQualifiedNameProp = property.FindPropertyRelative("assemblyQualifiedName");
+            var typeName = assemblyQualifiedNameProp.stringValue;
+            Type t = Type.GetType(typeName);
+
+            if (t != null) //Fully qualified, we good.
+                return;
+            else //Try obtaining the type by specifying the ror2 assembly.
+                t = Type.GetType($"{typeName}, RoR2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
+
+            if (t != null) //Type found, fully qualify it.
+            {
+                assemblyQualifiedNameProp.stringValue = t.AssemblyQualifiedName;
+                assemblyQualifiedNameProp.serializedObject.ApplyModifiedProperties();
+            }
+        }
     }
 
     public class SerializableSystemTypeDrawer
@@ -51,7 +77,7 @@ namespace RoR2.Editor.PropertyDrawers
 
             if (EditorGUI.DropdownButton(prefixRect, new GUIContent(typeName, assemblyQualifiedName), FocusType.Passive))
             {
-                var dropdown = new InheritingTypeSelectDropdown(new AdvancedDropdownState(), typeof(EntityState));
+                var dropdown = new InheritingTypeSelectDropdown(new AdvancedDropdownState(), requiredBaseType);
                 dropdown.onItemSelected += (item) =>
                 {
                     onTypeSelectedHandler?.Invoke(item);
