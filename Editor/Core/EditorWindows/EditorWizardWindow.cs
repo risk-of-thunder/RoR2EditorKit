@@ -62,6 +62,7 @@ namespace RoR2.Editor
             if(_coroutine == null)
             {
                 Debug.Log($"Cannot update progress when wizard is not running.");
+                return;
             }
 
             _progressBar.value = Mathf.Clamp01(zeroTo1Progress);
@@ -116,6 +117,10 @@ namespace RoR2.Editor
             {
                 return;
             }
+
+            AssetDatabase.Refresh();
+
+            Debug.Log("Starting " + GetType().Name);
             _runButton.SetEnabled(false);
             _closeButton.SetEnabled(false);
             _progressBar.SetDisplay(true);
@@ -132,6 +137,7 @@ namespace RoR2.Editor
                 yield return wizardCoroutine.Current;
             }
 
+            Debug.Log(GetType().Name + " Completed succesfully, cleaning up...");
             CleanupInternal();
             yield break;
         }

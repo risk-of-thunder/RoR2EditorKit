@@ -1,4 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <uie:PropertyField name="FolderPath" binding-path="folderPath" />
     <uie:PropertyField name="Template" binding-path="template" />
     <uie:PropertyField name="CharacterName" binding-path="characterName" tooltip="The name for this character, utilized for naming the GameObjects and filling tokens." />
     <uie:PropertyField name="ModelFBX" binding-path="modelFBX" tooltip="An FBX model for this character, if supplied, it&apos;ll be instantiated as a prefab instance for the model, and components related to CharacterModels will be added." />

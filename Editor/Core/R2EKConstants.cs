@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEditor;
 using UnityEngine;
 
 namespace RoR2.Editor
@@ -25,6 +26,7 @@ namespace RoR2.Editor
             public static readonly AssetGUID<GameObject> flyingTemplateBody = "bc5eaa02f0e93b04b95ba670fbdf2504";
             public static readonly AssetGUID<GameObject> stationaryTemplateBody = "ba7ba725a07707b4a912445ffceffc8c";
             public static readonly AssetGUID<GameObject> bossTemplateBody = "7c254df95d6214e40a7a0198c27f7dad";
+            public static readonly AssetGUID<SceneAsset> stageTemplate = "717669e0f1db24844bec177325679c34";
 
             public static readonly string ror2IconsForScriptsGUID = "87985f697aee81b48922b790035e73e1";
         }

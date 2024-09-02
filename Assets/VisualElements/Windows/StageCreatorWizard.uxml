@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <uie:PropertyField name="FolderPath" binding-path="folderPath" />
+    <uie:PropertyField name="StageName" binding-path="stageName" />
+    <uie:PropertyField name="StageOrder" binding-path="stageOrder" />
+</ui:UXML>

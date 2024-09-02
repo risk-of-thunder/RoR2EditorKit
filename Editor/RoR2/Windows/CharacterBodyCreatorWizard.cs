@@ -13,6 +13,9 @@ namespace RoR2.Editor.Windows
 {
     public class CharacterBodyWizard : EditorWizardWindow
     {
+        [FilePickerPath(FilePickerPath.PickerType.OpenFolder, title = "Folder for created Assets")]
+        public string folderPath;
+
         [Tooltip("The Template to use for the creation of this body.\n\n1. Standing - A Character that can stand and move around normally, based off CommandoBody.\n2. Flying - A Character that's not affected by gravity and flies, based off WispBody.\n3. Stationary - A Character that does not move and stays in place, based off the MinorConstructBody.\n4. Boss - A Character that works as a Boss, based off the TitanBody")]
         public TemplateChoice template;
         public string characterName;
@@ -391,16 +394,35 @@ The resulting prefab contains the necesary components for it's specified type, a
 
         private IEnumerator CreateAssets()
         {
-            var path = IOUtils.GetCurrentDirectory();
-            var bodyFolder = IOPath.Combine(path, characterName);
+            var bodyFolder = IOPath.Combine(folderPath, characterName);
             Debug.Log("Creating folder " + bodyFolder);
-            AssetDatabase.CreateFolder(path, characterName);
+            AssetDatabase.CreateFolder(folderPath, characterName);
             AssetDatabase.Refresh();
             yield return null;
 
             var skillsFolder = IOPath.Combine(bodyFolder, "Skills");
             Debug.Log("Creating Skills folder " + skillsFolder);
             AssetDatabase.CreateFolder(IOUtils.FormatPathForUnity(bodyFolder), "Skills");
+            AssetDatabase.Refresh();
+            yield return null;
+
+            Debug.Log($"Creating Skill Defs");
+            AssetDatabase.StartAssetEditing();
+            try
+            {
+                foreach (var skillDef in _createdSkillDefs)
+                {
+                    yield return null;
+                    var soName = ((ScriptableObject)skillDef).name;
+                    var skillDefPath = IOUtils.GenerateUniqueFileName(skillsFolder, soName, ".asset");
+                    Debug.Log($"Creating SkillDef in {skillDefPath}");
+                    AssetDatabase.CreateAsset(skillDef, IOUtils.FormatPathForUnity(skillDefPath));
+                }
+            }
+            finally
+            {
+                AssetDatabase.StopAssetEditing();
+            }
             AssetDatabase.Refresh();
             yield return null;
 
@@ -424,24 +446,6 @@ The resulting prefab contains the necesary components for it's specified type, a
             AssetDatabase.Refresh();
             yield return null;
 
-            Debug.Log($"Creating Skill Defs");
-            AssetDatabase.StartAssetEditing();
-            try
-            {
-                foreach (var skillDef in _createdSkillDefs)
-                {
-                    yield return null;
-                    var soName = ((ScriptableObject)skillDef).name;
-                    var skillDefPath = IOUtils.GenerateUniqueFileName(skillsFolder, soName, ".asset");
-                    Debug.Log($"Creating SkillDef in {skillDefPath}");
-                    AssetDatabase.CreateAsset(skillDef, IOUtils.FormatPathForUnity(skillDefPath));
-                }
-            }
-            finally
-            {
-                AssetDatabase.StopAssetEditing();
-            }
-            AssetDatabase.Refresh();
 
             var bodyPrefabPath = IOPath.Combine(bodyFolder, $"{_copiedBody.name}.prefab");
             Debug.Log("Saving body in " + bodyPrefabPath);
