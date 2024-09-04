@@ -35,6 +35,8 @@ namespace RoR2.Editor
 
             wizardElementContainer.Add(VisualElementTemplateDictionary.instance.GetTemplateInstance(GetType().Name, null, ValidateUXMLPath));
 
+            SetupControls();
+
             if(requiresTokenPrefix)
             {
                 Label label = new Label();
@@ -57,7 +59,7 @@ namespace RoR2.Editor
             rootVisualElement.Bind(serializedObject);
         }
 
-        protected void UpdateProgress(float zeroTo1Progress, string title = null)
+        public void UpdateProgress(float zeroTo1Progress, string title = null)
         {
             if(_coroutine == null)
             {
@@ -70,6 +72,8 @@ namespace RoR2.Editor
         }
 
         protected virtual bool ValidateData() => true;
+
+        protected virtual void SetupControls() { }
 
         private void OnGUI() { }
 
@@ -132,13 +136,18 @@ namespace RoR2.Editor
         private IEnumerator InternalWizardCoroutine()
         {
             var wizardCoroutine = RunWizardCoroutine();
-            while(wizardCoroutine.MoveNext())
+            try
             {
-                yield return wizardCoroutine.Current;
+                while(wizardCoroutine.MoveNext())
+                {
+                    yield return wizardCoroutine.Current;
+                }
             }
-
-            Debug.Log(GetType().Name + " Completed succesfully, cleaning up...");
-            CleanupInternal();
+            finally
+            {
+                Debug.Log(GetType().Name + " Completed, cleaning up...");
+                CleanupInternal();
+            }
             yield break;
         }
 

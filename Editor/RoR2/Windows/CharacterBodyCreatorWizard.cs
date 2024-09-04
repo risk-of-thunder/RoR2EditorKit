@@ -46,6 +46,7 @@ The resulting prefab contains the necesary components for it's specified type, a
 
         private Dictionary<TemplateChoice, GameObject> _choiceToTemplate = new Dictionary<TemplateChoice, GameObject>();
 
+        private WizardCoroutineHelper _wizardCoroutineHelper;
         private (Func<IEnumerator> subroutine, string step)[] _steps;
 
         private string _bodyTokenFormat;
@@ -54,7 +55,7 @@ The resulting prefab contains the necesary components for it's specified type, a
         private List<SkillFamily> _createdSkillFamilies = new List<SkillFamily>();
         private List<SkillDef> _createdSkillDefs = new List<SkillDef>();
 
-        [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Character Body Wizard")]
+        [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Wizards/Character Body")]
         private static void Open() => Open<CharacterBodyWizard>(null);
 
         protected override void OnEnable()
@@ -65,17 +66,15 @@ The resulting prefab contains the necesary components for it's specified type, a
             _choiceToTemplate.Add(TemplateChoice.Stationary, R2EKConstants.AssetGUIDs.stationaryTemplateBody);
             _choiceToTemplate.Add(TemplateChoice.Boss, R2EKConstants.AssetGUIDs.bossTemplateBody);
 
-            _steps = new (Func<IEnumerator>, string)[]
-            {
-                (CreateTokenFormat, "Creating token Format"),
-                (InstantiateTemplateAndUnpack, "Instantiating Template and Unpacking"),
-                (SetNameAndTokens, "Setting Name and Tokens"),
-                (AddStateMachines, "Adding State Machines"),
-                (AddGenericSkills, "Creating Skills"),
-                (AddComponents, "Adding Components"),
-                (SetupModelGameObject, "Setting Up Model"),
-                (CreateAssets, "Creating Assets")
-            };
+            _wizardCoroutineHelper = new WizardCoroutineHelper(this);
+            _wizardCoroutineHelper.AddStep(CreateTokenFormat(), "Creating Token Format");
+            _wizardCoroutineHelper.AddStep(InstantiateTemplateAndUnpack(), "Instantiating Template and Unpacking");
+            _wizardCoroutineHelper.AddStep(SetNameAndTokens(), "Setting Name and Tokens");
+            _wizardCoroutineHelper.AddStep(AddStateMachines(), "Adding State Machines");
+            _wizardCoroutineHelper.AddStep(AddGenericSkills(), "Creating Skills");
+            _wizardCoroutineHelper.AddStep(AddComponents(), "Adding Components");
+            _wizardCoroutineHelper.AddStep(SetupModelGameObject(), "Setting up Model");
+            _wizardCoroutineHelper.AddStep(CreateAssets(), "Creating Assets");
         }
 
         protected override bool ValidateData()
@@ -90,16 +89,9 @@ The resulting prefab contains the necesary components for it's specified type, a
 
         protected override IEnumerator RunWizardCoroutine()
         {
-            for(int i = 0; i < _steps.Length; i++)
+            while(_wizardCoroutineHelper.MoveNext())
             {
-                var tuple = _steps[i];
-                UpdateProgress(R2EKMath.Remap(i, 0, _steps.Length, 0, 1), tuple.step);
-                yield return null;
-                var enumerator = tuple.subroutine();
-                while(enumerator.MoveNext())
-                {
-                    yield return enumerator.Current;
-                }
+                yield return _wizardCoroutineHelper.Current;
             }
             yield break;
         }
@@ -140,32 +132,33 @@ The resulting prefab contains the necesary components for it's specified type, a
             var stateOnHurt = _copiedBody.GetComponent<SetStateOnHurt>();
             var deathBehaviour = _copiedBody.GetComponent<CharacterDeathBehavior>();
 
-            foreach(var stateMachineName in stateMachines)
+            for(int i = 0; i < stateMachines.Count; i++)
             {
-                yield return null;
+                var stateMachineName = stateMachines[i];
+                yield return R2EKMath.Remap(i, 0, stateMachines.Count - 1, 0, 1);
                 var stateMachine = _copiedBody.AddComponent<EntityStateMachine>();
                 stateMachine.customName = stateMachineName;
 
-                switch(stateMachineName)
+                switch (stateMachineName)
                 {
                     case "Body":
                         stateMachine.initialStateType = new EntityStates.SerializableEntityStateType(typeof(EntityStates.GenericCharacterSpawnState).AssemblyQualifiedName);
                         stateMachine.mainStateType = template == TemplateChoice.Flying ? new EntityStates.SerializableEntityStateType(typeof(EntityStates.FlyState).AssemblyQualifiedName) : new EntityStates.SerializableEntityStateType(typeof(EntityStates.GenericCharacterMain).AssemblyQualifiedName);
 
-                        if(stateOnHurt)
+                        if (stateOnHurt)
                             stateOnHurt.targetStateMachine = stateMachine;
-    
-                        if(deathBehaviour)
+
+                        if (deathBehaviour)
                             deathBehaviour.deathStateMachine = stateMachine;
                         break;
                     case "Weapon":
                         stateMachine.initialStateType = new EntityStates.SerializableEntityStateType(typeof(EntityStates.Idle).AssemblyQualifiedName);
                         stateMachine.mainStateType = new EntityStates.SerializableEntityStateType(typeof(EntityStates.Idle).AssemblyQualifiedName);
 
-                        if(stateOnHurt)
+                        if (stateOnHurt)
                             HG.ArrayUtils.ArrayAppend(ref stateOnHurt.idleStateMachine, stateMachine);
 
-                        if(deathBehaviour)
+                        if (deathBehaviour)
                             HG.ArrayUtils.ArrayAppend(ref deathBehaviour.idleStateMachine, stateMachine);
                         break;
                     default:
@@ -177,7 +170,7 @@ The resulting prefab contains the necesary components for it's specified type, a
                         break;
                 }
 
-                if(networker)
+                if (networker)
                 {
                     SerializedProperty prop = networkerSerializedObject.FindProperty("stateMachines");
                     prop.arraySize++;
@@ -185,7 +178,7 @@ The resulting prefab contains the necesary components for it's specified type, a
                 }
                 Debug.Log($"Created state machine with name {stateMachineName}");
             }
-            yield return null;
+            yield return 1f;
 
             if(networker)
             {
@@ -197,10 +190,11 @@ The resulting prefab contains the necesary components for it's specified type, a
         private IEnumerator AddGenericSkills()
         {
             var skillLocator = _copiedBody.GetComponent<SkillLocator>();
-            foreach (var skillSlot in genericSkills)
+            for (int i = 0; i < genericSkills.Count; i++)
             {
-                yield return null;
-
+                var skillSlot = genericSkills[i];
+                var stepProgress = R2EKMath.Remap(i, 0, genericSkills.Count - 1, 0, 1);
+                yield return stepProgress;
                 var genericSkill = _copiedBody.AddComponent<GenericSkill>();
                 genericSkill.skillName = skillSlot.ToString();
 
@@ -244,7 +238,7 @@ The resulting prefab contains the necesary components for it's specified type, a
                 }
 
                 Debug.Log($"Creating SkillFamily and SkillDef for generic skill of skillSlot {skillSlot}");
-                yield return null;
+                yield return stepProgress;
 
                 var sf = CreateInstance<SkillFamily>();
                 ((ScriptableObject)sf).name = $"sf{characterName}{skillSlot}";
@@ -271,20 +265,21 @@ The resulting prefab contains the necesary components for it's specified type, a
 
         private IEnumerator AddComponents()
         {
-            foreach(var type in extraComponents)
+            for (int i = 0; i < extraComponents.Count; i++)
             {
-                yield return null;
+                var type = extraComponents[i];
+                yield return R2EKMath.Remap(i, 0, extraComponents.Count - 1, 0, 1);
                 try
                 {
                     Type t = (Type)type;
-                    if(!ignoreExtraComponentDuplicates && _copiedBody.TryGetComponent(t, out _))
+                    if (!ignoreExtraComponentDuplicates && _copiedBody.TryGetComponent(t, out _))
                     {
                         throw new Exception($"Component of type {t} is already in the body.");
                     }
                     _copiedBody.AddComponent(t);
                     Debug.Log($"Added component {t.FullName}");
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Debug.LogError(e);
                 }
@@ -305,21 +300,25 @@ The resulting prefab contains the necesary components for it's specified type, a
 
                 Debug.Log($"Instantiated {fbxPrefabInstance} and transfered components, ensuring proper references between model and body components...");
                 var bodyComponents = _copiedBody.GetComponents<MonoBehaviour>();
-                foreach(var bodyComponent in bodyComponents)
+                for(int i = 0; i < bodyComponents.Length; i++)
                 {
-                    yield return null;
+                    var bodyComponent = bodyComponents[i];
+                    var componentIterationProgress = R2EKMath.Remap(i, 0, bodyComponents.Length, 0, 0.5f);
+                    yield return componentIterationProgress;
+
                     FieldInfo[] fields = bodyComponent.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f => f.IsPublic || f.GetCustomAttribute<SerializeField>() != null).ToArray();
-                    foreach(FieldInfo field in fields)
+                    for(int j = 0; j < fields.Length; j++)
                     {
-                        yield return null;
-                        if(field.FieldType == typeof(GameObject) && (GameObject)field.GetValue(bodyComponent) == mdlGameObject)
+                        FieldInfo field = fields[j];
+                        yield return R2EKMath.Remap(j, 0, fields.Length - 1, 0, 0.1f) + componentIterationProgress;
+                        if (field.FieldType == typeof(GameObject) && (GameObject)field.GetValue(bodyComponent) == mdlGameObject)
                         {
                             field.SetValue(bodyComponent, fbxPrefabInstance.gameObject);
                         }
                         else if (field.FieldType.IsSubclassOf(typeof(Component)))
                         {
                             Component referencedComponent = field.GetValue(bodyComponent) as Component;
-                            if(referencedComponent && referencedComponent.gameObject == mdlGameObject)
+                            if (referencedComponent && referencedComponent.gameObject == mdlGameObject)
                             {
                                 field.SetValue(bodyComponent, fbxPrefabInstance.GetComponent(field.FieldType));
                             }
@@ -333,7 +332,7 @@ The resulting prefab contains the necesary components for it's specified type, a
             }
             else
             {
-                yield return null;
+                yield return 0.5f;
                 GameObject primitiveCapsule = GameObject.CreatePrimitive(PrimitiveType.Capsule);
                 DestroyImmediate(primitiveCapsule.GetComponent<CapsuleCollider>());
                 primitiveCapsule.transform.SetParent(mdlGameObject.transform);
@@ -342,7 +341,7 @@ The resulting prefab contains the necesary components for it's specified type, a
 
             if(simpleHurtBox)
             {
-                yield return null;
+                yield return 0.55;
                 var hurtBoxGameObject = new GameObject("MainHurtBox");
                 hurtBoxGameObject.transform.SetParent(mdlGameObject.transform);
                 hurtBoxGameObject.layer = LayerIndex.entityPrecise.intVal;
@@ -361,11 +360,12 @@ The resulting prefab contains the necesary components for it's specified type, a
 
             var characterModel = mdlGameObject.GetComponent<CharacterModel>();
             var renderers = mdlGameObject.GetComponentsInChildren<Renderer>();
-            foreach(var renderer in renderers)
+            for(int i = 0; i < renderers.Length; i++)
             {
-                yield return null;
+                var renderer = renderers[i];
+                yield return R2EKMath.Remap(i, 0, renderers.Length, 0.55f, 1);
 
-                if(renderer is SkinnedMeshRenderer skinnedMeshRenderer)
+                if (renderer is SkinnedMeshRenderer skinnedMeshRenderer)
                 {
                     HG.ArrayUtils.ArrayAppend(ref characterModel.baseRendererInfos, new CharacterModel.RendererInfo
                     {
@@ -376,7 +376,7 @@ The resulting prefab contains the necesary components for it's specified type, a
                         ignoreOverlays = false,
                     });
                 }
-                else if(renderer is MeshRenderer meshRenderer)
+                else if (renderer is MeshRenderer meshRenderer)
                 {
                     HG.ArrayUtils.ArrayAppend(ref characterModel.baseRendererInfos, new CharacterModel.RendererInfo
                     {
@@ -398,21 +398,23 @@ The resulting prefab contains the necesary components for it's specified type, a
             Debug.Log("Creating folder " + bodyFolder);
             AssetDatabase.CreateFolder(folderPath, characterName);
             AssetDatabase.Refresh();
-            yield return null;
+            yield return 0.11f;
 
             var skillsFolder = IOPath.Combine(bodyFolder, "Skills");
             Debug.Log("Creating Skills folder " + skillsFolder);
             AssetDatabase.CreateFolder(IOUtils.FormatPathForUnity(bodyFolder), "Skills");
             AssetDatabase.Refresh();
-            yield return null;
+            yield return 0.22f;
 
             Debug.Log($"Creating Skill Defs");
             AssetDatabase.StartAssetEditing();
             try
             {
-                foreach (var skillDef in _createdSkillDefs)
+                for(int i = 0; i < _createdSkillDefs.Count; i++)
                 {
-                    yield return null;
+                    var skillDef = _createdSkillDefs[i];
+                    yield return R2EKMath.Remap(i, 0, _createdSkillDefs.Count - 1, 0.33f, 0.66f);
+
                     var soName = ((ScriptableObject)skillDef).name;
                     var skillDefPath = IOUtils.GenerateUniqueFileName(skillsFolder, soName, ".asset");
                     Debug.Log($"Creating SkillDef in {skillDefPath}");
@@ -424,15 +426,17 @@ The resulting prefab contains the necesary components for it's specified type, a
                 AssetDatabase.StopAssetEditing();
             }
             AssetDatabase.Refresh();
-            yield return null;
+            yield return 0.66f;
 
             Debug.Log("Creating Skill Families");
             AssetDatabase.StartAssetEditing();
             try
             {
-                foreach(var skillFamily in _createdSkillFamilies)
+                for(int i = 0; i < _createdSkillFamilies.Count; i++)
                 {
-                    yield return null;
+                    var skillFamily = _createdSkillFamilies[i];
+                    yield return R2EKMath.Remap(i, 0, _createdSkillFamilies.Count - 1, 0.75f, 0.99f);
+
                     var soName = ((ScriptableObject)skillFamily).name;
                     var skillFamilyPath = IOUtils.GenerateUniqueFileName(skillsFolder, soName, ".asset");
                     Debug.Log($"Creating SkillFamily in {skillFamilyPath}");
@@ -444,14 +448,14 @@ The resulting prefab contains the necesary components for it's specified type, a
                 AssetDatabase.StopAssetEditing();
             }
             AssetDatabase.Refresh();
-            yield return null;
+            yield return 0.99f;
 
 
             var bodyPrefabPath = IOPath.Combine(bodyFolder, $"{_copiedBody.name}.prefab");
             Debug.Log("Saving body in " + bodyPrefabPath);
             PrefabUtility.SaveAsPrefabAsset(_copiedBody, IOUtils.FormatPathForUnity(bodyPrefabPath));
             AssetDatabase.ImportAsset(IOUtils.FormatPathForUnity(bodyPrefabPath));
-            yield return null;
+            yield return 1f;
         }
 
         protected override void Cleanup()

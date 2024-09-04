@@ -31,5 +31,9 @@ namespace RoR2.Editor
         {
             EditorApplication.quitting -= EditorApplication_quitting;
         }
+
+
+        [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Settings/Project Editor Settings")]
+        public static void OpenSettings() => SettingsService.OpenProjectSettings("Project/R2EK Editor Settings");
     }
 }

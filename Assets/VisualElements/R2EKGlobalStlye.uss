@@ -21,3 +21,12 @@
 .r2ek-horizontal_layout {
     flex-direction: row;
 }
+
+.r2ek-elide-label .unity-base-field__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: none;
+    flex-grow: 1;
+    flex-basis: 1px;
+}

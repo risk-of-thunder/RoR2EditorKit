@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static UnityEngine.GridBrushBase;
 using IOPath = System.IO.Path;
 
 namespace RoR2.Editor.Windows
@@ -27,7 +28,7 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
 
         protected override bool requiresTokenPrefix => true;
 
-        private (Func<IEnumerator> subroutine, string step)[] _steps;
+        private WizardCoroutineHelper _wizardCoroutineHelper;
 
         private string _folderOutput;
         private string _upperToken;
@@ -37,23 +38,21 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
         private DirectorCardCategorySelection _interactableDCCS;
         private GameObject _sceneInfoGO;
 
-        [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Stage Wizard")]
+        [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Wizards/Stage")]
         private static void Open() => Open<StageCreatorWizard>(null);
 
         protected override void OnEnable()
         {
             base.OnEnable();
-            _steps = new (Func<IEnumerator> subroutine, string step)[]
-            {
-                (CreateTokens, "Creating Tokens"),
-                (DuplicateSceneAsset, "Creating Scene Asset"),
-                (OpenScene, "Opening Scene Asset"),
-                (CreateNodeGraphs, "Creating Node Graphs"),
-                (CreateDCCS, "Creating DCCS"),
-                (CreateDCCSPool, "Creating DCCSPool"),
-                (SaveScene, "Saving Scene Changes"),
-                (CreateSceneDef, "Creating SceneDef"),
-            };
+            _wizardCoroutineHelper = new WizardCoroutineHelper(this);
+            _wizardCoroutineHelper.AddStep(CreateTokens(), "Creating Tokens");
+            _wizardCoroutineHelper.AddStep(DuplicateSceneAsset(), "Creating Scene Asset");
+            _wizardCoroutineHelper.AddStep(OpenScene(), "Opening Scene Asset");
+            _wizardCoroutineHelper.AddStep(CreateNodeGraphs(), "Creating Node Graphs");
+            _wizardCoroutineHelper.AddStep(CreateDCCS(), "Creating DCCS");
+            _wizardCoroutineHelper.AddStep(CreateDCCSPool(), "Creating DCCSPool");
+            _wizardCoroutineHelper.AddStep(SaveScene(), "Saving Scene Changes");
+            _wizardCoroutineHelper.AddStep(CreateSceneDef(), "Creating Scene Def");
         }
 
         protected override void Cleanup()
@@ -86,16 +85,9 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
         
         protected override IEnumerator RunWizardCoroutine()
         {
-            for(int i = 0; i < _steps.Length; i++)
+            while(_wizardCoroutineHelper.MoveNext())
             {
-                var tuple = _steps[i];
-                UpdateProgress(R2EKMath.Remap(i, 0, _steps.Length, 0, 1), tuple.step);
-                yield return null;
-                var enumerator = tuple.subroutine();
-                while(enumerator.MoveNext())
-                {
-                    yield return enumerator.Current;
-                }
+                yield return _wizardCoroutineHelper.Current;
             }
             yield break;
         }
@@ -127,25 +119,26 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
         private IEnumerator CreateNodeGraphs()
         {
             var rootGO = _scene.GetRootGameObjects();
-            GameObject[] mapNodeGropuObjects = rootGO.Where(go => go.TryGetComponent<MapNodeGroup>(out _)).ToArray();
+            GameObject[] mapNodeGroupObjects = rootGO.Where(go => go.TryGetComponent<MapNodeGroup>(out _)).ToArray();
             SceneInfo sceneInfo = rootGO.Select(go => go.GetComponent<SceneInfo>()).Where(sceneInfo => sceneInfo != null).FirstOrDefault();
 
             _sceneInfoGO = sceneInfo.gameObject;
             var serializedObject = new SerializedObject(sceneInfo);
 
-            foreach (var gameObject in mapNodeGropuObjects)
+            for(int i = 0; i < mapNodeGroupObjects.Length; i++)
             {
-                Debug.Log($"Creating Node Graph for {gameObject.name}");
-                yield return null;
+                var gameObject = mapNodeGroupObjects[i];
+                Debug.Log($"Creating Node Graph for {gameObject}");
+                yield return R2EKMath.Remap(i, 0, mapNodeGroupObjects.Length - 1, 0, 1f);
                 var nodeGroup = gameObject.GetComponent<MapNodeGroup>();
                 var nodeGraph = CreateInstance<NodeGraph>();
 
                 var path = IOUtils.GenerateUniqueFileName(_folderOutput, gameObject.name, ".asset");
                 AssetDatabase.CreateAsset(nodeGraph, path);
                 nodeGroup.nodeGraph = nodeGraph;
-                
 
-                switch(nodeGroup.graphType)
+
+                switch (nodeGroup.graphType)
                 {
                     case MapNodeGroup.GraphType.Air:
                         serializedObject.FindProperty("airNodesAsset").objectReferenceValue = nodeGraph;
@@ -182,10 +175,10 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
             var stageInfoSerializedObject = new SerializedObject(stageInfo);
 
             string[] poolNames = new string[] { $"dccspool{stageName}Monsters", $"dccspool{stageName}Interactables" };
-            foreach(var pool in poolNames)
+            for(int i = 0; i < poolNames.Length; i++)
             {
-                yield return null;
-
+                var poolName = poolNames[i];
+                yield return R2EKMath.Remap(i, 0, poolNames.Length - 1, 0, 1);
                 var poolInstance = CreateInstance<DccsPool>();
                 var poolInstanceSerializedObject = new SerializedObject(poolInstance);
                 var categoriesArray = poolInstanceSerializedObject.FindProperty("poolCategories");
@@ -194,19 +187,19 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
                 var category = categoriesArray.GetArrayElementAtIndex(0);
                 category.FindPropertyRelative("name").stringValue = "Standard";
                 category.FindPropertyRelative("categoryWeight").floatValue = 0.98f;
-                
+
                 var ifNoConditionsMet = category.FindPropertyRelative("includedIfNoConditionsMet");
                 ifNoConditionsMet.arraySize = 1;
                 var poolEntry = ifNoConditionsMet.GetArrayElementAtIndex(0);
-                poolEntry.FindPropertyRelative("dccs").objectReferenceValue = pool.Contains("Monsters") ? _monsterDCCS : _interactableDCCS;
+                poolEntry.FindPropertyRelative("dccs").objectReferenceValue = poolName.Contains("Monsters") ? _monsterDCCS : _interactableDCCS;
                 poolEntry.FindPropertyRelative("weight").floatValue = 1;
 
                 poolInstanceSerializedObject.ApplyModifiedProperties();
 
-                var path = IOUtils.GenerateUniqueFileName(_folderOutput, pool, ".asset");
+                var path = IOUtils.GenerateUniqueFileName(_folderOutput, poolName, ".asset");
                 AssetDatabase.CreateAsset(poolInstance, path);
 
-                if(pool.Contains("Monsters"))
+                if (poolName.Contains("Monsters"))
                 {
                     stageInfoSerializedObject.FindProperty("monsterDccsPool").objectReferenceValue = poolInstance;
                 }

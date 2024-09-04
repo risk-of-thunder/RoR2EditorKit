@@ -9,7 +9,7 @@ namespace RoR2.Editor
 {
     public struct AssetGUID<T> where T : UnityEngine.Object
     {
-        public string guid;
+        public GUID guid;
 
         public static implicit operator bool(AssetGUID<T> asset)
         {
@@ -22,12 +22,17 @@ namespace RoR2.Editor
             return AssetDatabaseUtil.LoadAssetFromGUID<T>(asset.guid);
         }
 
-        public static implicit operator AssetGUID<T>(string guid)
+        public static implicit operator AssetGUID<T>(GUID guid)
         {
             return new AssetGUID<T>
             {
-                guid = guid,
+                guid = guid
             };
+        }
+
+        public static implicit operator AssetGUID<T>(string guid)
+        {
+            return new GUID(guid);
         }
 
         public static implicit operator AssetGUID<T>(T asset)

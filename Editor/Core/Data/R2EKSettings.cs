@@ -17,8 +17,8 @@ namespace RoR2.Editor
         public bool isFirstTimeBoot { get => _isFirstTimeBoot; set => _isFirstTimeBoot = value; }
         [SerializeField] private bool _isFirstTimeBoot = true;
 
-        public int callsBetweenCheckablePropertyChecks => _callsBetweenCheckablePropertyChecks;
-        [SerializeField] private int _callsBetweenCheckablePropertyChecks = 500;
+        public bool enableThunderkitIntegration => _enableThunderkitIntegration;
+        [SerializeField] private bool _enableThunderkitIntegration = false;
 
         [InitializeOnLoadMethod]
         public static void InitializeOnLoad()
@@ -84,5 +84,7 @@ namespace RoR2.Editor
             }
         }
 
+        [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Settings/Main Settings")]
+        public static void OpenSettings() => SettingsService.OpenProjectSettings("Project/RoR2EditorKit");
     }
 }

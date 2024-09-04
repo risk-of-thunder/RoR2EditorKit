@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <Style src="project://database/Packages/riskofthunder-ror2editorkit/Assets/VisualElements/R2EKGlobalStlye.uss?fileID=7433441132597879392&amp;guid=81861b4c6318b874391de872e1793059&amp;type=3#R2EKGlobalStlye" />
+    <RoR2.Editor.EqualLabelWidthContainer class="r2ek-elide-label">
+        <uie:PropertyField binding-path="folderPath" name="FolderPath" />
+        <uie:PropertyField name="AuthorName" binding-path="authorName" />
+        <uie:PropertyField name="ModName" binding-path="modName" />
+        <uie:PropertyField name="HumanReadableModName" binding-path="humanReadableModName" />
+        <uie:PropertyField name="ModDescription" binding-path="modDescription" />
+        <uie:PropertyField name="AssemblyDefinitionReferences" binding-path="assemblyDefinitionReferences" style="max-height: 220px;" />
+        <uie:PropertyField binding-path="addAllR2APIAssemblies" label="Add R2API Assemblies" name="AddAllR2APIAssemblies" />
+    </RoR2.Editor.EqualLabelWidthContainer>
+    <ui:ListView focusable="true" name="PrecompiledAssemblyReferences" show-border="true" show-foldout-header="true" header-title="Precompiled Assembly References" reorderable="true" show-bound-collection-size="true" show-add-remove-footer="true" style="max-height: 220px; height: auto;" />
+</ui:UXML>

@@ -61,10 +61,20 @@ namespace RoR2.Editor
             };
         }
 
+
         public override void OnDeactivate()
         {
             base.OnDeactivate();
+            serializedObject.ApplyModifiedProperties();
             Save();
+            if (settings.enableThunderkitIntegration && !ScriptingSymbolManager.ContainsDefine("R2EK_THUNDERKIT"))
+            {
+                ScriptingSymbolManager.AddScriptingDefine("R2EK_THUNDERKIT");
+            }
+            else if (!settings.enableThunderkitIntegration && ScriptingSymbolManager.ContainsDefine("R2EK_THUNDERKIT"))
+            {
+                ScriptingSymbolManager.RemoveScriptingDefine("R2EK_THUNDERKIT");
+            }
         }
 
         private void Save()

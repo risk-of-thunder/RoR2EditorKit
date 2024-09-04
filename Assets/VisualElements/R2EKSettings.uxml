@@ -5,10 +5,11 @@
     </ui:VisualElement>
     <ui:VisualElement name="Center">
         <ui:VisualElement style="flex-direction: row;">
-            <ui:VisualElement style="flex-direction: column; flex-grow: 1;">
-                <ui:TextField picking-mode="Ignore" label="Language Token Prefix" binding-path="_tokenPrefix" />
+            <RoR2.Editor.EqualLabelWidthContainer class="r2ek-elide-label" style="flex-grow: 1; flex-direction: column; -unity-text-align: upper-left; white-space: normal;">
+                <ui:TextField picking-mode="Ignore" label="Language Token Prefix" binding-path="_tokenPrefix" style="width: auto;" />
                 <ui:Toggle label="Enable RiskOfThunder Naming Conventions" name="EnableNamingConventions" binding-path="_enableNamingConventions" />
-            </ui:VisualElement>
+                <ui:Toggle label="Enable Thunderkit Integration" name="EnableThunderkitIntegration" binding-path="_enableThunderkitIntegration" />
+            </RoR2.Editor.EqualLabelWidthContainer>
             <ui:VisualElement>
                 <ui:Button text="Import Script Icons for RoR2 Classes" name="ImportIconButton" />
             </ui:VisualElement>

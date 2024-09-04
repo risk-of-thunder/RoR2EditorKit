@@ -33,5 +33,10 @@ namespace RoR2.Editor
         {
             EditorApplication.quitting -= EditorApplication_quitting;
         }
+
+
+
+        [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Settings/User Editor Settings")]
+        public static void OpenSettings() => SettingsService.OpenUserPreferences("Preferences/RoR2EditorKit Editor Preferences");
     }
 }

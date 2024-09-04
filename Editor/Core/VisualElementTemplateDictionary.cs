@@ -124,7 +124,7 @@ namespace RoR2.Editor
         private struct TemplateNameToUXMLGuid
         {
             public string k_templateName;
-            public string v_guid;
+            public GUID v_guid;
         }
 
         private class AssetPostprocessor : UnityEditor.AssetPostprocessor

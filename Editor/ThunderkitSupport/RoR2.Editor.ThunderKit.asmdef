@@ -1,0 +1,26 @@
+{
+    "name": "RoR2.Editor.ThunderKit",
+    "rootNamespace": "RoR2.Editor.ThunderKit",
+    "references": [
+        "GUID:60983344ee8157d4ab97c25513f789c4",
+        "GUID:280569ac301428d4d950fdf647900922",
+        "GUID:48abf88f565f4bb4fb35fbe2385f0894",
+        "GUID:b04f7ec21bb6ebe43a85599e36f30cff"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "RoR2.dll",
+        "BepInEx.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "R2EK_THUNDERKIT"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

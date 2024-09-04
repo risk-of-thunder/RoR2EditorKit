@@ -10,7 +10,7 @@ namespace RoR2.Editor
 {
     public static class AssetDatabaseUtil
     {
-        public static string GetAssetGUID(UnityEngine.Object asset)
+        public static string GetAssetGUIDString(UnityEngine.Object asset)
         {
             if(!AssetDatabase.Contains(asset))
             {
@@ -19,28 +19,45 @@ namespace RoR2.Editor
             }
             return AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(asset));
         }
+
+        public static GUID GetAssetGUID(UnityEngine.Object asset)
+        {
+            return new GUID(GetAssetGUIDString(asset));
+        }
+
         public static UnityEngine.Object LoadAssetFromGUID(string guid, Func<UnityEngine.Object> func = null)
+        {
+            return LoadAssetFromGUID<UnityEngine.Object>(new GUID(guid), func);
+        }
+
+        public static UnityEngine.Object LoadAssetFromGUID(GUID guid, Func<UnityEngine.Object> func = null)
         {
             return LoadAssetFromGUID<UnityEngine.Object>(guid, func);
         }
 
         public static T LoadAssetFromGUID<T>(string guid, Func<T> defaultInitializer = null) where T : UnityEngine.Object
         {
+            return LoadAssetFromGUID(new GUID(guid), defaultInitializer);
+        }
+
+        public static T LoadAssetFromGUID<T>(GUID guid, Func<T> defaultInitializer = null) where T : UnityEngine.Object
+        {
             var path = AssetDatabase.GUIDToAssetPath(guid);
-            if(string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path))
             {
                 Debug.LogWarning($"Cannot load asset with guid {guid} as the AssetDatabase doesnt contain said guid.");
                 return defaultInitializer?.Invoke() ?? default(T);
             }
 
             T obj = AssetDatabase.LoadAssetAtPath<T>(path);
-            if(!obj)
+            if (!obj)
             {
                 Debug.LogWarning($"Cannot load asset with guid {guid} using type {typeof(T).Name}.");
                 return defaultInitializer?.Invoke() ?? default(T);
             }
             return obj;
         }
+
 
         public static IEnumerable<string> FindAssetPaths(string filter, string[] searchFolders)
         {

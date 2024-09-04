@@ -23,7 +23,7 @@ namespace RoR2.Editor
             set
             {
                 _shaderName = !value ? string.Empty : value.name;
-                _shaderGuid = !value ? string.Empty : AssetDatabaseUtil.GetAssetGUID(value);
+                _shaderGuid = !value ? string.Empty : AssetDatabaseUtil.GetAssetGUIDString(value);
             }
         }
 
