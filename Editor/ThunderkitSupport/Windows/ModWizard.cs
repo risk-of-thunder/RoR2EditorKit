@@ -16,6 +16,9 @@ using BepInEx;
 using System.Reflection;
 using System.Linq.Expressions;
 using BepInEx.Logging;
+using ThunderKit.Core.Manifests;
+using ThunderKit.Core.Manifests.Datum;
+using ThunderKit.Core.Manifests.Datums;
 
 namespace RoR2.Editor.Windows
 {
@@ -47,6 +50,7 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
         private string _assetBundleFolder;
         private AssemblyDefinitionAsset _modAssemblyDef;
         private string[] _allReferencedAssembliesFromModAssemblyDefinition;
+        private ManifestIdentity _modIdentity;
         
         [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Wizards/Mod")]
         private static void OpenWindow() => Open<ModWizard>(null);
@@ -123,6 +127,8 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
             _wizardCoroutineHelper.AddStep(CreateAssemblyDef(), "Writing AssemblyDef");
             _wizardCoroutineHelper.AddStep(CreateMainClass(), "Writing Main Class");
             _wizardCoroutineHelper.AddStep(CreateContentProvider(), "Writing Content Provider");
+            _wizardCoroutineHelper.AddStep(CreateManifest(), "Creating Manifest");
+            _wizardCoroutineHelper.AddStep(ComputeManifestDependencies(), "Computing Manifest Dependencies");
         }
 
         protected override bool ValidateData()
@@ -401,7 +407,9 @@ while(!asyncOperation.isDone)
 {{
     args.ReportProgress(asyncOperation.progress);
     yield return null;
-}}");
+}}
+
+//Write code here to initialize your mod post assetbundle load");
                 writer.EndBlock(); //Load static content method end
 
                 writer.WriteLine($"public IEnumerator GenerateContentPackAsync(GetContentPackAsyncArgs args)"); //Generate content pack method begin
@@ -450,7 +458,110 @@ yield break;");
 
         private IEnumerator CreateManifest()
         {
+            var manifest = CreateInstance<Manifest>();
+            AssetDatabase.CreateAsset(manifest, IOUtils.GenerateUniqueFileName(_folderOutput, $"{modName}Manifest", ".asset"));
+
+            yield return 0.33f;
+
+            manifest.Identity = CreateInstance<ManifestIdentity>();
+            _modIdentity = manifest.Identity;
+
+            _modIdentity.name = nameof(ManifestIdentity);
+            _modIdentity.Author = authorName;
+            _modIdentity.Name = modName;
+            _modIdentity.Description = modDescription;
+            _modIdentity.Version = "0.0.1";
+            manifest.InsertElement(manifest.Identity, 0);
+
+            yield return 0.66f;
+
+            var bundleDatum = CreateInstance<AssetBundleDefinitions>();
+            bundleDatum.assetBundles = new AssetBundleDefinition[]
+            {
+                new AssetBundleDefinition
+                {
+                    assetBundleName = $"{modName}Assets",
+                    assets = new UnityEngine.Object[] { AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(_assetBundleFolder) },
+                },
+            };
+            manifest.InsertElement(bundleDatum, 1);
+
+            yield return 0.99f;
+
+            var assemblyDatum = CreateInstance<AssemblyDefinitions>();
+            assemblyDatum.definitions = new AssemblyDefinitionAsset[]
+            {
+                _modAssemblyDef
+            };
+
+            manifest.InsertElement(assemblyDatum, 2);
+            yield return 1f;
+        }
+
+        private IEnumerator ComputeManifestDependencies()
+        {
+            List<Manifest> manifestsFound = new List<Manifest>();
+
+            var assemblyPaths = assemblyDefinitionReferences.Select(AssetDatabase.GetAssetPath).Where(R2EKExtensions.IsNullOrEmptyOrWhiteSpace).Select(IOPath.GetFullPath).Concat(_defaultPrecompiledAssemblies.Select(CompilationPipeline.GetPrecompiledAssemblyPathFromAssemblyName)).ToArray();
+
+            string[] stopPoints = new string[] { "PackageCache", "Packages", "Assets" };
+
+            for(int i = 0; i < assemblyPaths.Length; i++)
+            {
+                var assemblyPath = assemblyPaths[i];
+                string currentDirToSearch = IOPath.GetDirectoryName(assemblyPath);
+                yield return R2EKMath.Remap(i, 0, assemblyPaths.Length - 1, 0, 0.5f);
+
+                while(!stopPoints.Contains(currentDirToSearch.Split('\\').Last()))
+                {
+                    yield return null;
+                    var files = Directory.GetFiles(currentDirToSearch, "*.asset", SearchOption.TopDirectoryOnly);
+
+                    if (files.Length == 0) //no .asset files, continue searching upwards
+                    {
+                        currentDirToSearch = IOPath.GetDirectoryName(currentDirToSearch);
+                        continue;
+                    }
+
+                    foreach (var file in files)
+                    {
+                        yield return null;
+                        var formattedPath = IOUtils.FormatPathForUnity(file);
+                        var logicalPath = FileUtil.GetLogicalPath(formattedPath);
+
+                        var manifest = AssetDatabase.LoadAssetAtPath<Manifest>(logicalPath);
+                        if (manifest && !manifestsFound.Contains(manifest))
+                        {
+                            manifestsFound.Add(manifest);
+                        }
+                    }
+                    currentDirToSearch = IOPath.GetDirectoryName(currentDirToSearch);
+                }
+            }
+
+            HashSet<Manifest> dependentManifests = new HashSet<Manifest>();
+            for(int i = 0; i < manifestsFound.Count; i++)
+            {
+                var foundManifest = manifestsFound[i];
+                yield return R2EKMath.Remap(i, 0, manifestsFound.Count - 1, 0.5f, 1f);
+
+                foreach(var dependency in foundManifest.Identity.Dependencies)
+                {
+                    dependentManifests.Add(dependency);
+                }
+            }
+
+            _modIdentity.Dependencies = manifestsFound.Where(m => !dependentManifests.Contains(m)).ToArray();
             yield break;
+        }
+
+        protected override void Cleanup()
+        {
+            _folderOutput = "";
+            _assetBundleFolder = "";
+            _modAssemblyDef = null;
+            _allReferencedAssembliesFromModAssemblyDefinition = Array.Empty<string>();
+            _modIdentity = null;
         }
 
         static ModWizard()

@@ -64,5 +64,17 @@ namespace RoR2.Editor
             var guids = AssetDatabase.FindAssets(filter, searchFolders);
             return guids.Select(AssetDatabase.GUIDToAssetPath);
         }
+
+        public static IEnumerable<T> FindAssetsByType<T>(string assetNameFilter = null) where T : UnityEngine.Object    
+        {
+            List<T> assets = new List<T>();
+            string[] guids;
+            if (assetNameFilter != null)
+                guids = AssetDatabase.FindAssets($"{assetNameFilter} t:{typeof(T).Name}", null);
+            else
+                guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}", null);
+
+            return guids.Select(x => LoadAssetFromGUID<T>(x));
+        }
     }
 }

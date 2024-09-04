@@ -95,6 +95,7 @@ namespace RoR2.Editor
         private void ReloadDictionary()
         {
             _templateTreeDictionary = new Dictionary<string, VisualTreeAsset>();
+            bool hasChanges = false;
             for(int i = _serializedDictionary.Count - 1; i >= 0; i--)
             {
                 TemplateNameToUXMLGuid template = _serializedDictionary[i];
@@ -104,6 +105,7 @@ namespace RoR2.Editor
                 {
                     Debug.LogError("Cannot find VisualTreeAsset for template " + template.k_templateName);
                     _serializedDictionary.RemoveAt(i);
+                    hasChanges = true;
                     continue;
                 }
 
@@ -111,11 +113,15 @@ namespace RoR2.Editor
                 {
                     Debug.LogWarning("Template for " + template.k_templateName + " is already in the dictionary, is this a duplicate entry?");
                     _serializedDictionary.RemoveAt(i);
+                    hasChanges = true;
                     continue;
                 }
 
                 _templateTreeDictionary.Add(template.k_templateName, asset);
             }
+
+            if (hasChanges)
+                DoSave();
         }
 
         public delegate bool TemplatePathValidator(string path);
