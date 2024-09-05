@@ -3,6 +3,9 @@ using UnityEditor;
 
 namespace RoR2.Editor
 {
+    /// <summary>
+    /// Ripped straight from thunderkit, sorry twiner <3
+    /// </summary>
     public static class ScriptingSymbolManager
     {
         static bool IsObsolete(BuildTargetGroup group)
@@ -11,6 +14,9 @@ namespace RoR2.Editor
             return attrs.Length > 0;
         }
 
+        /// <summary>
+        /// Checks if <paramref name="define"/> is within any build target
+        /// </summary>
         public static bool ContainsDefine(string define)
         {
             define = define.ToUpperInvariant();

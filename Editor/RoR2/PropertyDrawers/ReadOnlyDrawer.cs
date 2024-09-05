@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
-namespace RoR2.Editor
+namespace RoR2.Editor.PropertyDrawers
 {
     [CustomPropertyDrawer(typeof(KinematicCharacterController.ReadOnlyAttribute))]
     public class KCCReadOnlyDrawer : IMGUIPropertyDrawer<KinematicCharacterController.ReadOnlyAttribute>

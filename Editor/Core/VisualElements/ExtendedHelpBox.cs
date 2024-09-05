@@ -12,8 +12,9 @@ using Object = UnityEngine.Object;
 namespace RoR2.Editor
 {
     /// <summary>
-    /// A HelpBox is a custom VisualElement that works as a replacement for creating <see cref="IMGUIContainer"/> and calling <see cref="EditorGUILayout.HelpBox(GUIContent, bool)"/>
-    /// <para>The HelpBox element works by imitating the behaviour of the EditorGUILayout method, but with a few extra utilities, such as making messages implicit (showing in the icon's tooltip), and allowing for easy creation of ContextualMenus</para>
+    /// The ExtendedHelpBox is a custom VisualElement that works as a replacement of <see cref="HelpBox"/>, as this element cannot be instantiated in UIBuilder.
+    /// 
+    /// <para>Besides this, the ExtendedHelpBox contains some extra features, such as the message being implicit or explicit, the creation of contextual menus, and the posibility to dismiss the help box</para>
     /// </summary>
     public class ExtendedHelpBox : VisualElement
     {
@@ -43,7 +44,7 @@ namespace RoR2.Editor
 
         /// <summary>
         /// The type of message for this helpBox, different values change the Icon that's used in the Help Box.
-        /// <para><see cref="MessageType.None"/> will display a little page document icon</para>
+        /// <para><see cref="MessageType.None"/> Will not display an icon</para>
         /// <para><see cref="MessageType.Info"/> will display a round information bubble</para>
         /// <para><see cref="MessageType.Warning"/> will display a yellow warning triangle</para>
         /// <para><see cref="MessageType.Error"/> will display an red error octagon</para>
@@ -78,6 +79,7 @@ namespace RoR2.Editor
             }
         }
         private MessageType _messageType;
+
         /// <summary>
         /// Wether the string inputed in <see cref="message"/> is Explicit.
         /// <para>When <see cref="messageIsExplicit"/> is set to true, a <see cref="UnityEngine.UIElements.Label"/> will be displayed alongside the icon, where the text in <see cref="message"/> is displayed in the label</para>
@@ -109,6 +111,9 @@ namespace RoR2.Editor
         }
         private bool _messageIsExplicit;
 
+        /// <summary>
+        /// Wether the help box can be dismissed
+        /// </summary>
         public bool isDismissable
         {
             get => _isDismissable;
@@ -119,6 +124,7 @@ namespace RoR2.Editor
             }
         }
         private bool _isDismissable;
+
         /// <summary>
         /// An Acton to populate a context menu when the HelpBox is clicked
         /// </summary>
@@ -141,14 +147,17 @@ namespace RoR2.Editor
         }
         private Action<ContextualMenuPopulateEvent> _contextualMenuPopulateEvent;
         private ContextualMenuManipulator _manipulator;
+
         /// <summary>
         /// The Icon visual element
         /// </summary>
         public VisualElement icon { get; }
+
         /// <summary>
         /// A Container element, this element gets resized whenever <see cref="messageIsExplicit"/> changes value
         /// </summary>
         public override VisualElement contentContainer { get; }
+
         /// <summary>
         /// The Label of the HelpBox
         /// </summary>

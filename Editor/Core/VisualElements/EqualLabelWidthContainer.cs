@@ -7,6 +7,11 @@ using UnityEngine.UIElements;
 
 namespace RoR2.Editor
 {
+    /// <summary>
+    /// The <see cref="EqualLabelWidthContainer"/> is a VisualElement that ensures all the labels within it that are from Basefields are elided and cropped so the controls are aligned properly.
+    /// 
+    /// Only labels that are decorated with the R2EKGlobalSetting's ElideLabel class will be modified.
+    /// </summary>
     public class EqualLabelWidthContainer : VisualElement
     {
         private static ObservableHashSet<EqualLabelWidthContainer> _attachedInstances = new ObservableHashSet<EqualLabelWidthContainer>();
@@ -84,6 +89,9 @@ namespace RoR2.Editor
             }
         }
 
+        /// <summary>
+        /// Creates a new instance of an EqualLabelWidthContainer
+        /// </summary>
         public EqualLabelWidthContainer()
         {
             RegisterCallback<AttachToPanelEvent>(OnAttached);

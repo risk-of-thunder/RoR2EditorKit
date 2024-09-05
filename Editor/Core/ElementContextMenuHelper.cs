@@ -7,11 +7,22 @@ using UnityEngine.UIElements;
 
 namespace RoR2.Editor
 {
-    public static class ElementContextMenu
+    /// <summary>
+    /// The <see cref="ElementContextMenuHelper"/> is a class that allows for management of ContextMenus of VisualElements using a <see cref="ContextMenuWrapperElement"/>.
+    /// 
+    /// <para>It's main method,  <see cref="AddSimpleContextMenu(VisualElement, ContextMenuData)"/>, allows you to give a specific VisualElement a ContextMenu, and have a special Icon that will be the clickable element that'll show the field's ContextMenu</para>
+    /// <br>This allows the Element to be visible, and have a clear way of telling the end user that it has a context menu, alongside being easy to find and click.</br>
+    /// </summary>
+    public static class ElementContextMenuHelper
     {
         private static FixedConditionalWeakTable<ContextMenuWrapperElement, List<ContextMenuData>> _wrapperToData = new FixedConditionalWeakTable<ContextMenuWrapperElement, List<ContextMenuData>>();
         private static DropdownMenuAction.Status DefaultStatusCheck(DropdownMenuAction action) => DropdownMenuAction.Status.Normal;
 
+        /// <summary>
+        /// A custom way of adding a ContextMenu, it is incredibly recommended to use this method instead of manually adding a Manipulator, as this method will create a little icon that will be the clickable element for the context menu 
+        /// </summary>
+        /// <param name="element">The element that will be modified to be held by a ContextualMenuWrapper, this element will be removed from the hierarchy, parented to a ContextualMenuWrapper, and then the Wrapper will be inserted in the element's original position, preserving its position in the hierarchy and adding the icon that will contain the field's context menu.</param>
+        /// <param name="data">The data for the context menu.</param>
         public static void AddSimpleContextMenu(this VisualElement element, ContextMenuData data)
         {
             ContextMenuWrapperElement wrapper = WrapElement(element, data);
@@ -28,8 +39,6 @@ namespace RoR2.Editor
             element.iconElement.AddManipulator(manipulator);
             return new List<ContextMenuData>();
         }
-
-        internal static void OnContextualMenuWrapperElementDestroyed(ContextMenuWrapperElement element) => _wrapperToData.Remove(element); 
 
         private static ContextMenuWrapperElement WrapElement(VisualElement elementToWrap, ContextMenuData data)
         {
@@ -92,12 +101,32 @@ namespace RoR2.Editor
             }
         }
     }
+
+    /// <summary>
+    /// Data that defines a ContextMenu that will be used with the <see cref="ElementContextMenuHelper"/>
+    /// </summary>
     public struct ContextMenuData
     {
+        /// <summary>
+        /// The menu name for this context menu, you can group these with /, IE: MyCustomMenu/DoSomething
+        /// </summary>
         public string menuName;
+        /// <summary>
+        /// The action that runs when the context menu is clicked.
+        /// </summary>
         public Action<DropdownMenuAction> menuAction;
+        /// <summary>
+        /// A status check to see the status of the context menu
+        /// </summary>
         public Func<DropdownMenuAction, DropdownMenuAction.Status> actionStatusCheck;
+        /// <summary>
+        /// Optional data to pass for the menu to function
+        /// </summary>
         public object userData;
+        /// <summary>
+        /// An texture for the icon that will be displayed next to the element that will get the context menu.
+        /// <para>The icon should ideally be a multiple of 256 </para>
+        /// </summary>
         public Texture2D contextualMenuIcon;
     }
 }

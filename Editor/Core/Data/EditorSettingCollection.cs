@@ -7,11 +7,26 @@ using UnityEngine;
 
 namespace RoR2.Editor
 {
+    /// <summary>
+    /// An <see cref="EditorSettingCollection"/> represents an object that stores multiple types of Settings that are tied to a specific type.
+    /// 
+    /// <para>
+    /// EditorSettings can be used to store either project settings or user preference settings, Examples include storing Colors that can be later used on a custom inspector to draw custom Gizmos/Handles of the user's preference colors.
+    /// </para>
+    /// 
+    /// <br>See also <see cref="EditorSettingManager"/></br>
+    /// </summary>
     [Serializable]
-    public class EditorSetting
+    public class EditorSettingCollection
     {
+        /// <summary>
+        /// Returns the Type that owns this instance of <see cref="EditorSettingCollection"/>.
+        /// </summary>
         public Type ownerType => Type.GetType(_editorTypeQualifiedName);
 
+        /// <summary>
+        /// Returns all the setting names that this EditorSetting contains
+        /// </summary>
         public ReadOnlyCollection<string> allSettingNames => _serializedSettings.Select(x => x._settingName).ToList().AsReadOnly();
 
         [SerializeField]
@@ -22,14 +37,39 @@ namespace RoR2.Editor
         internal int _editorTypeQualifiedHash;
         [SerializeField]
         internal SettingValue[] _serializedSettings;
+
+        /// <summary>
+        /// Returns the type of EditorSetting, which can be used to obtain it's provider.
+        ///
+        /// <br>If the setting type is of value <see cref="EditorSettingManager.SettingType.Custom"/>, you can utilize the <see cref="settingProviderName"/> to obtain the provider</br>
+        /// </summary>
+        public EditorSettingManager.SettingType settingType => _settingType;
         [SerializeField]
         internal EditorSettingManager.SettingType _settingType;
 
+        /// <summary>
+        /// Represents the name of the provider that created this EditorSetting, the provider can be obtained utilizing <see cref="EditorSettingManager.GetEditorSettingProvider(string)"/> and passing this string.
+        /// </summary>
+        public string settingProviderName => _settingProviderName;
+        [SerializeField]
+        internal string _settingProviderName;
+
+        /// <summary>
+        /// Saves the settings to the disk
+        /// </summary>
         public void SaveSettings()
         {
+            if(_settingType == EditorSettingManager.SettingType.Custom)
+            {
+                EditorSettingManager.GetEditorSettingProvider(_settingProviderName).SaveSettings();
+                return;
+            }
             EditorSettingManager.GetEditorSettingProvider(_settingType).SaveSettings();
         }
 
+        /// <summary>
+        /// Resets all the settings stored by this EditorSetting to their default values.
+        /// </summary>
         public void ResetAllSettings()
         {
             for (int i = 0; i < _serializedSettings.Length; i++)
@@ -39,6 +79,10 @@ namespace RoR2.Editor
             }
         }
 
+        /// <summary>
+        /// Resets the specified setting in <paramref name="settingName"/> to it's default value
+        /// </summary>
+        /// <param name="settingName">The setting to reset</param>
         public void ResetSetting(string settingName)
         {
             int id = settingName.GetHashCode();
@@ -54,6 +98,13 @@ namespace RoR2.Editor
             }
         }
 
+        /// <summary>
+        /// Gets a the value of a Setting of name <paramref name="settingName"/>. if no setting with that name exists, it's created using <paramref name="defaultValue"/> as it's default value
+        /// </summary>
+        /// <typeparam name="T">The data type of the setting's value.</typeparam>
+        /// <param name="settingName">The name of the setting</param>
+        /// <param name="defaultValue">The default value of this setting, used when the setting is being created</param>
+        /// <returns>The requested setting</returns>
         public T GetOrCreateSetting<T>(string settingName, T defaultValue = default)
         {
             int id = settingName.GetHashCode();
@@ -69,6 +120,12 @@ namespace RoR2.Editor
             return (T)CreateSetting(defaultValue, settingName);
         }
 
+        /// <summary>
+        /// Sets the value of a Setting of name <paramref name="settingName"/> using the value in <paramref name="newValue"/>.
+        /// <br>No changes are made if the setting doesnt exists.</br>
+        /// </summary>
+        /// <param name="settingName">The setting to change it's value</param>
+        /// <param name="newValue">The new value for the setting</param>
         public void SetSettingValue(string settingName, object newValue)
         {
             int id = settingName.GetHashCode();

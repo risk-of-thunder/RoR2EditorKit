@@ -12,22 +12,47 @@ using UnityEngine.UIElements;
 
 namespace RoR2.Editor
 {
+    /// <summary>
+    /// A class containing a plethora of utility methods for creating and handling Visual Elements
+    /// </summary>
     public static class VisualElementUtil
     {
         private static Dictionary<Type, ControlBuilder> _typeToControlBuilder = new Dictionary<Type, ControlBuilder>();
         private static ControlBuilder _enumFlagsControlBuilder;
         private static ControlBuilder _enumIndexControlBuilder;
 
+        /// <summary>
+        /// Checks if its possible to build a Control for the specified type
+        /// </summary>
+        /// <param name="type">The type to check</param>
+        /// <returns>True if a control can be created, otherwise false</returns>
         public static bool CanBuildControlForType(Type type)
         {
             return typeof(UnityEngine.Object).IsAssignableFrom(type) || type.IsEnum || _typeToControlBuilder.ContainsKey(type);
         }
 
+        /// <summary>
+        /// Creates a Control from the specified type in <typeparamref name="T"/>
+        /// </summary>
+        /// <typeparam name="T">The type of control</typeparam>
+        /// <param name="label">The label for the control</param>
+        /// <param name="valueGetter">A function that obtains the current value for the control</param>
+        /// <param name="changeEvent">A deconstructed change event to handle what happens when the value changes</param>
+        /// <returns>A <see cref="INotifyValueChanged{T}"/> element that can be used as a control</returns>
         public static INotifyValueChanged<T> CreateControlFromType<T>(string label, Func<object> valueGetter, DeconstructedChangeEvent changeEvent)
         {
             return (INotifyValueChanged<T>)CreateControlFromType(typeof(T), label, valueGetter, changeEvent);
         }
 
+        /// <summary>
+        /// Creates a generic control from the specified type in <paramref name="type"/>
+        /// </summary>
+        /// <param name="type">The type of control</param>
+        /// <param name="label">The label for the control</param>
+        /// <param name="valueGetter">A function that obtains the current value for the control</param>
+        /// <param name="changeEvent">A deconstructed change event to handle what happens when the value changes</param>
+        /// <returns>A VisualElement that can be used as a control</returns>
+        /// <returns></returns>
         public static VisualElement CreateControlFromType(Type type, string label, Func<object> valueGetter, DeconstructedChangeEvent changeEvent)
         {
             if(typeof(UnityEngine.Object).IsAssignableFrom(type))
@@ -60,7 +85,11 @@ namespace RoR2.Editor
             return new Label($"Creation of control for type {type.Name} is not implemented.");
         }
 
-
+        /// <summary>
+        /// Directly sets <paramref name="objField"/>'s objectType using the provided generic
+        /// </summary>
+        /// <typeparam name="T">The type of object this object field accepts</typeparam>
+        /// <param name="objField">The object field itself</param>
         public static void SetObjectType<T>(this ObjectField objField) where T : UnityEngine.Object
         {
             objField.objectType = typeof(T);
@@ -90,12 +119,30 @@ namespace RoR2.Editor
 
         private delegate VisualElement ControlBuilder(string label, Func<object> valueGetter, DeconstructedChangeEvent changeEvent);
 
+        /// <summary>
+        /// Represents a deconstructed version of a <see cref="ChangeEvent{T}"/>, since there's no non generic version of <see cref="ChangeEvent{T}"/>, this is used instead.
+        /// </summary>
+        /// <param name="deconstructedChangeEvent">The deconstructed change event</param>
         public delegate void DeconstructedChangeEvent(DeconstructedChangeEventData deconstructedChangeEvent);
 
+        /// <summary>
+        /// Represents a deconstructed form of <see cref="ChangeEvent{T}"/>
+        /// </summary>
         public struct DeconstructedChangeEventData
         {
+            /// <summary>
+            /// The EventBase itself, this is technically a <see cref="ChangeEvent{T}"/> casted into an EventBase, so you can properly obtain data regarding how the change event was triggered.
+            /// </summary>
             public EventBase eventBase;
+
+            /// <summary>
+            /// The new value, boxed into a System.Object.
+            /// </summary>
             public object newValue;
+
+            /// <summary>
+            /// The previous value, boxed into a System.Object
+            /// </summary>
             public object previousValue;
         }
 

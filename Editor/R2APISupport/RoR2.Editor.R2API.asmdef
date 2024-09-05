@@ -1,0 +1,31 @@
+{
+    "name": "R2APIEditorScripts",
+    "rootNamespace": "",
+    "references": [
+        "GUID:a44f47cf3ada4435dbc516bad0bc86fe",
+        "GUID:60983344ee8157d4ab97c25513f789c4"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "HGUnityUtils.dll",
+        "SimpleJSON.dll",
+        "RoR2.dll",
+        "com.unity.multiplayer-hlapi.Runtime.dll",
+        "Unity.Addressables.dll",
+        "Unity.ResourceManager.dll",
+        "R2API.ContentManagement.dll",
+        "R2API.Addressables.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "RISKOFTHUNDER_R2API_ADDRESSABLES",
+        "RISKOFRAIN2"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

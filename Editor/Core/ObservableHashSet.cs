@@ -7,6 +7,10 @@ using System.Collections;
 
 namespace RoR2.Editor
 {
+    /// <summary>
+    /// Represents a <see cref="HashSet{T}"/> that raises events when the internal <see cref="HashSet{T}"/> has changed
+    /// </summary>
+    /// <typeparam name="T">The type contained by the <see cref="HashSet{T}"/></typeparam>
     public class ObservableHashSet<T>
         : ISet<T>, IReadOnlyCollection<T>, INotifyCollectionChanged, INotifyPropertyChanged, INotifyPropertyChanging
     {

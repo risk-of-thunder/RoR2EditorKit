@@ -6,11 +6,23 @@ using System.Linq;
 
 namespace RoR2.Editor
 {
+    /// <summary>
+    /// The <see cref="InheritingTypeSelectDropdown"/> is an <see cref="AdvancedDropdown"/> that can be used to select a specific Type that inherits from another type.
+    /// 
+    /// <br>These are used by the SerializableSystemType drawer and the SerializableStateType drawer</br>
+    /// </summary>
     public class InheritingTypeSelectDropdown : AdvancedDropdown
     {
         private string rootItemKey;
+
+        /// <summary>
+        /// When the user clicks on an item, this action is fired
+        /// </summary>
         public event Action<Item> onItemSelected;
 
+        /// <summary>
+        /// The baseType to use as a filter
+        /// </summary>
         public Type requiredBaseType { get; set; }
 
         protected override AdvancedDropdownItem BuildRoot()
@@ -68,7 +80,14 @@ namespace RoR2.Editor
             onItemSelected?.Invoke((Item)item);
         }
 
+        /// <summary>
+        /// Constructor for the <see cref="InheritingTypeSelectDropdown"/> with no specified baseType
+        /// </summary>
         public InheritingTypeSelectDropdown(AdvancedDropdownState state) : this(state, null) { }
+        /// <summary>
+        /// Constructor for the <see cref="InheritingTypeSelectDropdown"/> with a specified base type
+        /// </summary>
+        /// <param name="requiredBaseType">The base type to use as a filter</param>
         public InheritingTypeSelectDropdown(AdvancedDropdownState state, Type requiredBaseType) : base(state)
         {
             this.requiredBaseType = requiredBaseType;
@@ -78,13 +97,27 @@ namespace RoR2.Editor
             minimumSize = minSize;
         }
 
+        /// <summary>
+        /// Represents a Type in the dropdown
+        /// </summary>
         public class Item : AdvancedDropdownItem
         {
+            /// <summary>
+            /// The Type's <see cref="Type.Name"/>
+            /// </summary>
             public string typeName { get; }
+
+            /// <summary>
+            /// The Type's <see cref="Type.FullName"/>
+            /// </summary>
             public string fullName { get; }
+
+            /// <summary>
+            /// The Type's <see cref="Type.AssemblyQualifiedName"/>
+            /// </summary>
             public string assemblyQualifiedName { get; }
 
-            public Item(string displayName, string typeName, string fullName, string assemblyQualifiedName) : base(
+            internal Item(string displayName, string typeName, string fullName, string assemblyQualifiedName) : base(
     displayName)
             {
                 this.typeName = typeName;

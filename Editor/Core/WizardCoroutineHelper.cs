@@ -5,9 +5,21 @@ using UnityEngine;
 
 namespace RoR2.Editor
 {
+    /// <summary>
+    /// The WizardCoroutineHelper is an <see cref="IEnumerator"/> that can be used for creating complex Wizard setups for a <see cref="EditorWizardWindow"/>
+    /// 
+    /// <para>Coroutines added as steps using <see cref="AddStep(IEnumerator, string)"/> can yield return floats, these floats represent the individual percentage of completion of said step. this value should be between 0 and 1.</para>
+    /// </summary>
     public class WizardCoroutineHelper : IEnumerator
     {
+        /// <summary>
+        /// The EditorWizardWindow that created this instance.
+        /// </summary>
         public EditorWizardWindow wizardInstance { get; }
+
+        /// <summary>
+        /// The current object in the coroutine
+        /// </summary>
         public object Current => _internalCoroutine.Current;
 
         private Queue<Step> _stepsQueue = new Queue<Step>();
@@ -15,6 +27,11 @@ namespace RoR2.Editor
         private IEnumerator _internalCoroutine;
         private int _maxProgress;
 
+        /// <summary>
+        /// Adds a new step to the coroutine helper.
+        /// </summary>
+        /// <param name="coroutine">The coroutine itself, this coroutine can yield return floats to represent the individual progress of the step</param>
+        /// <param name="stepName">The name of the step, used during the calling of <see cref="wizardInstance"/>'s <see cref="EditorWizardWindow.UpdateProgress(float, string)"/></param>
         public void AddStep(IEnumerator coroutine, string stepName)
         {
             _stepsQueue.Enqueue(new Step
@@ -25,12 +42,19 @@ namespace RoR2.Editor
             _maxProgress++;
         }
 
+        /// <summary>
+        /// Processes the Coroutine helper
+        /// </summary>
+        /// <returns>True if the Coroutine helper is NOT finished, otherwise false.</returns>
         public bool MoveNext()
         {
             return _internalCoroutine.MoveNext();
         }
 
-        public void Reset()
+        /// <summary>
+        /// Not supported
+        /// </summary>
+        void IEnumerator.Reset()
         {
             throw new NotSupportedException();
         }
@@ -71,6 +95,10 @@ namespace RoR2.Editor
             return R2EKMath.Remap(val, 0, _maxProgress, 0, 1);
         }
 
+        /// <summary>
+        /// Creates a new instance of <see cref="WizardCoroutineHelper"/>
+        /// </summary>
+        /// <param name="wizardInstance">The wizard that created this coroutine helper.</param>
         public WizardCoroutineHelper(EditorWizardWindow wizardInstance)
         {
             this.wizardInstance = wizardInstance;

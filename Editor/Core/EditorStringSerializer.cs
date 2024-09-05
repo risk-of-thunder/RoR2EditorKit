@@ -52,7 +52,7 @@ namespace RoR2.Editor
             return default;
         }
 
-        public static void AddSerializationHandler<T>(SerializationHandler serializationDelegate)
+        private static void AddSerializationHandler<T>(SerializationHandler serializationDelegate)
         {
             if (_typeToSerializationHandlers.ContainsKey(typeof(T)))
             {

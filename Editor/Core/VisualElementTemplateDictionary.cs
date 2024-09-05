@@ -11,6 +11,10 @@ using UnityEngine.UIElements;
 
 namespace RoR2.Editor
 {
+    /// <summary>
+    /// The <see cref="VisualElementTemplateDictionary"/> is a <see cref="ScriptableSingleton{T}"/> that contains a way to directly obtain a VisualTreeAsset via a key, usually the template's name.
+    /// <br>This dictionary is serialized to improve performance.</br>
+    /// </summary>
     [FilePath("ProjectSettings/RoR2EditorKit/VisualElementTemplateDictionary.asset", FilePathAttribute.Location.ProjectFolder)]
     public class VisualElementTemplateDictionary : ScriptableSingleton<VisualElementTemplateDictionary>
     {
@@ -18,11 +22,22 @@ namespace RoR2.Editor
         private static TemplatePathValidator _defaultValidator = (path) => path.Contains(R2EKConstants.PACKAGE_NAME);
         [SerializeField] private List<TemplateNameToUXMLGuid> _serializedDictionary = new List<TemplateNameToUXMLGuid>();
         private static bool _didDomainReload = true;
+
+        /// <summary>
+        /// Saves the dictionary to disk
+        /// </summary>
         public void DoSave()
         {
             Save(true);
         }
 
+        /// <summary>
+        /// Tries to obtain a template instance of the name <paramref name="templateName"/>
+        /// </summary>
+        /// <param name="templateName">The name of the template</param>
+        /// <param name="target">The target visual element, if provided, the template's instance will be added to this</param>
+        /// <param name="templatePathValidator">A validator to ensure that the template is correct.</param>
+        /// <returns>A visual element with the template instance, if the template does not exists, it returns an error label and logs an error.</returns>
         public VisualElement GetTemplateInstance(string templateName, VisualElement target = null, TemplatePathValidator templatePathValidator = null)
         {
             var packageTemplate = LoadTemplate(templateName, templatePathValidator);
@@ -57,6 +72,12 @@ namespace RoR2.Editor
             return instance;
         }
 
+        /// <summary>
+        /// Retrieves the VisualTreeAsset with the name <paramref name="templateName"/>
+        /// </summary>
+        /// <param name="templateName">The name of the template</param>
+        /// <param name="validator">A validator to ensure that the template is correct.</param>
+        /// <returns>The visual tree template</returns>
         public VisualTreeAsset LoadTemplate(string templateName, TemplatePathValidator validator = null)
         {
             if(_templateTreeDictionary.Count == 0)
@@ -124,6 +145,9 @@ namespace RoR2.Editor
                 DoSave();
         }
 
+        /// <summary>
+        /// Represents a predicate that's used to validate a potential UXML asseet.
+        /// </summary>
         public delegate bool TemplatePathValidator(string path);
         
         [Serializable]

@@ -19,7 +19,8 @@ namespace RoR2.Editor
             var keywords = new[] { "RoR2EditorKit", "RoR2EK" };
             VisualElementTemplateDictionary.instance.DoSave();
             var settings = R2EKEditorPreferenceSettings.instance;
-            EditorSettingManager.PurgeOrphanedSettings(settings);
+            if(R2EKSettings.instance.purgeDefaultProviders)
+                EditorSettingManager.PurgeOrphanedSettings(settings);
             settings.hideFlags = HideFlags.DontSave | HideFlags.HideInHierarchy;
             settings.SaveSettings();
             return new R2EKEditorPreferenceSettingsProvider("Preferences/RoR2EditorKit Editor Preferences", SettingsScope.User, keywords)

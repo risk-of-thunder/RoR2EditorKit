@@ -9,6 +9,11 @@ using UnityEngine.UIElements;
 
 namespace RoR2.Editor
 {
+    /// <summary>
+    /// The <see cref="SerializedFieldCollectionElement"/> is a VisualElement that allows you to easily display the serialized fields that are stored within a HG.GeneralSerializer.SerializedfieldCollection. this is used within the inspector for the game's EntityStateConfiguration system.
+    /// 
+    /// <para>Theoretically, you can use this element to create custom serialization setups for your own mods.</para>
+    /// </summary>
     public class SerializedFieldCollectionElement : VisualElement
     {
         private static readonly Dictionary<Type, Func<object>> _specialDefaultValueCreators = new Dictionary<Type, Func<object>>
@@ -17,6 +22,9 @@ namespace RoR2.Editor
             [typeof(Gradient)] = () => new Gradient(),
         };
 
+        /// <summary>
+        /// The type we're currently serializing, changing this value will refresh the collection
+        /// </summary>
         public Type typeBeingSerialized
         {
             get
@@ -33,14 +41,41 @@ namespace RoR2.Editor
             }
         }
         private Type _typeBeingSerialized;
+
+        /// <summary>
+        /// The help box for this visual element, which displays useful information
+        /// </summary>
         public ExtendedHelpBox helpBox { get; private set; }
+
+        /// <summary>
+        /// The container for the visual element
+        /// </summary>
         public VisualElement container { get; private set; }
+
+        /// <summary>
+        /// A foldout which contains all the controls for static fields found within <see cref="typeBeingSerialized"/>
+        /// </summary>
         public Foldout staticFieldsFoldout { get; private set; }
+
+        /// <summary>
+        /// A Foldout which contains all the controls for static fields found within <see cref="typeBeingSerialized"/>
+        /// </summary>
         public Foldout instanceFieldsFoldout { get; private set; }
 
+        /// <summary>
+        /// A container which contains all the controls for entries that are unrecognized for the <see cref="typeBeingSerialized"/>
+        /// </summary>
         public VisualElement unrecognizedFieldContainer { get; private set; }
+
+        /// <summary>
+        /// A button which can be used to clear all unrecognized fields
+        /// </summary>
         public Button clearUnrecognizedFieldsButton { get; private set; }
         public Foldout unrecognizedFieldsFoldout { get; private set; }
+
+        /// <summary>
+        /// The bound property for this collection element, this MUST be a SerializedProperty that represents a "HG.GeneralSerializer.SerializedFieldCollection"
+        /// </summary>
         public SerializedProperty boundProperty
         {
             get
@@ -62,6 +97,10 @@ namespace RoR2.Editor
         private readonly List<FieldInfo> _serializableStaticFields = new List<FieldInfo>();
         private readonly List<FieldInfo> _serializableInstanceFields = new List<FieldInfo>();
         private readonly List<KeyValuePair<SerializedProperty, int>> _unrecognizedFields = new List<KeyValuePair<SerializedProperty, int>>();
+
+        /// <summary>
+        /// Checks for the type being serialized and updates the UI accordingly
+        /// </summary>
         public void CheckForTypeBeingSerialized()
         {
             if (typeBeingSerialized == null)
@@ -270,6 +309,30 @@ namespace RoR2.Editor
             unrecognizedFieldContainer.SetEnabled(false);
         }
 
+        private VisualElement CreateStringControl(FieldInfo fieldInfo, SerializedProperty fieldProperty, SerializedProperty stringValue, string serializedValue)
+        {
+            var fieldType = fieldInfo.FieldType;
+
+            if (!VisualElementUtil.CanBuildControlForType(fieldType))
+            {
+                var unrecognizedField = new PropertyField(fieldProperty);
+                return unrecognizedField;
+            }
+
+            string label = ObjectNames.NicifyVariableName(fieldInfo.Name);
+            Func<object> valueGetter = () => SerializationMediator.Deserialize(fieldType, serializedValue);
+            VisualElementUtil.DeconstructedChangeEvent changeEvent = data =>
+            {
+                SerializationMediator.SerializeFromFieldInfo(fieldInfo, data.newValue, out var result);
+                stringValue.stringValue = result.serializedString;
+                stringValue.serializedObject.ApplyModifiedProperties();
+            };
+            return VisualElementUtil.CreateControlFromType(fieldType, label, valueGetter, changeEvent);
+        }
+
+        /// <summary>
+        /// Constructor for a new <see cref="SerializedFieldCollectionElement"/> instance
+        /// </summary>
         public SerializedFieldCollectionElement()
         {
             VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(SerializedFieldCollectionElement), this);
@@ -288,301 +351,5 @@ namespace RoR2.Editor
             clearUnrecognizedFieldsButton = this.Q<Button>("ClearUnrecognizedFields");
             unrecognizedFieldsFoldout = this.Q<Foldout>("UnrecognizedFields");
         }
-
-        #region Controller creation //Move to another class
-        private VisualElement CreateStringControl(FieldInfo fieldInfo, SerializedProperty fieldProperty, SerializedProperty stringValue, string serializedValue)
-        {
-            var fieldType = fieldInfo.FieldType;
-
-            if (!CanBuildControlFromType(fieldType))
-            {
-                var unrecognizedField = new PropertyField(fieldProperty);
-                return unrecognizedField;
-            }
-
-            string label = ObjectNames.NicifyVariableName(fieldInfo.Name);
-            Func<object> valueGetter = () => SerializationMediator.Deserialize(fieldType, serializedValue);
-            VisualElementUtil.DeconstructedChangeEvent changeEvent = data =>
-            {
-                SerializationMediator.SerializeFromFieldInfo(fieldInfo, data.newValue, out var result);
-                stringValue.stringValue = result.serializedString;
-                stringValue.serializedObject.ApplyModifiedProperties();
-            };
-            return VisualElementUtil.CreateControlFromType(fieldType, label, valueGetter, changeEvent);
-        }
-
-        private static bool CanBuildControlFromFieldInfo(FieldInfo fInfo) => CanBuildControlFromType(fInfo.FieldType);
-        private static bool CanBuildControlFromType(Type type)
-        {
-            return type.IsEnum || _typeToControlBuilder.ContainsKey(type);
-        }
-
-        private static Dictionary<Type, ControlBuilder> _typeToControlBuilder = new Dictionary<Type, ControlBuilder>();
-
-        private static ControlBuilder _enumFlagsControlBuilder;
-        private static ControlBuilder _enumControlBuilder;
-
-        private delegate VisualElement ControlBuilder(string label, SerializedProperty stringValueProperty, string serializedValue, FieldInfo fieldInfo);
-
-        static SerializedFieldCollectionElement()
-        {
-            //Short, UShort, UInt and ULong fields dont exist yet, we need to do this as a compromise.
-            Add<short>((l, sp, sv, fi) =>
-            {
-                var field = new IntegerField(l);
-                field.value = (short)SerializationMediator.Deserialize(fi.FieldType, sv);
-                field.RegisterValueChangedCallback((e) =>
-                {
-                    int newValueAsInt = e.newValue;
-                    if(newValueAsInt > short.MaxValue)
-                    {
-                        newValueAsInt = short.MaxValue;
-                    }
-                    else if(newValueAsInt < short.MinValue)
-                    {
-                        newValueAsInt = short.MinValue;
-                    }
-                    short casted = Convert.ToInt16(newValueAsInt);
-                    field.SetValueWithoutNotify(casted);
-                    SerializationMediator.SerializeFromFieldInfo(fi, casted, out var result);
-                    sp.stringValue = result.serializedString;
-                    sp.serializedObject.ApplyModifiedProperties();
-                });
-                return field;
-            });
-            Add<ushort>((l, sp, sv, fi) =>
-            {
-                var field = new IntegerField(l);
-                field.value = (ushort)SerializationMediator.Deserialize(fi.FieldType, sv);
-                field.RegisterValueChangedCallback((e) =>
-                {
-                    int newValueAsInt = e.newValue;
-                    if (newValueAsInt > ushort.MaxValue)
-                    {
-                        newValueAsInt = ushort.MaxValue;
-                    }
-                    else if (newValueAsInt < ushort.MinValue)
-                    {
-                        newValueAsInt = ushort.MinValue;
-                    }
-                    ushort casted = Convert.ToUInt16(newValueAsInt);
-                    field.SetValueWithoutNotify(casted);
-                    SerializationMediator.SerializeFromFieldInfo(fi, casted, out var result);
-                    sp.stringValue = result.serializedString;
-                    sp.serializedObject.ApplyModifiedProperties();
-                });
-                return field;
-            });
-            Add<int>((l, sp, sv, fi) =>
-            {
-                var field = new IntegerField(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<uint>((l, sp, sv, fi) =>
-            {
-                var field = new LongField(l);
-                field.value = (uint)SerializationMediator.Deserialize(fi.FieldType, sv);
-                field.RegisterValueChangedCallback((e) =>
-                {
-                    long newValueAsLong = e.newValue;
-                    if (newValueAsLong > uint.MaxValue)
-                    {
-                        newValueAsLong = uint.MaxValue;
-                    }
-                    else if (newValueAsLong < uint.MinValue)
-                    {
-                        newValueAsLong = uint.MinValue;
-                    }
-                    uint casted = Convert.ToUInt32(newValueAsLong);
-                    field.SetValueWithoutNotify(casted);
-                    SerializationMediator.SerializeFromFieldInfo(fi, casted, out var result);
-                    sp.stringValue = result.serializedString;
-                    sp.serializedObject.ApplyModifiedProperties();
-                });
-                return field;
-            });
-            Add<long>((l, sp, sv, fi) =>
-            {
-                var field = new LongField(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<ulong>((l, sp, sv, fi) =>
-            {
-                var field = new LongField(l);
-                field.value = (long)(ulong)SerializationMediator.Deserialize(fi.FieldType, sv);
-                field.RegisterValueChangedCallback((e) =>
-                {
-                    var asLong = e.newValue;
-                    if(asLong < 0)
-                    {
-                        asLong = 0;
-                    }
-                    ulong casted = (ulong)asLong;
-                    field.SetValueWithoutNotify((long)casted);
-                    SerializationMediator.SerializeFromFieldInfo(fi, casted, out var result);
-                    sp.stringValue = result.serializedString;
-                    sp.serializedObject.ApplyModifiedProperties();
-                });
-                return field;
-            });
-            Add<bool>((l, sp, sv, fi) =>
-            {
-                var field = new Toggle(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<float>((l, sp, sv, fi) =>
-            {
-                var field = new FloatField(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<double>((l, sp, sv, fi) =>
-            {
-                var field = new DoubleField(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<string>((l, sp, sv, fi) =>
-            {
-                var field = new TextField(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<Color>((l, sp, sv, fi) =>
-            {
-                var field = new ColorField(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<LayerMask>((l, sp, sv, fi) =>
-            {
-                var field = new LayerMaskField(l);
-                field.value = ((LayerMask)SerializationMediator.Deserialize(fi.FieldType, sv)).value;
-                field.RegisterValueChangedCallback(evt =>
-                {
-                    SerializationMediator.SerializeFromFieldInfo(fi, evt.newValue, out var result);
-                    sp.stringValue = result.serializedString;
-                    sp.serializedObject.ApplyModifiedProperties();
-                });
-                return field;
-            });
-            Add<Vector2>((l, sp, sv, fi) =>
-            {
-                var field = new Vector2Field(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<Vector2Int>((l, sp, sv, fi) =>
-            {
-                var field = new Vector2IntField(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<Vector3>((l, sp, sv, fi) =>
-            {
-                var field = new Vector3Field(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<Vector3Int>((l, sp, sv, fi) =>
-            {
-                var field = new Vector3IntField(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<Vector4>((l, sp, sv, fi) =>
-            {
-                var field = new Vector4Field(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<Rect>((l, sp, sv, fi) =>
-            {
-                var field = new RectField(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<RectInt>((l, sp, sv, fi) =>
-            {
-                var field = new RectIntField(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<char>((l, sp, sv, fi) =>
-            {
-                var field = new TextField(l, 1, false, false, '*');
-                field.value = char.ToString((char)SerializationMediator.Deserialize(fi.FieldType, sv));
-                field.RegisterValueChangedCallback(evt =>
-                {
-                    SerializationMediator.SerializeFromFieldInfo(fi, evt.newValue, out var result);
-                    sp.stringValue = result.serializedString;
-                    sp.serializedObject.ApplyModifiedProperties();
-                });
-                return field;
-            });
-            Add<Bounds>((l, sp, sv, fi) =>
-            {
-                var field = new BoundsField(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<BoundsInt>((l, sp, sv, fi) =>
-            {
-                var field = new BoundsIntField(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-            Add<Quaternion>((l, sp, sv, fi) =>
-            {
-                var field = new Vector3Field(l);
-                field.value = ((Quaternion)SerializationMediator.Deserialize(fi.FieldType, sv)).eulerAngles;
-                field.RegisterValueChangedCallback(evt =>
-                {
-                    SerializationMediator.SerializeFromFieldInfo(fi, evt.newValue, out var result);
-                    sp.stringValue = result.serializedString;
-                    sp.serializedObject.ApplyModifiedProperties();
-                });
-                return field;
-            });
-            Add<AnimationCurve>((l, sp, sv, fi) =>
-            {
-                var field = new CurveField(l);
-                SetupField(field, sp, sv, fi);
-                return field;
-            });
-
-            _enumFlagsControlBuilder = (l, sp, sv, fi) =>
-            {
-                var enumFlagsField = new EnumFlagsField(l, (Enum)SerializationMediator.Deserialize(fi.FieldType, sv));
-                SetupField(enumFlagsField, sp, sv, fi);
-                return enumFlagsField;
-            };
-            _enumControlBuilder = (l, sp, sv, fi) =>
-            {
-                var enumField = new EnumField(l, (Enum)SerializationMediator.Deserialize(fi.FieldType, sv));
-                SetupField(enumField, sp, sv, fi);
-                return enumField;
-            };
-
-            void Add<T>(ControlBuilder func)
-            {
-                _typeToControlBuilder.Add(typeof(T), func);
-            }
-        }
-
-        private static void SetupField<T>(BaseField<T> field, SerializedProperty stringProperty, string serializedValue, FieldInfo fieldInfo)
-        {
-            field.value = (T)SerializationMediator.Deserialize(fieldInfo.FieldType, serializedValue);
-            field.RegisterValueChangedCallback(evt =>
-            {
-                SerializationMediator.SerializeFromFieldInfo(fieldInfo, evt.newValue, out var result);
-                stringProperty.stringValue = result.serializedString;
-                stringProperty.serializedObject.ApplyModifiedProperties();
-            });
-        }
-        #endregion
     }
 }

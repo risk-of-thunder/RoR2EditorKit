@@ -10,6 +10,9 @@ using UnityEngine;
 
 namespace RoR2.Editor
 {
+    /// <summary>
+    /// a Class containing a plethora of utility methods for drawing IMGUI based UI's
+    /// </summary>
     public static class IMGUIUtil
     {
         private static readonly Dictionary<Type, FieldDrawHandler> _typeDrawers = new Dictionary<Type, FieldDrawHandler>();
@@ -17,6 +20,12 @@ namespace RoR2.Editor
         private static FieldDrawHandler _enumFlagsHandler;
         private static FieldDrawHandler _enumTypeHandler;
 
+        /// <summary>
+        /// Draws the given property with a snug label, useful when grouping multiple property fields inside a horizontal group
+        /// </summary>
+        /// <param name="property">The proeprty to draw with a snug label</param>
+        /// <param name="includeChildren">Wether children should be included or not</param>
+        /// <param name="extraWidth">Extra padding that'll be given to the label's width</param>
         public static void PropertyFieldWithSnugLabel(SerializedProperty property, bool includeChildren = true, float extraWidth = 20)
         {
             var origLabelWidth = EditorGUIUtility.labelWidth;
@@ -25,11 +34,23 @@ namespace RoR2.Editor
             EditorGUIUtility.labelWidth = origLabelWidth;
         }
 
+        /// <summary>
+        /// Checks if the type specified in <paramref name="type"/> can be drawn using IMGUI
+        /// </summary>
+        /// <returns>True if the type can be drawn, false otherwise</returns>
         public static bool CanDrawFieldFromType(Type type)
         {
             return _typeDrawers.ContainsKey(type) || type.IsEnum;
         }
 
+        /// <summary>
+        /// Draws a field of type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of field to draw</typeparam>
+        /// <param name="content">The label for the field</param>
+        /// <param name="fieldValue">The initial value of the field</param>
+        /// <param name="newValue">The new value of the field</param>
+        /// <returns>True if the value has changed, false otherwise</returns>
         public static bool DrawFieldOfType<T>(GUIContent content, T fieldValue, out T newValue)
         {
             var boolValue = DrawFieldOfType(typeof(T), content, fieldValue, out var nValue);
@@ -37,6 +58,14 @@ namespace RoR2.Editor
             return boolValue;
         }
 
+        /// <summary>
+        /// Draws a field of type <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The type of field to draw</param>
+        /// <param name="content">The label for the field</param>
+        /// <param name="fieldValue">The initial value of the field</param>
+        /// <param name="newValue">The new value of the field</param>
+        /// <returns>True if the value has changed, false otherwise</returns>
         public static bool DrawFieldOfType(Type type, GUIContent content, object fieldValue, out object newValue)
         {
             if (!CanDrawFieldFromType(type))
@@ -63,13 +92,29 @@ namespace RoR2.Editor
             return EditorGUI.EndChangeCheck();
         }
 
-        public static bool CreateFieldForSetting<T>(EditorSetting setting, string settingName, T defaultValue = default)
+        /// <summary>
+        /// Creates an IMGUI field for the specified EditorSetting
+        /// </summary>
+        /// <typeparam name="T">The type of the editor setting's value</typeparam>
+        /// <param name="setting">The setting from which we'll get the values</param>
+        /// <param name="settingName">The name of the setting</param>
+        /// <param name="defaultValue">The default value in case a setting of name <paramref name="settingName"/> doesnt exist</param>
+        /// <returns>True if the setting was changed, false otherwise</returns>
+        public static bool CreateFieldForSetting<T>(EditorSettingCollection setting, string settingName, T defaultValue = default)
         {
             Type type = typeof(T);
             return CreateFieldForSetting(setting, settingName, type, defaultValue);
         }
 
-        public static bool CreateFieldForSetting(EditorSetting setting, string settingName, Type valueType, object defaultValue = default)
+        /// <summary>
+        /// Creates an IMGUI field for the specified EditorSetting
+        /// </summary>
+        /// <param name="valueType">The type of the editor setting's value</param>
+        /// <param name="setting">The setting from which we'll get the values</param>
+        /// <param name="settingName">The name of the setting</param>
+        /// <param name="defaultValue">The default value in case a setting of name <paramref name="settingName"/> doesnt exist</param>
+        /// <returns>True if the setting was changed, false otherwise</returns>
+        public static bool CreateFieldForSetting(EditorSettingCollection setting, string settingName, Type valueType, object defaultValue = default)
         {
             if(!CanDrawFieldFromType(valueType) || !EditorStringSerializer.CanSerializeType(valueType))
             {

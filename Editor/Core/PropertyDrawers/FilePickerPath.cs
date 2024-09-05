@@ -6,21 +6,60 @@ using UnityEngine.UIElements;
 
 namespace RoR2.Editor
 {
+    /// <summary>
+    /// An Editor only PropertyAttribute that marks that a string field should have a button, and that button can be used to specify a path.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
     public class FilePickerPath : PropertyAttribute
     {
+        /// <summary>
+        /// Optional, the title of the window displayed when the button is clicked
+        /// </summary>
         public string title { get; set; }
+        /// <summary>
+        /// Optional, the default name for the Folder/File in the window when the button is clicked
+        /// </summary>
         public string defaultName { get; set; }
+        /// <summary>
+        /// Optional, the extension type for the File in the window when the button is clicked
+        /// </summary>
         public string extension { get; set; }
+
+        /// <summary>
+        /// What method from EditorUtility should be used
+        /// </summary>
         public PickerType pickerType { get; set; }
+
+        /// <summary>
+        /// Represents the different options EditorUtility has for displaying the window
+        /// </summary>
         public enum PickerType
         {
+            /// <summary>
+            /// Calls <see cref="EditorUtility.OpenFolderPanel(string, string, string)"/> with <see cref="title"/>, <see cref="Application.dataPath"/> and <see cref="defaultName"/> as the arguments.
+            /// </summary>
             OpenFolder,
+
+            /// <summary>
+            /// Calls <see cref="EditorUtility.SaveFolderPanel(string, string, string)"/> with <see cref="title"/>, <see cref="Application.dataPath"/> and <see cref="defaultName"/> as the arguments.
+            /// </summary>
             SaveFolder,
+
+            /// <summary>
+            /// Calls <see cref="EditorUtility.OpenFilePanel(string, string, string)"/> with <see cref="title"/>, <see cref="Application.dataPath"/> and <see cref="extension"/> as the arguments
+            /// </summary>
             OpenFile,
+
+            /// <summary>
+            /// Calls <see cref="EditorUtility.SaveFilePanel(string, string, string, string)"/> with <see cref="title"/>, <see cref="Application.dataPath"/>, <see cref="defaultName"/> and <see cref="extension"/> as the arguments
+            /// </summary>
             SaveFile
         }
 
+        /// <summary>
+        /// Constructor for a FilePickerPath attribute
+        /// </summary>
+        /// <param name="_pickerType">The type of EditorUtility method to use for the drawer</param>
         public FilePickerPath(PickerType _pickerType)
         {
             pickerType = _pickerType;
