@@ -1,3 +1,12 @@
+### '5.0.1'
+
+* Core Changes:
+	* Fixed an issue where the VisualElementTemplateDictionary wouldnt properly serialize GUIDs.
+	* Added proper toggle for automatic purging of project settings.
+	* user preferences will no longer be purged of settings.
+	* The naming conventions toggle is now disabled and defaults to false, since naming convention systems havent been implemented yet.
+	* Deleted the "Legacy.zip" file from the project. Version control exists for a reason.
+
 ### '5.0.0'
  
 * General Changes

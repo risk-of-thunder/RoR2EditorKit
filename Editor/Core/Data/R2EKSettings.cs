@@ -29,7 +29,7 @@ namespace RoR2.Editor
         /// Checks if NamingConventions are Enabled in this project
         /// </summary>
         public bool enableNamingConventions => _enableNamingConventions;
-        [SerializeField] private bool _enableNamingConventions;
+        [SerializeField] private bool _enableNamingConventions = false;
 
         /// <summary>
         /// Checks if this is the first time R2EK has been booted, used to open the project settings window when the package is first installed and shows a special help box as a result.
@@ -44,11 +44,11 @@ namespace RoR2.Editor
         [SerializeField] private bool _enableThunderkitIntegration = false;
 
         /// <summary>
-        /// Checks if R2EK should purge <see cref="R2EKEditorProjectSettings"/> and <see cref="R2EKEditorPreferenceSettings"/> of orphaned entries
+        /// Checks if R2EK should purge <see cref="R2EKEditorProjectSettings"/> of orphaned settings
         /// </summary>
-        public bool purgeDefaultProviders => _purgeDefaultProviders;
+        public bool purgeProjectSettings => _purgeProjectSettings;
         [SerializeField]
-        private bool _purgeDefaultProviders = false;
+        private bool _purgeProjectSettings = false;
 
         [InitializeOnLoadMethod]
         private static void InitializeOnLoad()

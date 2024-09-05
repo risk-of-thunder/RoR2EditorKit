@@ -51,6 +51,8 @@ namespace RoR2.Editor
         {
             var button = root.Q<Button>("ImportIconButton");
 
+            root.Q<Toggle>("EnableNamingConventions").SetEnabled(false);
+
             bool gizmosReadmeInProject = R2EKConstants.AssetGUIDs.gizmosReadme;
             button.SetEnabled(!gizmosReadmeInProject);
 

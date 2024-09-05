@@ -154,7 +154,13 @@ namespace RoR2.Editor
         private struct TemplateNameToUXMLGuid
         {
             public string k_templateName;
-            public GUID v_guid;
+            public GUID v_guid
+            {
+                get => new GUID(_hexRepresentation);
+                set => _hexRepresentation = value.ToString();
+            }
+            [SerializeField]
+            private string _hexRepresentation;
         }
 
         private class AssetPostprocessor : UnityEditor.AssetPostprocessor

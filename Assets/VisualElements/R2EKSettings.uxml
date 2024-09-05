@@ -6,12 +6,13 @@
     <ui:VisualElement name="Center">
         <ui:VisualElement style="flex-direction: row;">
             <RoR2.Editor.EqualLabelWidthContainer class="r2ek-elide-label" style="flex-grow: 1; flex-direction: column; -unity-text-align: upper-left; white-space: normal;">
-                <ui:TextField picking-mode="Ignore" label="Language Token Prefix" binding-path="_tokenPrefix" style="width: auto;" />
-                <ui:Toggle label="Enable RiskOfThunder Naming Conventions" name="EnableNamingConventions" binding-path="_enableNamingConventions" />
-                <ui:Toggle label="Enable Thunderkit Integration" name="EnableThunderkitIntegration" binding-path="_enableThunderkitIntegration" />
+                <ui:TextField picking-mode="Ignore" label="Language Token Prefix" binding-path="_tokenPrefix" tooltip="A token prefix your your language tokens, this should not have white spaces, underscores or dashes." style="width: auto;" />
+                <ui:Toggle label="Enable RiskOfThunder Naming Conventions" name="EnableNamingConventions" binding-path="_enableNamingConventions" tooltip="Wether the official naming conventions for objects are enabled, this is yet to be inplemented" style="display: flex; visibility: visible;" />
+                <ui:Toggle label="Enable Thunderkit Integration" name="EnableThunderkitIntegration" binding-path="_enableThunderkitIntegration" tooltip="Wether the ThunderKit integration is enabled, which enables certain extra features. Suffice to say, it requires thunderkit." />
+                <ui:Toggle label="Purge Project Settings" name="PurgeProjectSettings" binding-path="_purgeProjectSettings" tooltip="Wether R2EK Purges the ProjectSettings file of orphaned settings" />
             </RoR2.Editor.EqualLabelWidthContainer>
             <ui:VisualElement>
-                <ui:Button text="Import Script Icons for RoR2 Classes" name="ImportIconButton" />
+                <ui:Button text="Import Script Icons for RoR2 Classes" name="ImportIconButton" tooltip="If clicked, it&apos;ll import custom icons for ror2 classes." />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

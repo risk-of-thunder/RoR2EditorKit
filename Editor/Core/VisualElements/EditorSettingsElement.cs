@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -69,12 +70,7 @@ namespace RoR2.Editor
 
         private bool FilterOrphans(EditorSettingCollection setting)
         {
-            if(setting.ownerType == null)
-            {
-                Debug.LogWarning($"Not drawing {setting._typeName}'s settings since theyre orphaned.");
-                return false;
-            }
-            return true;
+            return setting.ownerType != null;
         }
 
         private void OnCurrentlyInspectedSettingChange()
