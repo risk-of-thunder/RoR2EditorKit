@@ -1,3 +1,86 @@
+### '5.0.0'
+ 
+* General Changes
+    * Updated to use Unity version 2021.3.33
+    * Rewrote most of the package from scratch.
+    * ThunderKit is no longer a dependency
+    * Added a dependency to the EditorCoroutines package.
+    * Some Types have been renamed, but their remains functionality unchanged.
+    * Added Bombardier font, which can be used in UI
+    * Namespaces have been consolidated into the ``RoR2.Editor`` namespace
+
+* Core Changes:
+    * Core assembly has been renamed to ``RoR2.Editor``
+    * Added the EditorSetting System
+        * This system can be used to generically save settings from inspectors, such as colors, floats, etc.
+        * These are stored within classes that implement ``EditorSettingManager.IEditorSettingProvider`` interfaces. (Usually Scriptable Singletons)
+        * By default, both Project wide and User specific settings are available.
+        * Inspectors being enabled are now considered a Use specific setting
+        * There's an ``EditorSettingElement`` which can be used to display the settings within a setting provider, and edit with custom controls.
+        * You can tie an element that implements ``INotifyValueChanged<T>`` to a specific setting, useful for complex inspectors
+    * Added a Code Generation system
+        * The code generation does not use Roslyn Analizers, instead it works via the ``Writer`` struct, and the ``CodeGeneratorValidator`` and ``CodeGeneratorHelper`` classes.
+    * Added a ``InheritingTypeSelect`` advanced dropdown.
+    * Implemented a solution for finding and caching Visual Element Templates.
+    * Inspectors and PropertyDrawers can now be created using IMGUI or Visual Elements.
+    * Added a unity package which contains custom script icons for RoR2 Scripts (Contribution by Groove Salad)
+    * HelpBoxes can now be Dismissed
+    * Added ``AssetGUID<T>``, which is a struct used to save references to assets using their guids.
+    * The HG.GeneralSerializer.SerializeFieldCollection can now be drawn using a custom Visual Element.
+        * This allows easy management of custom serialization setups for mods.
+    * Added the SerializationMediator
+        * The SerializationMediator works as a Facade and Mediator for the internal EditorStringSerializer
+        * It ensures that only specific types can be serialized under the current project's context.
+            * This allows the EntityStateConfiguration inspector to only serialize valid fields, if R2API.StringSerializerExtensions is added, the support is expanded to the new handlers added by said module.
+        * The SerializationMediator can be bypassed by utilizing the ``SafetyBypass`` class
+            * This class allows you to directly serialize with the internal Editor String Serializer.
+    * Fields for Types that can be serialized can now be created using IMGUI or Visual Elements
+    * Editor Wizards now run as a Coroutine instead of async tasks.
+        * This allows you to use the C++ side of the engine without fear of calling the methods outside of the main thread.
+    * Editor Wizards now have a progress bar, which can be used to judge how long until the wizard finishes execution.
+    * Removed all obsolete members
+    * Removed the following publicly available classes:
+        * AddressablesUtilities
+        * ErrorShorthands
+        * IObjectNameConvention
+        * Markdown Utils
+        * ScriptableObjectUtils
+        * TypeCacheRequester
+        * ALL ManifestDatums
+        * ALL Pipeline Jobs
+        * Element Resizer Manipulator
+        * Extended List View
+        * Validating Field
+        * Validating Object Field
+        * IMGUI to Visual Element Inspector
+            * These removals may or may not be added back in a future update, some of these have been replaced by incredible advancements in the editor between 2019 and 2021.
+
+* RoR2EditorScripts changes:
+    * Assembly has been renamed to ``RoR2.Editor.Scripts``
+    * Assembly is only loaded if the game was imported via ThunderKit.
+    * Fixed various issues related to the CharacterBody wizard.
+    * StageWizard can now create node graphs, DCCS and DCCSPools
+    * Various preferences have been added to the NodeGraph inspector
+    * Removed the following classes:
+        * Characterbody Inspector
+        * CharacterModel inspector
+        * ObjectScaleCurve Inspector
+        * SkillLocator Inspector
+        * ArtifactCompoundDef Inspector
+        * AssetCollectionInspector
+        * BuffDef Inspector
+        * EliteDef Inspector
+        * EquipmentDef Inspector
+        * SurivvorDef Inspector
+        * ScaleHelper Window
+        * Survivor Creator Wizard
+            * These removals may or may not be added back in a future update.
+    * ThunderKit related features, such as the ModWizard, has been moved to a separate assembly.
+
+* R2APIEditorScripts changes:
+    * Assembly has been renamed to ``RoR2.Editor.R2API``
+    * Removed the R2APISerializableContentPack inspector
+
 ### '4.1.0'
 
 * General Changes:
@@ -13,7 +96,6 @@
 
 * RoR2EditorScripts Changes
 	* Added a new script to avoid having NGSS_DIRECTIONAL saving an Addressable Texture, causing issues with lighting
-	* 
 
 ### '4.0.4'
 

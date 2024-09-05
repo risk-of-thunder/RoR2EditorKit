@@ -1,0 +1,32 @@
+.r2ek-text_header {
+    font-size: 48px;
+    border-bottom-width: 3px;
+    border-bottom-color: rgb(47, 47, 47);
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.r2ek-bombardier {
+    -unity-font: url('project://database/Packages/riskofthunder-ror2editorkit/Assets/Bombardier.ttf?fileID=12800000&guid=c206b3ea191bcc942ad15474d24d061e&type=3#Bombardier');
+    -unity-font-definition: initial;
+}
+
+.r2ek-text_center_aligned {
+    -unity-font-definition: initial;
+    -unity-text-align: middle-center;
+}
+
+.r2ek-horizontal_layout {
+    flex-direction: row;
+}
+
+.r2ek-elide-label .unity-base-field__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: none;
+    flex-grow: 1;
+    flex-basis: 1px;
+}

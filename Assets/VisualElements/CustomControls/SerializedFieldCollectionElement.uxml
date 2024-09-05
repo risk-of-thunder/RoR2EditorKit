@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:VisualElement name="MainContainer" enabled="false" style="flex-grow: 1;">
+        <ui:Foldout text="Static Fields" name="StaticFields" />
+        <ui:Foldout text="Instance Fields" name="InstanceFields" />
+        <ui:VisualElement name="UnrecognizedFieldContainer" enabled="true" style="flex-grow: 1; display: none;">
+            <ui:Button text="Clear Unrecognized Fields" name="ClearUnrecognizedFields" />
+            <ui:Foldout text="Unrecognized Fields" name="UnrecognizedFields" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

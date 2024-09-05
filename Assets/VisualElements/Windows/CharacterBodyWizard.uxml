@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <uie:PropertyField name="FolderPath" binding-path="folderPath" />
+    <uie:PropertyField name="Template" binding-path="template" />
+    <uie:PropertyField name="CharacterName" binding-path="characterName" tooltip="The name for this character, utilized for naming the GameObjects and filling tokens." />
+    <uie:PropertyField name="ModelFBX" binding-path="modelFBX" tooltip="An FBX model for this character, if supplied, it&apos;ll be instantiated as a prefab instance for the model, and components related to CharacterModels will be added." />
+    <uie:PropertyField name="SimpleHurtBox" binding-path="simpleHurtBox" tooltip="Wether or not to create a simple hurtbox for this character, it&apos;ll be a simple capsule hurt box like most survivors." />
+    <uie:PropertyField name="StateMachines" binding-path="stateMachines" tooltip="A List of State Machines to add, each state machine that&apos;s added will be given this name, set their state values to appropiate states. and added to Components related to EntityStates" />
+    <uie:PropertyField name="GenericSkills" binding-path="genericSkills" tooltip="A List of Generic skill components for this character, specifying a slot will assign the GenericSkill to the SkillLocator&apos;s entry, if no skill slot is provided, a generic skill will be added. SkillFamilies and Empty SkillDefs will be created for each generic skill created." />
+    <uie:PropertyField name="ExtraComponents" binding-path="extraComponents" tooltip="A List of Extra components, these components will be added to the CharacterBody GameObject and initialized with their default values" />
+    <uie:PropertyField name="IgnoreExtraComponentDuplicates" binding-path="ignoreExtraComponentDuplicates" tooltip="If during component addition the wizard finds the component specified, it wont add it. otherwise, it&apos;ll add it despite potential component duplication." />
+</ui:UXML>

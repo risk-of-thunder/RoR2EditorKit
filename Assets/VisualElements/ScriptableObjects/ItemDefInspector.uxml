@@ -1,0 +1,25 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="GeneralSettings">
+        <uie:PropertyField name="DeprecatedTier" binding-path="deprecatedTier" label="Item Tier" />
+        <uie:PropertyField name="PickupIconSprite" binding-path="pickupIconSprite" />
+        <uie:PropertyField name="PickupModelPrefab" binding-path="pickupModelPrefab" />
+        <uie:PropertyField name="ItemTierDef" binding-path="_itemTierDef" label="Custom ItemTier" style="display: none;" />
+    </ui:VisualElement>
+    <ui:VisualElement name="TagsAndOthers">
+        <uie:PropertyField name="Hidden" label="Is Hidden" binding-path="hidden" />
+        <uie:PropertyField binding-path="canRemove" label="Can be Removed from Inventory" name="CanRemove" />
+        <uie:PropertyField name="Tags" binding-path="tags" label="Item Tags" />
+    </ui:VisualElement>
+    <ui:VisualElement name="RequirementSettings">
+        <uie:PropertyField name="UnlockableDef" binding-path="unlockableDef" />
+        <uie:PropertyField name="RequiredExpansion" binding-path="requiredExpansion" />
+    </ui:VisualElement>
+    <ui:VisualElement name="TokenSettings">
+        <ui:Foldout text="Item Tokens" name="TokenContainer" value="false">
+            <uie:PropertyField binding-path="nameToken" name="NameToken" />
+            <uie:PropertyField binding-path="pickupToken" name="PickupToken" />
+            <uie:PropertyField binding-path="descriptionToken" name="DescriptionToken" />
+            <uie:PropertyField binding-path="loreToken" name="LoreToken" />
+        </ui:Foldout>
+    </ui:VisualElement>
+</ui:UXML>

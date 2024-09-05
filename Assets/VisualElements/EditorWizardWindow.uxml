@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Packages/riskofthunder-ror2editorkit/Assets/VisualElements/R2EKGlobalStlye.uss?fileID=7433441132597879392&amp;guid=81861b4c6318b874391de872e1793059&amp;type=3#R2EKGlobalStlye" />
+    <ui:VisualElement name="Header">
+        <ui:Label text="Wizard Type" display-tooltip-when-elided="true" class="r2ek-text_header r2ek-bombardier r2ek-text_center_aligned" style="white-space: normal;" />
+    </ui:VisualElement>
+    <ui:ScrollView scroll-deceleration-rate="0,135" elasticity="0,1" name="WizardElementContainer" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto" style="height: auto; flex-grow: 1;" />
+    <ui:VisualElement name="Footer" style="border-top-width: 3px; border-left-color: rgb(47, 47, 47); border-right-color: rgb(47, 47, 47); border-top-color: rgb(47, 47, 47); border-bottom-color: rgb(47, 47, 47);">
+        <ui:ProgressBar value="0" name="ProgressBar" high-value="1" />
+        <ui:VisualElement class="r2ek-horizontal_layout">
+            <ui:Button text="Close" display-tooltip-when-elided="true" name="CloseWizardButton" style="flex-grow: 1; width: 48%;" />
+            <ui:Button text="Run Wizard" display-tooltip-when-elided="true" name="RunWizard" style="flex-grow: 1; width: 48%; flex-basis: auto;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

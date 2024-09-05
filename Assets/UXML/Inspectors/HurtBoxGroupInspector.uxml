@@ -1,8 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:VisualElement name="InspectorDataContainer" class="genericHolder">
-        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ComponentInspector.uss" />
-        <uie:PropertyField name="mainHurtBox" binding-path="mainHurtBox" />
-        <ui:Label text="Hurt Boxes" name="hurtBoxesLabel" class="separatorLabel genericHolderHeader" />
-        <ui:ListView focusable="true" name="hurtBoxes" binding-path="hurtBoxes" item-height="20" class="listView" style="height: 100px;" />
-    </ui:VisualElement>
-</ui:UXML>

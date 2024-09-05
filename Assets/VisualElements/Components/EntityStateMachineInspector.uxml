@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:TextField picking-mode="Ignore" label="Custom Name" value="filler text" name="CustomName" binding-path="customName" />
+    <uie:PropertyField name="InitialStateType" binding-path="initialStateType" />
+    <uie:PropertyField name="MainStateType" binding-path="mainStateType" />
+</ui:UXML>

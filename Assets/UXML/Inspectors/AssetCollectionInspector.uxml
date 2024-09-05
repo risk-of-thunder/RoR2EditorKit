@@ -1,9 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:VisualElement name="Container" class="genericHolder">
-        <Style src="/Packages/riskofthunder-ror2editorkit/Assets/USS/Inspectors/ScriptableObjectInspector.uss" />
-        <ui:Label text="Label" name="scriptType" class="genericHolderHeader scriptType" />
-        <ui:VisualElement name="InspectorDataContainer">
-            <RoR2EditorKit.VisualElements.ExtendedListView binding-path="assets" name="extendedListView" list-view-item-height="20" create-context-menu-wrappers="true" />
-        </ui:VisualElement>
-    </ui:VisualElement>
-</ui:UXML>

@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:VisualElement style="background-color: rgba(62, 62, 62, 255); border-left-color: rgba(50, 50, 50, 255); border-right-color: rgba(50, 50, 50, 255); border-top-color: rgba(50, 50, 50, 255); border-bottom-color: rgba(50, 50, 50, 255); border-bottom-width: 1px;">
+        <ui:Toggle label="Enable Inspector" style="flex-direction: row; width: auto;" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,18 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Packages/riskofthunder-ror2editorkit/Assets/VisualElements/R2EKGlobalStlye.uss?fileID=7433441132597879392&amp;guid=81861b4c6318b874391de872e1793059&amp;type=3#R2EKGlobalStlye" />
+    <ui:VisualElement name="Header">
+        <ui:Label text="Risk of Rain 2: Editor Kit" class="r2ek-text_header r2ek-bombardier r2ek-text_center_aligned" style="-unity-font-definition: initial;" />
+    </ui:VisualElement>
+    <ui:VisualElement name="Center">
+        <ui:VisualElement style="flex-direction: row;">
+            <RoR2.Editor.EqualLabelWidthContainer class="r2ek-elide-label" style="flex-grow: 1; flex-direction: column; -unity-text-align: upper-left; white-space: normal;">
+                <ui:TextField picking-mode="Ignore" label="Language Token Prefix" binding-path="_tokenPrefix" style="width: auto;" />
+                <ui:Toggle label="Enable RiskOfThunder Naming Conventions" name="EnableNamingConventions" binding-path="_enableNamingConventions" />
+                <ui:Toggle label="Enable Thunderkit Integration" name="EnableThunderkitIntegration" binding-path="_enableThunderkitIntegration" />
+            </RoR2.Editor.EqualLabelWidthContainer>
+            <ui:VisualElement>
+                <ui:Button text="Import Script Icons for RoR2 Classes" name="ImportIconButton" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

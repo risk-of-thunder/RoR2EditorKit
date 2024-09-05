@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <uie:PropertyField name="HurtBoxes" binding-path="hurtBoxes" />
+    <uie:PropertyField name="MainHurtBox" binding-path="mainHurtBox" />
+</ui:UXML>

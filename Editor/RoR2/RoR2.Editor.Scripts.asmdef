@@ -1,0 +1,31 @@
+{
+    "name": "RoR2.Editor.Scripts",
+    "rootNamespace": "",
+    "references": [
+        "GUID:60983344ee8157d4ab97c25513f789c4",
+        "GUID:a44f47cf3ada4435dbc516bad0bc86fe",
+        "GUID:1c73e6e1e2b784953a9212924dc002d1",
+        "GUID:478a2357cc57436488a56e564b08d223"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "RoR2.dll",
+        "HGCSharpUtils.dll",
+        "HGUnityUtils.dll",
+        "Assembly-CSharp.dll",
+        "Decalicious.dll",
+        "KinematicCharacterController.dll",
+        "LegacyResourcesAPI.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "RISKOFRAIN2"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
