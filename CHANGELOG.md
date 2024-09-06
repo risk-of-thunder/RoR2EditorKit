@@ -1,3 +1,11 @@
+### '5.0.2'
+
+* RoR2EditorScripts Changes:
+	* Fixed the assembly not referencing the DLL version of HLAPI alongside the AsmDef version of HLAPI
+
+* R2APIEditorScripts Changes:
+	* Fixed the AddressReferencedAsset drawer not being updated to use the new R2EKConstants class
+
 ### '5.0.1'
 
 * Core Changes:

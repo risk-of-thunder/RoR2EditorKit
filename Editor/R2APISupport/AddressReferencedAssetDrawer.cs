@@ -24,7 +24,7 @@ namespace RoR2.Editor.PropertyDrawers
             EditorGUI.PropertyField(fieldRect, usingDirectReference ? property.FindPropertyRelative("_asset") : property.FindPropertyRelative("_address"), new GUIContent(property.displayName, usingDirectReference ? string.Empty : AddressTooltip));
 
             var contextRect = new Rect(fieldRect.xMax, position.y, 16, position.height);
-            EditorGUI.DrawTextureTransparent(contextRect, Constants.AssetGUIDS.QuickLoad<Texture2D>(Constants.AssetGUIDS.iconGUID), ScaleMode.ScaleToFit);
+            EditorGUI.DrawTextureTransparent(contextRect, R2EKConstants.AssetGUIDs.r2ekIcon, ScaleMode.ScaleToFit);
             if(Event.current.type == EventType.ContextClick)
             {
                 Vector2 mousePos = Event.current.mousePosition;

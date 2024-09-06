@@ -20,7 +20,8 @@
         "Assembly-CSharp.dll",
         "Decalicious.dll",
         "KinematicCharacterController.dll",
-        "LegacyResourcesAPI.dll"
+        "LegacyResourcesAPI.dll",
+        "com.unity.multiplayer-hlapi.Runtime.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [
