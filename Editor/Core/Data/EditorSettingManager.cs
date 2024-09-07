@@ -262,7 +262,7 @@ namespace RoR2.Editor
 
                 return editorSetting;
             }
-            throw new NullReferenceException($"Setting for editor type {editorType} within {provider.providerName} does not exist.");
+            return null;
         }
 
         private static EditorSettingCollection CreateSettingsFor(Type editorType, SettingType settingType, IEditorSettingProvider provider)

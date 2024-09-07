@@ -84,14 +84,12 @@ namespace RoR2.Editor
             var path = AssetDatabase.GUIDToAssetPath(guid);
             if (string.IsNullOrEmpty(path))
             {
-                Debug.LogWarning($"Cannot load asset with guid {guid} as the AssetDatabase doesnt contain said guid.");
                 return defaultInitializer?.Invoke() ?? default(T);
             }
 
             T obj = AssetDatabase.LoadAssetAtPath<T>(path);
             if (!obj)
             {
-                Debug.LogWarning($"Cannot load asset with guid {guid} using type {typeof(T).Name}.");
                 return defaultInitializer?.Invoke() ?? default(T);
             }
             return obj;

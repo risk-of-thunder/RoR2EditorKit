@@ -23,9 +23,25 @@
     ],
     "autoReferenced": true,
     "defineConstraints": [
-        "RISKOFTHUNDER_R2API_ADDRESSABLES",
-        "RISKOFRAIN2"
+        "R2EK_R2API_ENABLE",
+        "R2EK_ROR2_IMPORTED"
     ],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "riskofrain2",
+            "expression": "[1.3.1]",
+            "define": "R2EK_ROR2_IMPORTED"
+        },
+        {
+            "name" : "riskofthunder-r2api_addressables",
+            "expression" : "1.0.3",
+            "define": "R2EK_R2API_ADDRESSABLES"
+        },
+        {
+            "name" : "riskofthunder-r2api_core",
+            "expression" : "5.1.1",
+            "define": "R2EK_R2API_ENABLE"
+        }
+    ],
     "noEngineReferences": false
 }

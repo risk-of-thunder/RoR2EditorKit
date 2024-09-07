@@ -1,4 +1,4 @@
-#if RISKOFRAIN2 && RISKOFTHUNDER_R2API_ADDRESSABLES
+#if R2EK_R2API_ADDRESSABLES
 using R2API.AddressReferencedAssets;
 using System;
 using System.Collections.Generic;

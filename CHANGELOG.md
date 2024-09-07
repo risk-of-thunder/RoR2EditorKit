@@ -1,3 +1,12 @@
+### '5.1.0'
+
+* General Changes:
+	* Non Core Assemblies (RoR2.Editor.Scripts, RoR2.Editor.R2API, RoR2.Editor.Thunderkit) will only load when the required packages are installed utilizing the Version Defines system of AssemblyDefinitions.
+
+* Core Changes:
+	* Removed logs from ``AssetDatabase.LoadAssetFromGUID`` to avoid generating multiple logs when being called by IMGUI related methods.
+	* Removed "Enable ThunderKit Integration" option from the main settings, as the ThunderKit integration now becomes enabled and disabled automatically depending on the AssemblyDef's Version Defines.
+
 ### '5.0.4'
 
 * Core Changes:
