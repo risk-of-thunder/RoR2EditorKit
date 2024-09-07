@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
 
 namespace RoR2.Editor
 {
@@ -24,6 +26,11 @@ namespace RoR2.Editor
         {
             key = kvp.Key;
             value = kvp.Value;
+        }
+
+        public static GUIContent GetGUIContent(this SerializedProperty property)
+        {
+            return new GUIContent(property.displayName, property.tooltip);
         }
     }
 }

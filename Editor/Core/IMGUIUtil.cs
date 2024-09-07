@@ -21,6 +21,60 @@ namespace RoR2.Editor
         private static FieldDrawHandler _enumTypeHandler;
 
         /// <summary>
+        /// Draws <paramref name="property"/> within an <see cref="EditorGUI.BeginChangeCheck"/> and calls <paramref name="onValueChanged"/> when the <paramref name="property"/>'s value changes.
+        /// </summary>
+        /// <param name="property">The property to draw</param>
+        /// <param name="onValueChanged">The method to invoke when the value changes.</param>
+        public static void DrawCheckableProperty(SerializedProperty property, Action<SerializedProperty> onValueChanged)
+        {
+            DrawCheckableProperty(property, onValueChanged, property.GetGUIContent(), true);
+        }
+
+
+        /// <summary>
+        /// Draws <paramref name="property"/> within an <see cref="EditorGUI.BeginChangeCheck"/> and calls <paramref name="onValueChanged"/> when the <paramref name="property"/>'s value changes.
+        /// </summary>
+        /// <param name="property">The property to draw</param>
+        /// <param name="onValueChanged">The method to invoke when the value changes.</param>
+        /// <param name="drawChildren">Wether children of <paramref name="property"/> should be drawn too</param>
+        /// <returns>True if the property has children, is expanded, and drawChildren is set to false, otherwise false.</returns>
+        public static bool DrawCheckableProperty(SerializedProperty property, Action<SerializedProperty> onValueChanged, bool drawChildren)
+        {
+            return DrawCheckableProperty(property, onValueChanged, property.GetGUIContent(), drawChildren);
+        }
+
+        /// <summary>
+        /// Draws <paramref name="property"/> within an <see cref="EditorGUI.BeginChangeCheck"/> and calls <paramref name="onValueChanged"/> when the <paramref name="property"/>'s value changes.
+        /// </summary>
+        /// <param name="property">The property to draw</param>
+        /// <param name="onValueChanged">The method to invoke when the value changes.</param>
+        /// <param name="label">The label to display for the property</param>
+        public static void DrawCheckableProperty(SerializedProperty property, Action<SerializedProperty> onValueChanged, GUIContent label)
+        {
+            DrawCheckableProperty(property, onValueChanged, label, true);
+        }
+
+
+        /// <summary>
+        /// Draws <paramref name="property"/> within an <see cref="EditorGUI.BeginChangeCheck"/> and calls <paramref name="onValueChanged"/> when the <paramref name="property"/>'s value changes.
+        /// </summary>
+        /// <param name="property">The property to draw</param>
+        /// <param name="onValueChanged">The method to invoke when the value changes.</param>
+        /// <param name="label">The label to display for the property</param>
+        /// <param name="drawChildren">Wether children of <paramref name="property"/> should be drawn too</param>
+        /// <returns>True if the property has children, is expanded, and drawChildren is set to false, otherwise false.</returns>
+        public static bool DrawCheckableProperty(SerializedProperty property, Action<SerializedProperty> onValueChanged, GUIContent label, bool drawChildren)
+        {
+            EditorGUI.BeginChangeCheck();
+            var v = EditorGUILayout.PropertyField(property, label, drawChildren);
+            if(EditorGUI.EndChangeCheck())
+            {
+                onValueChanged(property);
+            }
+            return v;
+        }
+
+        /// <summary>
         /// Draws the given property with a snug label, useful when grouping multiple property fields inside a horizontal group
         /// </summary>
         /// <param name="property">The proeprty to draw with a snug label</param>

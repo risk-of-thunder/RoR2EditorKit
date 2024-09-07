@@ -1,3 +1,13 @@
+### '5.0.3'
+
+* Core Changes:
+	* Fixed ``SerializableShaderWrapperDrawer`` still using the old property names for finding the ``SerializedProperties``, causing null reference exceptions.
+	* Added back ``DrawCheckableProperty`` functionality to IMGUIUtil
+	* Added a ``SerializedProperty`` extension to generate it's GUIContent,
+
+* ThunderKitSupport Changes:
+	* Re-Added the ``MarkdownUtility`` class
+
 ### '5.0.2'
 
 * RoR2EditorScripts Changes:
