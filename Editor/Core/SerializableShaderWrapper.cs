@@ -34,8 +34,8 @@ namespace RoR2.Editor
             }
         }
 
-        [SerializeField] private string _shaderName;
-        [SerializeField] private string _shaderGuid;
+        [SerializeField] internal string _shaderName;
+        [SerializeField] internal string _shaderGuid;
 
         /// <summary>
         /// Creates a new instance of a SerializableShaderWrapper

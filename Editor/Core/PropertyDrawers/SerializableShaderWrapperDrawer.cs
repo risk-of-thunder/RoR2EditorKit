@@ -9,8 +9,8 @@ namespace RoR2.Editor.PropertyDrawers
         Object shaderObj = null;
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            var shaderNameProp = property.FindPropertyRelative("_shaderName");
-            var shaderGUIDProp = property.FindPropertyRelative("_shaderGUID");
+            var shaderNameProp = property.FindPropertyRelative(nameof(SerializableShaderWrapper._shaderName));
+            var shaderGUIDProp = property.FindPropertyRelative(nameof(SerializableShaderWrapper._shaderGuid));
 
             shaderObj = Shader.Find(shaderNameProp.stringValue);
             if (!shaderObj)
@@ -25,6 +25,7 @@ namespace RoR2.Editor.PropertyDrawers
             {
                 shaderNameProp.stringValue = shaderObj == null ? string.Empty : ((Shader)shaderObj).name;
                 shaderGUIDProp.stringValue = shaderObj == null ? string.Empty : AssetDatabaseUtil.GetAssetGUIDString(shaderObj);
+                property.serializedObject.ApplyModifiedProperties();
             }
             EditorGUI.EndProperty();
         }

@@ -1,3 +1,8 @@
+### '5.0.4'
+
+* Core Changes:
+	* ``SerializableShaderWrapperDrawer`` now uses ``nameof`` to avoid not finding the correct properties.
+
 ### '5.0.3'
 
 * Core Changes:
