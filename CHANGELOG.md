@@ -1,3 +1,12 @@
+### '5.1.1'
+
+* General
+	* Updated to use version 1.3.4 of Risk of Rain 2
+	* RoR2EditorKit now loads as long as a version of the game greater than 1.3.1 is loaded, instead of being a strict version rule.
+
+* Core Changes:
+	* Removed the code bits of the EditorSettings pertraining to the ThunderKit integration
+
 ### '5.1.0'
 
 * General Changes:

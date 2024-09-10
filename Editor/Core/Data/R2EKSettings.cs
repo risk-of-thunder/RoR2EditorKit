@@ -38,12 +38,6 @@ namespace RoR2.Editor
         [SerializeField] private bool _isFirstTimeBoot = true;
 
         /// <summary>
-        /// Checks if the ThunderKit integration system is enabled.
-        /// </summary>
-        public bool enableThunderkitIntegration => _enableThunderkitIntegration;
-        [SerializeField] private bool _enableThunderkitIntegration = false;
-
-        /// <summary>
         /// Checks if R2EK should purge <see cref="R2EKEditorProjectSettings"/> of orphaned settings
         /// </summary>
         public bool purgeProjectSettings => _purgeProjectSettings;
