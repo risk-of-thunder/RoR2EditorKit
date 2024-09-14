@@ -1,5 +1,5 @@
 {
-    "name": "R2APIEditorScripts",
+    "name": "RoR2.Editor.R2API",
     "rootNamespace": "",
     "references": [
         "GUID:a44f47cf3ada4435dbc516bad0bc86fe",
@@ -18,8 +18,9 @@
         "com.unity.multiplayer-hlapi.Runtime.dll",
         "Unity.Addressables.dll",
         "Unity.ResourceManager.dll",
-        "R2API.ContentManagement.dll",
-        "R2API.Addressables.dll"
+        "R2API.Core.dll",
+        "R2API.Addressables.dll",
+        "R2API.Director.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [
@@ -33,14 +34,19 @@
             "define": "R2EK_ROR2_IMPORTED"
         },
         {
+            "name": "riskofthunder-r2api_core",
+            "expression": "5.0.0",
+            "define": "R2EK_R2API_ENABLE"
+        },
+        {
             "name": "riskofthunder-r2api_addressables",
             "expression": "1.0.3",
             "define": "R2EK_R2API_ADDRESSABLES"
         },
         {
-            "name": "riskofthunder-r2api_core",
-            "expression": "5.1.1",
-            "define": "R2EK_R2API_ENABLE"
+            "name": "riskofthunder-r2api_director",
+            "expression": "2.2.1",
+            "define": "R2EK_R2API_DIRECTOR"
         }
     ],
     "noEngineReferences": false

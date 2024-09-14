@@ -6,9 +6,9 @@
     "url": ""
   },
   "displayName": "RoR2EditorKit",
-  "version": "5.1.1",
+  "version": "5.2.0",
   "unity": "2021.3",
-  "description": "The Risk of Rain 2 Editor Kit (Abreviated as ROR2EK) is a Thunderkit Extension designed specifically for helping mod creators create content for Risk of Rain 2.",
+  "description": "The Risk of Rain 2 Editor Kit (Abreviated as ROR2EK) is a unity package designed specifically for helping mod creators create content for Risk of Rain 2.",
   "dependencies": {
     "com.unity.editorcoroutines": "1.0.0"
   }

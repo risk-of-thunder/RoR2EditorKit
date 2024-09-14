@@ -1,3 +1,10 @@
+### '5.2.0'
+
+* R2APIEditorScripts Changes:
+	* Renamed the assembly to follow the naming convention of the rest of the assemblies.
+	* Added a property drawer for the struct ``DirectorAPI.StageSerde``
+		* The property drawer showcases the value as a mask of the Stage enum, this was done because unity cannot serialize enums greater than 32 bits.
+
 ### '5.1.1'
 
 * General

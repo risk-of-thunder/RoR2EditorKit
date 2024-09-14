@@ -10,12 +10,12 @@ using UnityEngine;
 
 namespace RoR2.Editor.PropertyDrawers
 {
-    public abstract class AddressReferencedAssetDrawer<T> : PropertyDrawer where T : AddressReferencedAsset
+    public abstract class AddressReferencedAssetDrawer<T> : IMGUIPropertyDrawer<T> where T : AddressReferencedAsset
     {
         protected virtual string AddressTooltip { get; } = "The Address to the Asset";
         protected bool usingDirectReference;
 
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             usingDirectReference = GetDirectReferenceValue(property);
 
@@ -25,10 +25,10 @@ namespace RoR2.Editor.PropertyDrawers
 
             var contextRect = new Rect(fieldRect.xMax, position.y, 16, position.height);
             EditorGUI.DrawTextureTransparent(contextRect, R2EKConstants.AssetGUIDs.r2ekIcon, ScaleMode.ScaleToFit);
-            if(Event.current.type == EventType.ContextClick)
+            if (Event.current.type == EventType.ContextClick)
             {
                 Vector2 mousePos = Event.current.mousePosition;
-                if(contextRect.Contains(mousePos))
+                if (contextRect.Contains(mousePos))
                 {
                     GenericMenu menu = new GenericMenu();
                     menu.AddItem(new GUIContent($"Use Direct Reference"), GetDirectReferenceValue(property), () =>
@@ -42,6 +42,7 @@ namespace RoR2.Editor.PropertyDrawers
             }
             EditorGUI.EndProperty();
         }
+
         protected virtual void ModifyContextMenu(GenericMenu menu) { }
         private bool GetDirectReferenceValue(SerializedProperty property)
         {
