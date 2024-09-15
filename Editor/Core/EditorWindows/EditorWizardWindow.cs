@@ -65,7 +65,6 @@ namespace RoR2.Editor
 
         protected sealed override void CreateGUI()
         {
-            serializedObject = new SerializedObject(_sourceSerializedObject ?? this);
             rootVisualElement.Clear();
             VisualElementTemplateDictionary.instance.GetTemplateInstance(typeof(EditorWizardWindow).Name, rootVisualElement);
 
@@ -89,6 +88,7 @@ namespace RoR2.Editor
                 wizardElementContainer.Add(label);
                 label.BringToFront();
             }
+            serializedObject = new SerializedObject(_sourceSerializedObject ?? this);
         }
 
         protected override void OnSerializedObjectChanged()

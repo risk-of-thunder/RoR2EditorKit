@@ -44,7 +44,6 @@ namespace RoR2.Editor.Inspectors
         {
             base.OnInspectorEnabled();
             _parentObject = targetType.transform.Find(parentGameObjectName)?.gameObject ?? null;
-            _parentObjectField.SetValueWithoutNotify(_parentObject);
             _offsetUpVector = inspectorProjectSettings.GetOrCreateSetting(nameof(_offsetUpVector), new Vector3(0, 15, 0));
             _raycastMask = inspectorProjectSettings.GetOrCreateSetting(nameof(_raycastMask), LayerIndex.CommonMasks.bullet);
 
@@ -79,6 +78,7 @@ namespace RoR2.Editor.Inspectors
 
             _parentObjectField = templateInstanceRoot.Q<ObjectField>("ParentGameObject");
             _parentObjectField.RegisterValueChangedCallback(UpdateParentGameObjectSetting);
+            _parentObjectField.SetValueWithoutNotify(_parentObject);
 
             var drawAllNodes = templateInstanceRoot.Q<Toggle>("DrawAllNodes");
             drawAllNodes.RegisterValueChangedCallback(evt => _drawallNodes = evt.newValue);

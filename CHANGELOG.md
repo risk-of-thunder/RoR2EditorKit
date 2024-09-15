@@ -1,3 +1,15 @@
+### '5.2.1'
+
+* Core Changes:
+	* Fixed the Editor Wizard Windows binding to a serialized object too early, causing controls built from property fields to not display.
+
+* R2APISupport Changes:
+	* Fixed the StageSerde drawer not showing correct values for its label under specific circumstances.
+
+* RoR2Scripts Changes:
+	* Fixed the Node Graph inspector not working due to a null reference exception on enable
+
+
 ### '5.2.0'
 
 * R2APIEditorScripts Changes:

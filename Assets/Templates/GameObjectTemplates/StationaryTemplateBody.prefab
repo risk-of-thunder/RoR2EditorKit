@@ -365,7 +365,8 @@ MonoBehaviour:
   currentVehicle: {fileID: 0}
   preferredPodPrefab: {fileID: 0}
   preferredInitialStateType:
-    _typeName: EntityStates.Uninitialized
+    _typeName: EntityStates.Uninitialized, RoR2, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
   skinIndex: 0
   customKillTotalStatName: 
   overrideCoreTransform: {fileID: 0}

@@ -9,36 +9,32 @@ namespace RoR2.Editor.PropertyDrawers
     [CustomPropertyDrawer(typeof(DirectorAPI.StageSerde))]
     public class StageSerdeDrawer : IMGUIPropertyDrawer<DirectorAPI.StageSerde>
     {
-        private GUIContent _popupButtonText;
-        private long _mask;
         private static string[] _optionNames;
         private static DirectorAPI.Stage[] _optionValues;
         private static Vector2 _windowSize;
 
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            _mask = (long)property.FindPropertyRelative("Value").longValue;
-            _popupButtonText ??= CreateContentFromMaskValue();
+            var mask = (long)property.FindPropertyRelative("Value").longValue;
+            var popupButtonText = CreateContentFromMaskValue(mask);
 
             var controlRect = EditorGUI.PrefixLabel(position, label);
-            if (EditorGUI.DropdownButton(controlRect, _popupButtonText, FocusType.Passive))
+            if (EditorGUI.DropdownButton(controlRect, popupButtonText, FocusType.Passive))
             {
-                PopupContent content = new PopupContent((DirectorAPI.Stage)_mask);
+                PopupContent content = new PopupContent((DirectorAPI.Stage)mask);
                 content.onValueChanged = (newVal) =>
                 {
-                    _mask = (long)newVal;
-                    property.FindPropertyRelative("Value").longValue = _mask;
+                    mask = (long)newVal;
+                    property.FindPropertyRelative("Value").longValue = mask;
                     property.serializedObject.ApplyModifiedProperties();
-                    _popupButtonText = CreateContentFromMaskValue();
-                    Debug.Log(_mask);
                 };
                 PopupWindow.Show(controlRect, content);
             }
         }
 
-        private GUIContent CreateContentFromMaskValue()
+        private GUIContent CreateContentFromMaskValue(long mask)
         {
-            DirectorAPI.Stage stageValue = (DirectorAPI.Stage)_mask;
+            DirectorAPI.Stage stageValue = (DirectorAPI.Stage)mask;
             string label;
             StringBuilder tooltipBuilder = new StringBuilder();
             int valCount = 0;

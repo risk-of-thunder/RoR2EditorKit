@@ -819,7 +819,7 @@ MonoBehaviour:
   targetStateMachine: {fileID: 0}
   idleStateMachine: []
   hurtState:
-    _typeName: EntityStates.Idle
+    _typeName: EntityStates.Idle, RoR2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   canBeHitStunned: 0
   canBeStunned: 0
   canBeFrozen: 1
