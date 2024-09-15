@@ -30,7 +30,7 @@
         },
         {
             "name": "riskofrain2",
-            "expression": "1.3.1",
+            "expression": "1.3.0",
             "define": "R2EK_ROR2_IMPORTED"
         }
     ],
