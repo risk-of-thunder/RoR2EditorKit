@@ -20,6 +20,8 @@ namespace RoR2.Editor
         /// </summary>
         public event Action<Item> onItemSelected;
 
+        public bool useFullNameAsItemName { get; }
+
         /// <summary>
         /// The baseType to use as a filter
         /// </summary>
@@ -45,7 +47,7 @@ namespace RoR2.Editor
                     {
                         var typeName =
                             lastDotIndex == -1 ? itemFullName : itemFullName.Substring(lastDotIndex + 1);
-                        var item = new Item(typeName, typeName, itemFullName, assemblyQualifiedName);
+                        var item = new Item(useFullNameAsItemName ? itemFullName : typeName, typeName, itemFullName, assemblyQualifiedName);
                         items.Add(itemFullName, item);
                     }
 
@@ -88,13 +90,19 @@ namespace RoR2.Editor
         /// Constructor for the <see cref="InheritingTypeSelectDropdown"/> with a specified base type
         /// </summary>
         /// <param name="requiredBaseType">The base type to use as a filter</param>
-        public InheritingTypeSelectDropdown(AdvancedDropdownState state, Type requiredBaseType) : base(state)
+        public InheritingTypeSelectDropdown(AdvancedDropdownState state, Type requiredBaseType) : this(state, requiredBaseType, false)
+        {
+
+        }
+
+        public InheritingTypeSelectDropdown(AdvancedDropdownState state, Type requiredBaseType, bool useFullName) : base(state)
         {
             this.requiredBaseType = requiredBaseType;
-            rootItemKey = requiredBaseType.Name;
+            rootItemKey = requiredBaseType?.Name ?? "Select Type";
             var minSize = minimumSize;
             minSize.y = 200;
             minimumSize = minSize;
+            useFullNameAsItemName = useFullName;
         }
 
         /// <summary>
