@@ -19,7 +19,7 @@ namespace RoR2.Editor.GameMaterialSystem
             var material = target as Material;
             if (importer is SerializableMaterialDataImporter smdi)
             {
-                if (!draw) return;
+                //if (!draw) return;
 
                 GUI.Box(new Rect(0, 0, EditorGUIUtility.currentViewWidth, 46), new GUIContent(), BaseStyles.inspectorBig);
                 var cursor = EditorGUILayout.GetControlRect();
@@ -91,7 +91,7 @@ namespace RoR2.Editor.GameMaterialSystem
             var smdi = AssetImporter.GetAtPath(assetPath) as SerializableMaterialDataImporter;
             if (smdi)
             {
-                if (!draw) return;
+                //if (!draw) return;
                 target.hideFlags = HideFlags.None;
                 EditorGUI.BeginChangeCheck();
             }

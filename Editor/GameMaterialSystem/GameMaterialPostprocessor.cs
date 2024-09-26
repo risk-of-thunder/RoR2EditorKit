@@ -1,27 +1,22 @@
 using UnityEngine;
 using UnityEditor;
+using RoR2.Editor.GameMaterialSystem;
+using System.Collections.Generic;
 
 class MyAllPostprocessor : AssetPostprocessor
 {
+    static List<Shader> realShaders = new List<Shader>();
     static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths, bool didDomainReload)
     {
-        foreach (string str in importedAssets)
-        {
-            Debug.Log("Reimported Asset: " + str);
-        }
-        foreach (string str in deletedAssets)
-        {
-            Debug.Log("Deleted Asset: " + str);
-        }
-
-        for (int i = 0; i < movedAssets.Length; i++)
-        {
-            Debug.Log("Moved Asset: " + movedAssets[i] + " from: " + movedFromAssetPaths[i]);
-        }
-
         if (didDomainReload)
         {
-            Debug.Log("Domain has been reloaded");
+            foreach(var stubbedShader in GameMaterialSystemSettings.instance.stubbedShaders)
+            {
+                if(GameMaterialSystemSettings.instance.TryLoadAddressableShader(stubbedShader.shader, out var real))
+                {
+                    realShaders.Add(real);
+                }
+            }
         }
     }
 }
