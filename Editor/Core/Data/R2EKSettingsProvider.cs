@@ -11,8 +11,8 @@ namespace RoR2.Editor
 {
     internal sealed class R2EKSettingsProvider : SettingsProvider
     {
-        private R2EKSettings settings;
-        private SerializedObject serializedObject;
+        private R2EKSettings _settings;
+        private SerializedObject _serializedObject;
         [SettingsProvider]
         public static SettingsProvider CreateProvider()
         {
@@ -21,10 +21,10 @@ namespace RoR2.Editor
             var settings = R2EKSettings.instance;
             settings.hideFlags = HideFlags.DontSave | HideFlags.HideInHierarchy;
             settings.SaveSettings();
-            return new R2EKSettingsProvider("Project/RoR2EditorKit", SettingsScope.Project, keywords)
+            return new R2EKSettingsProvider("Project/RoR2EditorKit/Settings", SettingsScope.Project, keywords)
             {
-                settings = settings,
-                serializedObject = new SerializedObject(settings),
+                _settings = settings,
+                _serializedObject = new SerializedObject(settings),
             };
         }
 
@@ -33,18 +33,18 @@ namespace RoR2.Editor
             base.OnActivate(searchContext, rootElement);
             VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(R2EKSettings), rootElement);
 
-            if(settings.isFirstTimeBoot)
+            if(_settings.isFirstTimeBoot)
             {
                 var center = rootElement.Q<VisualElement>("Center");
                 var welcome = new ExtendedHelpBox("Thanks for downloading and using Risk of Rain 2 EditorKit. Inside this window you can see the settings to modify how RoR2EditorKit functions inside your project.\nRoR2EditorKit is a team effort by the community, mostly developed by Nebby1999 on discord. Consider donating to him for his dedication.\n\nThis window will only open once when installed, and this HelpBox will only show this time.", MessageType.Info, true, true);
                 center.Add(welcome);
                 welcome.SendToBack();
-                settings.isFirstTimeBoot = false;
+                _settings.isFirstTimeBoot = false;
                 Save();
             }
 
             SetupNonFieldControls(rootElement);
-            rootElement.Bind(serializedObject);
+            rootElement.Bind(_serializedObject);
         }
 
         private void SetupNonFieldControls(VisualElement root)
@@ -67,15 +67,24 @@ namespace RoR2.Editor
         public override void OnDeactivate()
         {
             base.OnDeactivate();
-            serializedObject.ApplyModifiedProperties();
+            _serializedObject.ApplyModifiedProperties();
             Save();
+
+            if(_settings.enableGameMaterialSystem && !ScriptingSymbolManager.ContainsDefine("R2EK_GAME_MATERIAL_SYSTEM"))
+            {
+                ScriptingSymbolManager.AddScriptingDefine("R2EK_GAME_MATERIAL_SYSTEM");
+            }
+            else if(!_settings.enableGameMaterialSystem && ScriptingSymbolManager.ContainsDefine("R2EK_GAME_MATERIAL_SYSTEM"))
+            {
+                ScriptingSymbolManager.RemoveScriptingDefine("R2EK_GAME_MATERIAL_SYSTEM");
+            }
         }
 
         private void Save()
         {
-            serializedObject?.ApplyModifiedProperties();
-            if (settings)
-                settings.SaveSettings();
+            _serializedObject?.ApplyModifiedProperties();
+            if (_settings)
+                _settings.SaveSettings();
         }
         public R2EKSettingsProvider(string path, SettingsScope scopes, IEnumerable<string> keywords = null) : base(path, scopes, keywords)
         {

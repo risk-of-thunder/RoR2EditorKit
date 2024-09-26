@@ -9,6 +9,7 @@
                 <ui:TextField picking-mode="Ignore" label="Language Token Prefix" binding-path="_tokenPrefix" tooltip="A token prefix your your language tokens, this should not have white spaces, underscores or dashes." style="width: auto;" />
                 <ui:Toggle label="Enable RiskOfThunder Naming Conventions" name="EnableNamingConventions" binding-path="_enableNamingConventions" tooltip="Wether the official naming conventions for objects are enabled, this is yet to be inplemented" style="display: flex; visibility: visible;" />
                 <ui:Toggle label="Purge Project Settings" name="PurgeProjectSettings" binding-path="_purgeProjectSettings" tooltip="Wether R2EK Purges the ProjectSettings file of orphaned settings" />
+                <ui:Toggle label="Enable Game Material System" name="EnableGameMaterialSystem" binding-path="_enableGameMaterialSystem" tooltip="Enables the Game Material System, allowing you to use the RoR2 Stubbed Shaders as if they where the real shaders using the power of Addressables" />
             </RoR2.Editor.EqualLabelWidthContainer>
             <ui:VisualElement>
                 <ui:Button text="Import Script Icons for RoR2 Classes" name="ImportIconButton" tooltip="If clicked, it&apos;ll import custom icons for ror2 classes." />

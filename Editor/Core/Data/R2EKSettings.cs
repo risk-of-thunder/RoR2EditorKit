@@ -44,6 +44,9 @@ namespace RoR2.Editor
         [SerializeField]
         private bool _purgeProjectSettings = false;
 
+        public bool enableGameMaterialSystem => _enableGameMaterialSystem;
+        [SerializeField] private bool _enableGameMaterialSystem;
+
         [InitializeOnLoadMethod]
         private static void InitializeOnLoad()
         {
@@ -73,18 +76,20 @@ namespace RoR2.Editor
         /// <summary>
         /// Retrieves the <see cref="tokenPrefix"/>, but as camelCase
         /// </summary>
-        /// <returns>The prefix in a camelCase format</returns>
-        public string GetPrefixCamelCase()
+        /// <returns>The token prefix in a camelCase format</returns>
+        public string GetTokenCamelCase()
         {
             ThrowIfNoToken();
             char[] array = tokenPrefix.ToCharArray();
-            for(int i = 0; i < array.Length; i++)
+            for (int i = 0; i < array.Length; i++)
             {
                 array[i] = i == 0 ? char.ToUpperInvariant(array[i]) : char.ToLowerInvariant(array[i]);
             }
 
             return new string(array);
         }
+        [Obsolete("This method is wrongfuly named, use \"GetTokenCamelCase\" instead.")]
+        public string GetPrefixCamelCase() => GetTokenCamelCase();
 
         /// <summary>
         /// Saves any modifications to the disk
@@ -119,7 +124,7 @@ namespace RoR2.Editor
             if(instance._isFirstTimeBoot)
             {
                 Debug.Log("Showing ror2ek settings.");
-                SettingsService.OpenProjectSettings("Project/RoR2EditorKit");
+                SettingsService.OpenProjectSettings("Project/RoR2EditorKit/Settings");
             }
         }
 
@@ -127,6 +132,6 @@ namespace RoR2.Editor
         /// Opens the ProjectSettings window and selects these settings
         /// </summary>
         [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Settings/Main Settings")]
-        public static void OpenSettings() => SettingsService.OpenProjectSettings("Project/RoR2EditorKit");
+        public static void OpenSettings() => SettingsService.OpenProjectSettings("Project/RoR2EditorKit/Settings");
     }
 }

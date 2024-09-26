@@ -49,6 +49,6 @@ namespace RoR2.Editor
         /// Opens the ProjectSettings window and selects these settings.
         /// </summary>
         [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Settings/Project Editor Settings")]
-        public static void OpenSettings() => SettingsService.OpenProjectSettings("Project/R2EK Editor Settings");
+        public static void OpenSettings() => SettingsService.OpenProjectSettings("Project/RoR2EditorKit/R2EK Editor Settings");
     }
 }
