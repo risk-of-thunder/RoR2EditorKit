@@ -13,6 +13,7 @@ namespace RoR2.Editor.GameMaterialSystem
 
         public event Action<Item> onShaderSelected;
 
+
         protected override AdvancedDropdownItem BuildRoot()
         {
             ReadOnlyCollection<SerializableShaderWrapper> shaders = GameMaterialSystemSettings.instance.stubbedShaders;
@@ -72,8 +73,10 @@ namespace RoR2.Editor.GameMaterialSystem
             onShaderSelected?.Invoke((Item)item);
         }
 
-        public StubbedShaderDropdown(AdvancedDropdownState state) : base(state)
+        public StubbedShaderDropdown(AdvancedDropdownState state, Vector2? size) : base(state)
         {
+            if(size.HasValue)
+                minimumSize = size.Value;
         }
 
         public class Item : AdvancedDropdownItem

@@ -13,7 +13,7 @@ namespace RoR2.Editor.GameMaterialSystem
     {
         public string identity;
         public string name;
-        public SerializableShaderWrapper shaderWrapper;
+        public SerializableShaderWrapper stubbedShader;
         public bool doubleSidedGI;
         public bool enableInstancing;
         public int renderQueue;
@@ -24,21 +24,17 @@ namespace RoR2.Editor.GameMaterialSystem
         public static SerializableMaterialData Build(Material material, string identity = null)
         {
             var serializedMaterial = new SerializableMaterialData();
-            var addressableShader = material.shader;
-
-            var stubbedWrapper = GameMaterialSystemSettings.instance.GetStubbedFromAddressableShaderName(addressableShader.name);
-
+            var shader = material.shader;
             serializedMaterial.name = material.name;
-            serializedMaterial.shaderWrapper = stubbedWrapper;
+            serializedMaterial.stubbedShader = TryGetShader(material);
 
-            var stubbedShader = stubbedWrapper.shader;
             var dataList = new List<SerializableShaderProperty>();
-            for (int i = 0; i < GetPropertyCount(stubbedShader); i++)
+            for (int i = 0; i < GetPropertyCount(shader); i++)
             {
                 var data = new SerializableShaderProperty
                 {
-                    name = GetPropertyName(stubbedShader, i),
-                    type = GetPropertyType(stubbedShader, i)
+                    name = GetPropertyName(shader, i),
+                    type = GetPropertyType(shader, i)
                 };
                 switch (data.type)
                 {
@@ -84,10 +80,35 @@ namespace RoR2.Editor.GameMaterialSystem
             return serializedMaterial;
         }
 
+        public static SerializableShaderWrapper TryGetShader(Material material)
+        {
+            var materialShader = material.shader;
+
+            if (materialShader.name.StartsWith("Stubbed"))
+                return new SerializableShaderWrapper(materialShader);
+
+            if(AssetDatabase.GetAssetPath(materialShader) == string.Empty)
+            {
+                var wrapper = GameMaterialSystemSettings.instance.GetStubbedFromAddressableShaderName(materialShader.name);
+                if(wrapper == null)
+                {
+                    Debug.LogError($"Material {material} is using an AddressableShader, but its AddressableShader has no stubbed counterpart, assigning stubbed HGStandard.");
+                    return new SerializableShaderWrapper(GameMaterialSystemSettings.instance.stubbedHGStandard);
+                }
+                return wrapper;
+            }
+
+            Debug.LogError($"Shader assigned to {material} seems to be invalid as its neither a stubbed shader or an addressable shader. assigning stubbed HGStandard");
+
+            return new SerializableShaderWrapper(GameMaterialSystemSettings.instance.stubbedHGStandard);
+        }
+
         public Material ToMaterial()
         {
-            Shader shaderObj = shaderWrapper.shader;
-            Shader addressableShader = GameMaterialSystemSettings.instance.LoadAddressableShader(shaderObj);
+            if(!GameMaterialSystemSettings.instance.TryLoadAddressableShader(stubbedShader.shader, out var addressableShader))
+            {
+                return null;
+            }
             Material material = new Material(addressableShader);
             material.doubleSidedGI = doubleSidedGI;
             material.enableInstancing = enableInstancing;

@@ -11,6 +11,23 @@ namespace RoR2.Editor.GameMaterialSystem
     [FilePath("ProjectSettings/RoR2EditorKit/GameMaterialSystemSettings.asset", FilePathAttribute.Location.ProjectFolder)]
     public class GameMaterialSystemSettings : ScriptableSingleton<GameMaterialSystemSettings>
     {
+        public Shader stubbedHGStandard
+        {
+            get
+            {
+                if (_addressableShaderNameToStubbedIndex.Count == 0)
+                    ReloadDictionary();
+
+                if(_addressableShaderNameToStubbedIndex.TryGetValue("Hopoo Games/Deferred/Standard", out var index))
+                {
+                    return _stubbedShaders[index].shader;
+                }
+
+                Debug.LogError($"Could not find the Stubbed version of HGStandard.");
+                return null;
+            }
+        }
+
         public ReadOnlyCollection<SerializableShaderWrapper> stubbedShaders => new ReadOnlyCollection<SerializableShaderWrapper>(_stubbedShaders);
         [SerializeField] private List<SerializableShaderWrapper> _stubbedShaders = new List<SerializableShaderWrapper>();
         private Dictionary<string, int> _addressableShaderNameToStubbedIndex = new Dictionary<string, int>();
@@ -75,20 +92,21 @@ namespace RoR2.Editor.GameMaterialSystem
             return null;
         }
 
-        public Shader LoadAddressableShader(Shader stubbed)
+        public bool TryLoadAddressableShader(Shader stubbed, out Shader addressableShader)
         {
             var name = stubbed.name;
             var substring = name.Substring("Stubbed".Length);
             var address = $"{substring}.shader";
             try
             {
-                var addressableShader = Addressables.LoadAssetAsync<Shader>(address).WaitForCompletion();
+                addressableShader = Addressables.LoadAssetAsync<Shader>(address).WaitForCompletion();
                 return addressableShader;
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to load Addressable Shader of address {address}, Either the address does not point to an addressable asset or you may need to reimport the addressable catalog.");
-                return null;
+                Debug.LogError($"Failed to load Addressable Shader of address {address}, Either the address does not point to an addressable asset or you may need to reimport the addressable catalog.\n{e}");
+                addressableShader = null;
+                return false;
             }
         }
 
@@ -102,10 +120,9 @@ namespace RoR2.Editor.GameMaterialSystem
                 if (!stubbedShader)
                     continue;
 
-                var shader = LoadAddressableShader(stubbedShader);
-                if(shader)
+                if(TryLoadAddressableShader(stubbedShader, out Shader addressableShader))
                 {
-                    _addressableShaderNameToStubbedIndex.Add(shader.name, i);
+                    _addressableShaderNameToStubbedIndex.Add(addressableShader.name, i);
                 }
             }
         }

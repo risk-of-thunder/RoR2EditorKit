@@ -16,65 +16,72 @@ namespace RoR2.Editor.GameMaterialSystem
             var assetPath = AssetDatabase.GetAssetPath(target);
             var importer = AssetImporter.GetAtPath(assetPath);
             var material = target as Material;
-            if(importer is not SerializableMaterialDataImporter smdi)
+            if (importer is SerializableMaterialDataImporter smdi)
             {
-                base.OnHeaderGUI();
+                GUI.Box(new Rect(0, 0, EditorGUIUtility.currentViewWidth, 46), new GUIContent(), BaseStyles.inspectorBig);
+                var cursor = EditorGUILayout.GetControlRect();
+                cursor = new Rect(cursor.x, cursor.y + 4, cursor.width, cursor.height);
+                OnPreviewGUI(new Rect(cursor.x + 2, cursor.y + 2, 32, 32), BaseStyles.inspectorBigInner);
+
+                cursor = new Rect(cursor.x + 40, cursor.y, cursor.width, cursor.height);
+                GUI.Label(cursor, target.name, EditorStyles.largeLabel);
+
+
+                var shaderLabelContent = new GUIContent("Shader");
+                var offset = EditorStyles.label.CalcSize(shaderLabelContent).x + 10;
+                cursor = new Rect(cursor.x + 2, cursor.y + 22, offset - 2, cursor.height);
+                GUI.Label(cursor, shaderLabelContent, EditorStyles.label);
+
+                cursor = new Rect(cursor.x + offset + 7, cursor.y - 1, EditorGUIUtility.currentViewWidth - (cursor.width + cursor.x) - 16, cursor.height);
+                if(EditorGUI.DropdownButton(cursor, new GUIContent(material.shader.name), FocusType.Passive))
+                {
+                    var size = cursor.size;
+                    size.y = 300;
+                    StubbedShaderDropdown dropdown = new StubbedShaderDropdown(null, size);
+                    dropdown.onShaderSelected += OnSelectedStubbedShaderPopup;
+                    dropdown.Show(cursor);
+                }
+
+                cursor = new Rect(cursor.x - offset - 50, cursor.y + 5, 32, cursor.height);
+
+
+                GUILayout.Space(32);
+
+                void OnSelectedStubbedShaderPopup(StubbedShaderDropdown.Item item)
+                {
+                    var serializedObject = new SerializedObject(smdi);
+                    serializedObject.Update();
+
+                    var wrapper = item.shader;
+
+                    if (wrapper == null)
+                        return;
+
+                    var stubbedShader = wrapper.shader;
+                    if (!stubbedShader)
+                        return;
+
+                    if(!GameMaterialSystemSettings.instance.TryLoadAddressableShader(stubbedShader, out var addressableShader))
+                    {
+                        Debug.LogError($"Failed to obtain the Addressable shader from stubbed shader {stubbedShader}. Either the stubbed shader doesnt point to a Shader or the AddressableCatalog is corrupted or invalid. You may need to reimport the catalog.");
+                        return;
+                    }
+
+                    var shaderProp = serializedObject.FindProperty("stubbedShader");
+                    var shaderNameProp = shaderProp.FindPropertyRelative("_shaderName");
+                    var shaderGUIDProp = shaderProp.FindPropertyRelative("_shaderGuid");
+
+                    shaderNameProp.stringValue = stubbedShader.name;
+                    shaderGUIDProp.stringValue = AssetDatabaseUtil.GetAssetGUIDString(stubbedShader);
+
+                    material.shader = addressableShader;
+                    WriteChanges();
+                }
                 return;
             }
-
-            GUI.Box(new Rect(0, 0, EditorGUIUtility.currentViewWidth, 46), new GUIContent(), BaseStyles.inspectorBig);
-            var cursor = EditorGUILayout.GetControlRect();
-            cursor = new Rect(cursor.x, cursor.y + 4, cursor.width, cursor.height);
-            OnPreviewGUI(new Rect(cursor.x + 2, cursor.y + 2, 32, 32), BaseStyles.inspectorBigInner);
-
-            cursor = new Rect(cursor.x + 40, cursor.y, cursor.width, cursor.height);
-            GUI.Label(cursor, target.name, EditorStyles.largeLabel);
-
-
-            var shaderLabelContent = new GUIContent("Shader");
-            var offset = EditorStyles.label.CalcSize(shaderLabelContent).x + 10;
-            cursor = new Rect(cursor.x + 2, cursor.y + 22, offset - 2, cursor.height);
-            GUI.Label(cursor, shaderLabelContent, EditorStyles.label);
-
-            cursor = new Rect(cursor.x + offset + 7, cursor.y - 1, EditorGUIUtility.currentViewWidth - (cursor.width + cursor.x) - 16, cursor.height);
-
-            if(EditorGUI.DropdownButton(cursor, new GUIContent(material.shader.name), FocusType.Passive))
-            {
-                var popup = new StubbedShaderDropdown(null);
-                popup.onShaderSelected += OnSelectedShaderPopup;
-                popup.Show(cursor);
-            }
-
-
-            cursor = new Rect(cursor.x - offset - 50, cursor.y + 5, 32, cursor.height);
-
-
-            GUILayout.Space(32);
-
-            void OnSelectedShaderPopup(StubbedShaderDropdown.Item item)
-            {
-                var serializedObject = new SerializedObject(smdi);
-                serializedObject.Update();
-                SerializableShaderWrapper shaderWrapper = item.shader;
-                if(shaderWrapper != null)
-                {
-                    Shader shader = shaderWrapper.shader;
-                    if(shader)
-                    {
-                        var shaderProp = serializedObject.FindProperty("shader");
-                        var shaderNameProp = shaderProp.FindPropertyRelative("_shaderName");
-                        var shaderGUIDProp = shaderProp.FindPropertyRelative("_shaderGuid");
-
-                        shaderNameProp.stringValue = shader.name;
-                        shaderGUIDProp.stringValue = AssetDatabaseUtil.GetAssetGUIDString(shader);
-
-                        material.shader = shader;
-                        WriteChanges();
-                    }
-                }
-            }
+            else
+                base.OnHeaderGUI();
         }
-
         public override void OnInspectorGUI()
         {
             var assetPath = AssetDatabase.GetAssetPath(target);
