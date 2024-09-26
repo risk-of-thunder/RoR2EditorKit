@@ -11,6 +11,7 @@ namespace RoR2.Editor.GameMaterialSystem
     [CustomEditor(typeof(Material))]
     public class SerializedMaterialDataEditor : MaterialEditor
     {
+        public bool draw = false;
         protected override void OnHeaderGUI()
         {
             var assetPath = AssetDatabase.GetAssetPath(target);
@@ -18,6 +19,8 @@ namespace RoR2.Editor.GameMaterialSystem
             var material = target as Material;
             if (importer is SerializableMaterialDataImporter smdi)
             {
+                if (!draw) return;
+
                 GUI.Box(new Rect(0, 0, EditorGUIUtility.currentViewWidth, 46), new GUIContent(), BaseStyles.inspectorBig);
                 var cursor = EditorGUILayout.GetControlRect();
                 cursor = new Rect(cursor.x, cursor.y + 4, cursor.width, cursor.height);
@@ -88,6 +91,7 @@ namespace RoR2.Editor.GameMaterialSystem
             var smdi = AssetImporter.GetAtPath(assetPath) as SerializableMaterialDataImporter;
             if (smdi)
             {
+                if (!draw) return;
                 target.hideFlags = HideFlags.None;
                 EditorGUI.BeginChangeCheck();
             }

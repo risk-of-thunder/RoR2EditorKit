@@ -18,20 +18,22 @@ namespace RoR2.Editor.GameMaterialSystem
         }
         public override void OnDisable()
         {
-            base.OnDisable();
             if (!inspector) return;
+            inspector.draw = true;
             inspector = null;
+            base.OnDisable();
         }
         protected override void OnHeaderGUI()
         {
             if (!inspector) return;
+            inspector.draw = true;
             inspector.DrawHeader();
         }
         public override void OnInspectorGUI()
         {
-            ApplyRevertGUI();
             if (!inspector) return;
             inspector.OnInspectorGUI();
+            inspector.draw = false;
         }
     }
 }
