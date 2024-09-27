@@ -4,7 +4,7 @@ using UnityEditorInternal;
 
 namespace RoR2.Editor.GameMaterialSystem
 {
-    [CustomEditor(typeof(SerializableMaterialDataImporter))]
+    //[CustomEditor(typeof(SerializableMaterialDataImporter))]
     public class SerializableMaterialDataImporterEditor : ScriptedImporterEditor
     {
         SerializedMaterialDataEditor inspector;

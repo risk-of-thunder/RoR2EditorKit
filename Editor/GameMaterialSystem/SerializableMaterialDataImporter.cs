@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.AddressableAssets;
+using System.Collections.Generic;
 
 namespace RoR2.Editor.GameMaterialSystem
 {
@@ -12,8 +13,14 @@ namespace RoR2.Editor.GameMaterialSystem
     {
         public const string Extension = "smd";
 
+        public static List<SerializableMaterialDataImporter> instances = new List<SerializableMaterialDataImporter>();
         [SerializeField]
         public SerializableShaderWrapper stubbedShader;
+
+        public SerializableMaterialDataImporter()
+        {
+            instances.Add(this);
+        }
 
         public override void OnImportAsset(AssetImportContext ctx)
         {
@@ -66,10 +73,10 @@ namespace RoR2.Editor.GameMaterialSystem
             var material = new Material(addressableShader);
             var smd = SerializableMaterialData.Build(material);
 
-            string assetPath = Path.Combine(path, $"NewMaterial.{Extension}");
-            File.WriteAllText(assetPath, JsonUtility.ToJson(smd));
+            var filePath = IOUtils.GenerateUniqueFileName(path, "NewMaterial", Extension);
+            File.WriteAllText(filePath, JsonUtility.ToJson(smd));
 
-            AssetDatabase.ImportAsset(assetPath);
+            AssetDatabase.ImportAsset(filePath);
         }
     }
 }
