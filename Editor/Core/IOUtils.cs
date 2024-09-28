@@ -61,6 +61,7 @@ namespace RoR2.Editor
             {
                 folderPath += "/";
             }
+            extension = extension.StartsWith('.') ? extension : ('.' + extension);
 
             string fileName = baseFileName;
             string filePath = folderPath + fileName + extension;

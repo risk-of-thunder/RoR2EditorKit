@@ -5,7 +5,9 @@
         "GUID:60983344ee8157d4ab97c25513f789c4",
         "GUID:280569ac301428d4d950fdf647900922",
         "GUID:48abf88f565f4bb4fb35fbe2385f0894",
-        "GUID:b04f7ec21bb6ebe43a85599e36f30cff"
+        "GUID:b04f7ec21bb6ebe43a85599e36f30cff",
+        "GUID:7b6797d0f5adde64d8f71e4e56cbe2a1",
+        "GUID:c5ecc461727906345a35491a0440694f"
     ],
     "includePlatforms": [
         "Editor"
@@ -27,6 +29,11 @@
             "name": "com.passivepicasso.thunderkit",
             "expression": "9.0.0",
             "define": "R2EK_THUNDERKIT"
+        },
+        {
+            "name": "com.unity.scriptablebuildpipeline",
+            "expression": "1.2.0",
+            "define": "R2EK_SCRIPTABLEBUILDPIPELINE"
         },
         {
             "name": "riskofrain2",
