@@ -85,7 +85,7 @@ namespace RoR2.Editor
         private void BindEditorSettingButton(VisualElement element, int arg2)
         {
             var button = (Button)element;
-            var setting = provider.editorSettings[arg2];
+            var setting = _settingsThatAreNotOrphaned[arg2];
             button.clicked += () =>
             {
                 currentlyInspectedSetting = setting;

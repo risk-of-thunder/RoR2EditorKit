@@ -14,19 +14,17 @@ namespace RoR2.Editor.PropertyDrawers
     [CustomPropertyDrawer(typeof(SerializableEntityStateType))]
     internal sealed class SerializableEntityStateTypePropertyDrawer : IMGUIPropertyDrawer<SerializableEntityStateType>
     {
-        private bool _triedToFullyQualify = false;
-        private SerializableEntityStateTypeDrawer _drawer;
+        private static bool _useFullName = false;
 
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            if(!_triedToFullyQualify)
+            if(!IsFullyQualified(property))
             {
-                _triedToFullyQualify = true;
                 FullyQualify(property);
-                return;
             }
 
-            _drawer = _drawer ?? new SerializableEntityStateTypeDrawer();
+            var _drawer = new SerializableEntityStateTypeDrawer();
+            _drawer.useFullName = _useFullName;
 
             _drawer.onTypeSelectedHandler += (item) =>
             {
@@ -36,16 +34,18 @@ namespace RoR2.Editor.PropertyDrawers
             _drawer.DoEditorGUI(position, property.FindPropertyRelative("_typeName").stringValue, label);
         }
 
+        private bool IsFullyQualified(SerializedProperty property)
+        {
+            var p = property.FindPropertyRelative("_typeName");
+            var typeName = p.stringValue;
+            return Type.GetType(typeName) != null;
+        }
+
         private void FullyQualify(SerializedProperty property)
         {
             var p = property.FindPropertyRelative("_typeName");
             var typeName = p.stringValue;
-            Type t = Type.GetType(typeName);
-
-            if (t != null) //Fully qualified, we good.
-                return;
-            else //Try obtaining the type by specifying the ror2 assembly.
-                t = Type.GetType($"{typeName}, RoR2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null"); 
+            var t = Type.GetType($"{typeName}, RoR2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null"); 
 
             if (t != null) //Type found, fully qualify it.
             {
@@ -53,10 +53,16 @@ namespace RoR2.Editor.PropertyDrawers
                 p.serializedObject.ApplyModifiedProperties();
             }
         }
+
+        public SerializableEntityStateTypePropertyDrawer()
+        {
+            _useFullName = propertyDrawerPreferenceSettings.GetOrCreateSetting("useFullNameForItems", false);
+        }
     }
 
     public class SerializableEntityStateTypeDrawer
     {
+        public bool useFullName;
         public event Action<InheritingTypeSelectDropdown.Item> onTypeSelectedHandler;
 
         public void DoEditorGUI(Rect position, string assemblyQualifiedName, GUIContent label)
@@ -67,7 +73,7 @@ namespace RoR2.Editor.PropertyDrawers
 
             if (EditorGUI.DropdownButton(prefixRect, new GUIContent(typeName, assemblyQualifiedName), FocusType.Passive))
             {
-                var dropdown = new InheritingTypeSelectDropdown(new AdvancedDropdownState(), typeof(EntityState));
+                var dropdown = new InheritingTypeSelectDropdown(new AdvancedDropdownState(), typeof(EntityState), useFullName);
                 dropdown.onItemSelected += (item) =>
                 {
                     onTypeSelectedHandler?.Invoke(item);
@@ -94,7 +100,7 @@ namespace RoR2.Editor.PropertyDrawers
                     width = rect.width - labelRect.width
                 };
 
-                var dropdown = new InheritingTypeSelectDropdown(new AdvancedDropdownState(), typeof(EntityState));
+                var dropdown = new InheritingTypeSelectDropdown(new AdvancedDropdownState(), typeof(EntityState), useFullName);
                 dropdown.onItemSelected += (item) => onTypeSelectedHandler?.Invoke(item);
                 dropdown.Show(rectToUse);
             }

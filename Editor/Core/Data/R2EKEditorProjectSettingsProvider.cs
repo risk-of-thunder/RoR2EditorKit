@@ -23,7 +23,7 @@ namespace RoR2.Editor
                 EditorSettingManager.PurgeOrphanedSettings(settings);
             settings.hideFlags = HideFlags.DontSave | HideFlags.HideInHierarchy;
             settings.SaveSettings();
-            return new R2EKEditorProjectSettingsProvider("Project/R2EK Editor Settings", SettingsScope.Project, keywords)
+            return new R2EKEditorProjectSettingsProvider("Project/RoR2EditorKit/R2EK Editor Settings", SettingsScope.Project, keywords)
             {
                 settings = settings,
                 serializedObject = new SerializedObject(settings),

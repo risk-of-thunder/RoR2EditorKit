@@ -217,7 +217,6 @@ namespace RoR2.Editor
             propertyField.BindProperty(valueProperty);
             propertyField.RegisterCallback<ChangeEvent<string>>(evt =>
             {
-                Debug.Log("Calling ApplyModifiedProperties");
                 valueProperty.serializedObject.ApplyModifiedProperties();
             });
             unrecognizedFieldsFoldout.Add(propertyField);

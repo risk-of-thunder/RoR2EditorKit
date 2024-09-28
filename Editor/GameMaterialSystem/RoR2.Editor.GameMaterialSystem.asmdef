@@ -1,0 +1,22 @@
+{
+    "name": "RoR2.Editor.GameMaterialSystem",
+    "rootNamespace": "RoR2.Editor.GameMaterialSystem",
+    "references": [
+        "GUID:60983344ee8157d4ab97c25513f789c4"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Unity.Addressables.dll",
+        "Unity.ResourceManager.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "TK_ADDRESSABLE",
+        "R2EK_GAME_MATERIAL_SYSTEM"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
