@@ -70,14 +70,14 @@ namespace RoR2.Editor
             _serializedObject.ApplyModifiedProperties();
             Save();
 
-            if(_settings.enableGameMaterialSystem && !ScriptingSymbolManager.ContainsDefine("R2EK_GAME_MATERIAL_SYSTEM"))
+            /*if(_settings.enableGameMaterialSystem && !ScriptingSymbolManager.ContainsDefine("R2EK_GAME_MATERIAL_SYSTEM"))
             {
                 ScriptingSymbolManager.AddScriptingDefine("R2EK_GAME_MATERIAL_SYSTEM");
             }
             else if(!_settings.enableGameMaterialSystem && ScriptingSymbolManager.ContainsDefine("R2EK_GAME_MATERIAL_SYSTEM"))
             {
                 ScriptingSymbolManager.RemoveScriptingDefine("R2EK_GAME_MATERIAL_SYSTEM");
-            }
+            }*/
         }
 
         private void Save()

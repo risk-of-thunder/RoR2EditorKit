@@ -44,8 +44,8 @@ namespace RoR2.Editor
         [SerializeField]
         private bool _purgeProjectSettings = false;
 
-        public bool enableGameMaterialSystem => _enableGameMaterialSystem;
-        [SerializeField] private bool _enableGameMaterialSystem;
+        /*public bool enableGameMaterialSystem => _enableGameMaterialSystem;
+        [SerializeField] private bool _enableGameMaterialSystem;*/
 
         [InitializeOnLoadMethod]
         private static void InitializeOnLoad()
