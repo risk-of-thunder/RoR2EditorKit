@@ -1,3 +1,25 @@
+### '5.2.2'
+
+* Core Changes:
+	* The ``InheritingTypeSelectDropdown`` can now use the type's full name instead of the type name
+		* These are preference settings tied to the drawers that use this feature.
+	* Fixed an issue where the ``EditorSettingsElement`` would sometimes display settings that are orphaned in the current editor context.
+	* Project Settings are now consolidated under a foldout for ease of access.
+	* Added menu items for the following actions:
+		* Refreshing the Asset Database (``Tools/RoR2EditorKit/Utility/Refresh Asset Database``)
+		* Saving the Asset Database (``Tools/RoR2EditorKit/Utility/Save Assets``)
+		* Requesting a Script Reload (``Tools/RoR2EditorKit/Utility/Reload Domain``)
+	* ``IOUtils.GenerateUniqueFileName`` now has a fallback check in the case that the end user doesnt provide the ``.`` char for the ``extension`` parameter.
+
+* RoR2Scripts Changes:
+	* Added new PropertyDrawers for both EntityStateMachines and GenericSkills (Thanks TheTimeSweeper!)
+		* As a result for the EntityStateMachine drawer, the ``NetworkEntityStateMachineInspector`` has been removed.
+	* The ``SerializableEntityStateTypeDrawer`` and the ``SerializableSystemTypeDrawer`` now fully qualify the base game's types.
+	* Fixed bug where the ``SerializableEntityStateTypeDrawer`` or the ``SerializableSystemTypeDrawer`` would change values without the user's consent.
+
+* R2APISupport Changes:
+	* Added support for the ``AddressReferencedFamilyDirectorCardCategorySelection``.
+
 ### '5.2.1'
 
 * Core Changes:

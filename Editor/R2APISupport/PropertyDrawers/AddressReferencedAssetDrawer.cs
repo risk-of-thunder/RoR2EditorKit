@@ -101,5 +101,12 @@ namespace RoR2.Editor.PropertyDrawers
     {
         protected override string AddressTooltip => "The Address or Asset Name of the UnlockableDef";
     }
+#if R2EK_R2API_DIRECTOR
+    //-----
+    public sealed class AddressReferencedFamilyDirectorCardCategorySelectionDrawer : AddressReferencedAssetDrawer<AddressReferencedFamilyDirectorCardCategorySelection>
+    {
+
+    }
+#endif
 }
 #endif
