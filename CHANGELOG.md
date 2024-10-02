@@ -1,3 +1,19 @@
+### '5.3.0'
+
+* RoR2Scripts Changes:
+	* Made multiple changes and improvements to the ``MapNodeGroup`` inspector
+		* Fixed the SceneGUI not updating as often as necesary, causing a choppy experience.
+		* Fixed certain utilities that where supposed to be connected to editor settings not being properly updated.
+		* Added a "HitPoint position" scene field to display the position where the cursor is.
+		* Re-implemented the node painter utility.
+			* Allows you to select a size for the brush
+			* Pressing ``B`` by default paints nodes on the selected area
+				* This utility will not be directly supported by the main developer
+		* Added a button to bake the nodes "asynchronously"
+			* Uses a Coroutine for baking the nodes
+			* Coroutine yields more often with less node counts, specially noticeable when the node count jumps by magnitudes.
+			* Added a ProgressBar that's used when the inspector is baking nodes asynchronously
+
 ### '5.2.2'
 
 * Core Changes:

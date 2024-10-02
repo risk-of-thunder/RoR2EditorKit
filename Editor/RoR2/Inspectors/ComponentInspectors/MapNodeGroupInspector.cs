@@ -5,6 +5,9 @@ using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using System;
 using System.Collections.Generic;
+using Unity.EditorCoroutines.Editor;
+using System.Collections;
+using System.Collections.ObjectModel;
 
 namespace RoR2.Editor.Inspectors
 {
@@ -22,8 +25,10 @@ namespace RoR2.Editor.Inspectors
         private LayerMask _raycastMask;
 
         private float _nodeCylinderSize;
+        private float _painterSize;
         private bool _roundHitPointToNearestGrid;
         private bool _drawallNodes;
+        private bool _usePainter;
         private KeyCode _addNodeKeyCode;
         private KeyCode _deleteNearestKeyCode;
         private KeyCode _addOnCamPosKeyCode;
@@ -39,7 +44,10 @@ namespace RoR2.Editor.Inspectors
         private List<MapNode> _cachedMapNodeList = new List<MapNode>();
         private float _maxDistance;
         private VisualElement _nodePlacerContainer;
+        private VisualElement _painterContainer;
+        private VisualElement _buttonsContainer;
 
+        private EditorCoroutine _bakingCoroutine;
         protected override void OnInspectorEnabled()
         {
             base.OnInspectorEnabled();
@@ -69,6 +77,7 @@ namespace RoR2.Editor.Inspectors
         {
             AddFlags(templateInstanceRoot);
 
+            _painterContainer = templateInstanceRoot.Q<VisualElement>("PainterContainer");
             _nodePlacerContainer = templateInstanceRoot.Q<VisualElement>("NodePlacerContainer");
 
             var property = serializedObject.FindProperty("nodeGraph");
@@ -83,23 +92,50 @@ namespace RoR2.Editor.Inspectors
             var drawAllNodes = templateInstanceRoot.Q<Toggle>("DrawAllNodes");
             drawAllNodes.RegisterValueChangedCallback(evt => _drawallNodes = evt.newValue);
             drawAllNodes.ConnectWithSetting(inspectorPreferenceSettings, nameof(drawAllNodes), false);
+            _drawallNodes = inspectorPreferenceSettings.GetOrCreateSetting<bool>(nameof(drawAllNodes));
+
+            var usePainter = templateInstanceRoot.Q<Toggle>("UsePainter");
+            usePainter.RegisterValueChangedCallback(OnUsePainterSet);
+            usePainter.ConnectWithSetting(inspectorPreferenceSettings, nameof(usePainter), false);
+            _usePainter = inspectorPreferenceSettings.GetOrCreateSetting<bool>(nameof(usePainter));
+            _painterContainer.SetDisplay(_usePainter);
+
+            var painterSize = templateInstanceRoot.Q<FloatField>("BrushSize");
+            painterSize.RegisterValueChangedCallback(evt => _painterSize = evt.newValue);
+            painterSize.ConnectWithSetting(inspectorPreferenceSettings, nameof(painterSize), 4f);
+            _painterSize = inspectorPreferenceSettings.GetOrCreateSetting<float>(nameof(painterSize));
 
             var roundHitPointToNearestGrid = templateInstanceRoot.Q<Toggle>("RoundPointToGrid");
             roundHitPointToNearestGrid.RegisterValueChangedCallback(evt => _roundHitPointToNearestGrid = evt.newValue);
             roundHitPointToNearestGrid.ConnectWithSetting(inspectorPreferenceSettings, nameof(roundHitPointToNearestGrid), false);
+            _roundHitPointToNearestGrid = inspectorPreferenceSettings.GetOrCreateSetting<bool>(nameof(roundHitPointToNearestGrid));
 
             var gateName = templateInstanceRoot.Q<TextField>("GateName");
             gateName.RegisterValueChangedCallback(evt => _gateName = evt.newValue);
             gateName.ConnectWithSetting(inspectorProjectSettings, nameof(gateName), "");
+            _gateName = inspectorProjectSettings.GetOrCreateSetting<string>(nameof(gateName));
 
             templateInstanceRoot.Q<Button>("UpdateNoCeilingMasks").clicked += UpdateNoCeilingMasks;
-            templateInstanceRoot.Q<Button>("ClearNodes").clicked += ClearNodes;
             templateInstanceRoot.Q<Button>("UpdateTeleporterMasks").clicked += UpdateTeleporterMasks;
-            templateInstanceRoot.Q<Button>("BakeNodeGraph").clicked += BakeNodeGraph;
             templateInstanceRoot.Q<Button>("UpdateHullMasks").clicked += UpdateHullMasks;
             templateInstanceRoot.Q<Button>("RemoveNodeExcess").clicked += RemoveNodeExcess;
             templateInstanceRoot.Q<Button>("MakeAirNodes").clicked += MakeAirNodes;
             templateInstanceRoot.Q<Button>("MakeGroundNodes").clicked += MakeGroundNodes;
+            templateInstanceRoot.Q<Button>("ClearNodes").clicked += ClearNodes;
+            templateInstanceRoot.Q<Button>("BakeNodeGraph").clicked += BakeNodeGraph;
+            templateInstanceRoot.Q<Button>("BakeGraphAsync").clicked += BakeGraphAsync;
+            _buttonsContainer = templateInstanceRoot.Q<VisualElement>("ButtonContainer");
+        }
+
+        private void BakeGraphAsync()
+        {
+            _bakingCoroutine = EditorCoroutineUtility.StartCoroutine(BakeNodeGraphAsync(rootVisualElement.Q<ProgressBar>(), _buttonsContainer), this);
+        }
+
+        private void OnUsePainterSet(ChangeEvent<bool> evt)
+        {
+            _usePainter = evt.newValue;
+            _painterContainer.SetDisplay(evt.newValue);
         }
 
         private void OnNodeGraphChange(SerializedProperty property)
@@ -203,6 +239,50 @@ namespace RoR2.Editor.Inspectors
             AssetDatabase.SaveAssets();
         }
 
+        private IEnumerator BakeNodeGraphAsync(ProgressBar progressBar, VisualElement buttonContainer)
+        {
+            progressBar.SetDisplay(true);
+            buttonContainer.SetEnabled(false);
+            EditorUtility.SetDirty(targetType.nodeGraph);
+            List<MapNode> nodes = targetType.GetNodes();
+            ReadOnlyCollection<MapNode> readOnlyCollection = nodes.AsReadOnly();
+
+            var modulo = Mathf.Floor((Mathf.Log10(nodes.Count) + 1) * 2);
+            for(int i = 0; i < nodes.Count; i++)
+            {
+                progressBar.title = $"Building Links for Node {i} thru {i + modulo}";
+                progressBar.value = R2EKMath.Remap(i, 0, nodes.Count - 1, 0, 0.5f);
+
+                if(i % modulo == 0)
+                    yield return null;
+
+                nodes[i].BuildLinks(readOnlyCollection, targetType.graphType);
+            }
+            List<SerializableBitArray> list = new List<SerializableBitArray>();
+            for(int i = 0; i < nodes.Count; i++)
+            {
+                float nodeIterationProgress = R2EKMath.Remap(i, 0, nodes.Count - 1, 0.5f, 1f);
+                progressBar.title = $"Testing node {i} thru {i + modulo}'s LOS with other nodes";
+                progressBar.value = nodeIterationProgress;
+                if (i % modulo == 0)
+                    yield return null;
+
+                MapNode mapNode = nodes[i];
+                SerializableBitArray serializableBitArray = new SerializableBitArray(nodes.Count);
+                for(int j = 0; j < nodes.Count; j++)
+                {
+                    MapNode other = nodes[j];
+                    serializableBitArray[j] = mapNode.TestLineOfSight(other);
+                }
+                list.Add(serializableBitArray);
+            }
+            targetType.nodeGraph.SetNodes(readOnlyCollection, list.AsReadOnly());
+            buttonContainer.SetEnabled(true);
+            progressBar.SetDisplay(false);
+            AssetDatabase.SaveAssetIfDirty(targetType.nodeGraph);
+            _bakingCoroutine = null;
+        }
+
         private void UpdateTeleporterMasks()
         {
             targetType.UpdateTeleporterMasks();
@@ -251,39 +331,60 @@ namespace RoR2.Editor.Inspectors
         {
             if(inspectorEnabled && targetType.nodeGraph)
             {
-                DrawPlacer();
+                if (_bakingCoroutine == null)
+                    DrawPlacerOrPainter();
 
                 Handles.BeginGUI();
                 EditorGUILayout.BeginVertical("box", GUILayout.Width(400));
                 EditorGUILayout.BeginVertical("box", GUILayout.Width(400));
                 EditorGUILayout.BeginVertical("box", GUILayout.Width(400));
 
+                if (_bakingCoroutine != null)
+                {
+                    EditorGUILayout.LabelField("Baking... Controls are Disabled.", EditorStyles.boldLabel);
+                    goto endVertical;
+                }
+
                 EditorGUILayout.LabelField($"Camera Position: {Camera.current.transform.position}", EditorStyles.boldLabel);
-                EditorGUILayout.LabelField($"Press {_addNodeKeyCode} to add a map node at the current mouse position (raycast)", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField($"Hitpoint Position: {_currentHitInfo}", EditorStyles.boldLabel);
+
+                string placerString = "Press B to ";
+                placerString += _usePainter ? "paint nodes at the current mouse position (raycast)" : "add a map node at the current mouse position (raycast)";
+                EditorGUILayout.LabelField(placerString, EditorStyles.boldLabel);
                 EditorGUILayout.LabelField($"Press {_addOnCamPosKeyCode} to add a map node at the current camera's position", EditorStyles.boldLabel);
                 EditorGUILayout.LabelField($"Press {_deleteNearestKeyCode} to delete the nearest map node at current mouse position", EditorStyles.boldLabel);
 
+                endVertical:
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.EndVertical();
                 Handles.EndGUI();
+                SceneView.currentDrawingSceneView.Repaint();
             }
         }
 
-        private void DrawPlacer()
+        private void DrawPlacerOrPainter()
         {
             UnityEngine.Cursor.visible = true;
 
             int controlID = GUIUtility.GetControlID(FocusType.Keyboard | FocusType.Passive);
             _cachedMapNodeList = targetType.GetNodes();
             _maxDistance = MapNode.maxConnectionDistance;
+            float zPainterOffset = _maxDistance / 2;
 
             if (Event.current.GetTypeForControl(controlID) == EventType.KeyDown)
             {
                 var keyCode = Event.current.keyCode;
                 if (keyCode == _addNodeKeyCode)
                 {
-                    AddNode(targetType, _currentHitInfo);
+                    if(_usePainter)
+                    {
+                        PaintNodes(_maxDistance, zPainterOffset, _cachedMapNodeList);
+                    }
+                    else
+                    {
+                        AddNode(targetType, _currentHitInfo);
+                    }
                     Event.current.Use();
                 }
                 if (keyCode == _deleteNearestKeyCode)
@@ -341,6 +442,18 @@ namespace RoR2.Editor.Inspectors
                 }
 
                 Handles.CylinderHandleCap(controlID, _currentHitInfo, rotation, _nodeCylinderSize, EventType.Repaint);
+
+                if(_usePainter)
+                {
+                    if(_painterSize <= 0)
+                    {
+                        Handles.CylinderHandleCap(controlID, _currentHitInfo, Quaternion.Euler(90, 0, 0), _nodeCylinderSize, EventType.Repaint);
+                    }
+                    else
+                    {
+                        Handles.CircleHandleCap(controlID, _currentHitInfo, Quaternion.Euler(90, 0, 0), _painterSize, EventType.Repaint);
+                    }
+                }
             }
 
             for (int i = 0; i < length; i++)
@@ -379,13 +492,175 @@ namespace RoR2.Editor.Inspectors
             }
         }
 
-        private void DeleteNearestNode(Vector3 currentHitInfo)
+        //N: This is not my code, this is a code of a previous community member that was banned for being abhorrent, i dont have plans to support this tool if it breaks.
+        private void PaintNodes(float currentMaxDistance, float zPainterOffset, List<MapNode> cachedMapNodeList)
+        {
+            for (float x = _currentHitInfo.x - _painterSize, zCount = 0; x <= _currentHitInfo.x; x += currentMaxDistance - 4, zCount++)
+            {
+                for (float z = _currentHitInfo.z - _painterSize; z <= _currentHitInfo.z; z += currentMaxDistance - 4)
+                {
+                    //Haven't found a single node that is too close, feel free to spawn.
+                    //We lift the pos in case terrain is not flat...
+                    //We raycast to ground
+                    if ((x - _currentHitInfo.x) * (x - _currentHitInfo.x) + (z - _currentHitInfo.z) * (z - _currentHitInfo.z) <= _painterSize * _painterSize)
+                    {
+                        float xSym = _currentHitInfo.x - (x - _currentHitInfo.x);
+                        float zSym = _currentHitInfo.z - (z - _currentHitInfo.z);
+
+                        float offsetY = targetType.graphType == MapNodeGroup.GraphType.Air ? 0 : 6;
+                        Vector3 future1 = (int)zCount % 2 == 0 ? new Vector3(x, _currentHitInfo.y + offsetY, z + zPainterOffset) : new Vector3(x, _currentHitInfo.y + offsetY, z);
+                        Vector3 future2 = (int)zCount % 2 == 0 ? new Vector3(x, _currentHitInfo.y + offsetY, zSym + zPainterOffset) : new Vector3(x, _currentHitInfo.y + offsetY, zSym);
+                        Vector3 future3 = (int)zCount % 2 == 0 ? new Vector3(xSym, _currentHitInfo.y + offsetY, z + zPainterOffset) : new Vector3(xSym, _currentHitInfo.y + offsetY, z);
+                        Vector3 future4 = (int)zCount % 2 == 0 ? new Vector3(xSym, _currentHitInfo.y + offsetY, zSym + zPainterOffset) : new Vector3(xSym, _currentHitInfo.y + offsetY, zSym);
+
+                        if (!Physics.Linecast(_currentHitInfo, future1, out _, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
+                        {
+                            bool canPlace = true;
+                            if (targetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future1, Vector3.down, out RaycastHit raycastHit, 30, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                            {
+                                foreach (MapNode node in cachedMapNodeList)
+                                {
+                                    if (Vector3.Distance(node.transform.position, raycastHit.point) <= currentMaxDistance / 2)
+                                    {
+                                        canPlace = false;
+                                        break;
+                                    }
+                                }
+                                if (canPlace)
+                                {
+                                    AddNode(targetType, raycastHit.point);
+                                }
+                            }
+                            /*else
+                            {
+                                foreach (MapNode node in cachedMapNodeList)
+                                {
+                                    if (Vector3.Distance(node.transform.position, future1) <= currentMaxDistance)
+                                    {
+                                        canPlace = false;
+                                        break;
+                                    }
+                                }
+                                if (canPlace)
+                                {
+                                    AddNode(targetType, future1);
+                                }
+                            }*/
+                        }
+                        if (!Physics.Linecast(_currentHitInfo, future2, out _, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
+                        {
+                            bool canPlace = true;
+                            if (targetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future2, Vector3.down, out RaycastHit raycastHitto, 30, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                            {
+                                foreach (MapNode node in cachedMapNodeList)
+                                {
+                                    if (Vector3.Distance(node.transform.position, raycastHitto.point) <= currentMaxDistance / 2)
+                                    {
+                                        canPlace = false;
+                                        break;
+                                    }
+                                }
+                                if (canPlace)
+                                {
+                                    AddNode(targetType, raycastHitto.point);
+                                }
+                            }
+                            /*else
+                            {
+                                foreach (MapNode node in cachedMapNodeList)
+                                {
+                                    if (Vector3.Distance(node.transform.position, future2) <= currentMaxDistance)
+                                    {
+                                        canPlace = false;
+                                        break;
+                                    }
+                                }
+                                if (canPlace)
+                                {
+                                    AddNode(targetType, future2);
+                                }
+                            }*/
+                        }
+                        if (!Physics.Linecast(_currentHitInfo, future3, out _, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
+                        {
+                            bool canPlace = true;
+                            if (targetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future3, Vector3.down, out RaycastHit raycastHittoto, 30, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                            {
+                                foreach (MapNode node in cachedMapNodeList)
+                                {
+                                    if (Vector3.Distance(node.transform.position, raycastHittoto.point) <= currentMaxDistance / 2)
+                                    {
+                                        canPlace = false;
+                                        break;
+                                    }
+                                }
+                                if (canPlace)
+                                {
+                                    AddNode(targetType, raycastHittoto.point);
+                                }
+                            }
+                            /*else
+                            {
+                                foreach (MapNode node in cachedMapNodeList)
+                                {
+                                    if (Vector3.Distance(node.transform.position, future3) <= currentMaxDistance)
+                                    {
+                                        canPlace = false;
+                                        break;
+                                    }
+                                }
+                                if (canPlace)
+                                {
+                                    AddNode(targetType, future3);
+                                }
+                            }*/
+                        }
+                        if (!Physics.Linecast(_currentHitInfo, future4, out _, LayerIndex.world.mask, QueryTriggerInteraction.Ignore))
+                        {
+                            bool canPlace = true;
+                            if (targetType.graphType == MapNodeGroup.GraphType.Ground && Physics.Raycast(future4, Vector3.down, out RaycastHit raycastHittototo, 30, LayerIndex.CommonMasks.bullet, QueryTriggerInteraction.Collide))
+                            {
+                                foreach (MapNode node in cachedMapNodeList)
+                                {
+                                    if (Vector3.Distance(node.transform.position, raycastHittototo.point) <= currentMaxDistance / 2)
+                                    {
+                                        canPlace = false;
+                                        break;
+                                    }
+                                }
+                                if (canPlace)
+                                {
+                                    AddNode(targetType, raycastHittototo.point);
+                                }
+                            }
+                            /*else
+                            {
+                                foreach (MapNode node in cachedMapNodeList)
+                                {
+                                    if (Vector3.Distance(node.transform.position, future4) <= currentMaxDistance)
+                                    {
+                                        canPlace = false;
+                                        break;
+                                    }
+                                }
+                                if (canPlace)
+                                {
+                                    AddNode(targetType, future4);
+                                }
+                            }*/
+                        }
+                    }
+                }
+            }
+        }
+
+        private void DeleteNearestNode(Vector3 _currentHitInfo)
         {
             float minDist = Mathf.Infinity;
             MapNode nearestNode = null;
             foreach (var mapNode in targetType.GetNodes())
             {
-                float dist = Vector3.Distance(mapNode.transform.position, currentHitInfo);
+                float dist = Vector3.Distance(mapNode.transform.position, _currentHitInfo);
                 if (dist < minDist)
                 {
                     nearestNode = mapNode;
@@ -399,9 +674,9 @@ namespace RoR2.Editor.Inspectors
             }
         }
 
-        private void AddNode(MapNodeGroup targetType, Vector3 currentHitInfo)
+        private void AddNode(MapNodeGroup targetType, Vector3 _currentHitInfo)
         {
-            GameObject node = targetType.AddNode(currentHitInfo);
+            GameObject node = targetType.AddNode(_currentHitInfo);
 
             if (_parentObject)
             {
