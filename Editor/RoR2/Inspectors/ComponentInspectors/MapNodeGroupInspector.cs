@@ -200,21 +200,6 @@ namespace RoR2.Editor.Inspectors
                         c++;
                         continue;
                     }
-                    //List<MapNode.Link> buffer = new List<MapNode.Link>();
-                    // for (int i = 0; i < mapNode.links.Count; i++)
-                    // {
-                    //     //Make sure the other node exists and hasn't been deleted before.
-                    //     if (mapNode.links[i].nodeB)
-                    //     {
-                    //         //Too friccin close, get off
-                    //         if ((Vector3.Distance(mapNode.links[i].nodeB.gameObject.transform.position, mapNode.gameObject.transform.position) <= _maxDistance / 1.5))
-                    //         {
-                    //             DestroyImmediate(mapNode.gameObject);
-                    //             c++;
-                    //             break;
-                    //         }
-                    //     }
-                    // }
                 }
             }
             Debug.Log($"Removed {c} nodes that were not connected to anything.");
@@ -374,7 +359,6 @@ namespace RoR2.Editor.Inspectors
 
             int controlID = GUIUtility.GetControlID(FocusType.Keyboard | FocusType.Passive);
             _cachedMapNodeList = targetType.GetNodes();
-            //_maxDistance = MapNode.maxConnectionDistance;
             float zPainterOffset = _maxDistance / 2;
 
             if (Event.current.GetTypeForControl(controlID) == EventType.KeyDown)
