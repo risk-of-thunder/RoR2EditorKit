@@ -16,6 +16,7 @@
         <ui:VisualElement name="PainterContainer" style="display: none;">
             <RoR2.Editor.ExtendedHelpBox message="The Painter for Map Nodes is a legacy feature and is not supported directly by Nebby. Bugs related to it will be fixed by the community" message-type="Info" />
             <uie:FloatField label="Painter Size" value="42,2" name="BrushSize" />
+            <uie:FloatField label="Distance Between Nodes" value="15" name="NodeDistance"/>
         </ui:VisualElement>
         <ui:VisualElement name="ButtonContainer">
             <ui:VisualElement style="flex-direction: row;">
@@ -24,7 +25,7 @@
             </ui:VisualElement>
             <ui:VisualElement style="flex-direction: row;">
                 <ui:Button text="Update Hull Masks" display-tooltip-when-elided="true" name="UpdateHullMasks" style="white-space: normal; flex-grow: 0; flex-direction: column; flex-wrap: nowrap; width: 48%;" />
-                <ui:Button text="Remove Node Excess" display-tooltip-when-elided="true" name="RemoveNodeExcess" style="flex-grow: 0; width: 48%;" />
+                <ui:Button text="Remove Unconnected Nodes" display-tooltip-when-elided="true" name="RemoveNodeExcess" style="flex-grow: 0; width: 48%;" />
             </ui:VisualElement>
             <ui:VisualElement style="flex-direction: row;">
                 <ui:Button text="Make Air Nodes" display-tooltip-when-elided="true" name="MakeAirNodes" style="white-space: normal; flex-grow: 0; flex-direction: column; flex-wrap: nowrap; width: 48%;" />

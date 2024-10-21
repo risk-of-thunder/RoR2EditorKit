@@ -104,6 +104,11 @@ namespace RoR2.Editor.Inspectors
             painterSize.RegisterValueChangedCallback(evt => _painterSize = evt.newValue);
             painterSize.ConnectWithSetting(inspectorPreferenceSettings, nameof(painterSize), 4f);
             _painterSize = inspectorPreferenceSettings.GetOrCreateSetting<float>(nameof(painterSize));
+            
+            var nodeDistance = templateInstanceRoot.Q<FloatField>("NodeDistance");
+            nodeDistance.RegisterValueChangedCallback(evt => _maxDistance = evt.newValue);
+            nodeDistance.ConnectWithSetting(inspectorPreferenceSettings, nameof(nodeDistance), 15f);
+            _maxDistance = inspectorPreferenceSettings.GetOrCreateSetting<float>(nameof(nodeDistance));
 
             var roundHitPointToNearestGrid = templateInstanceRoot.Q<Toggle>("RoundPointToGrid");
             roundHitPointToNearestGrid.RegisterValueChangedCallback(evt => _roundHitPointToNearestGrid = evt.newValue);
@@ -196,23 +201,23 @@ namespace RoR2.Editor.Inspectors
                         continue;
                     }
                     //List<MapNode.Link> buffer = new List<MapNode.Link>();
-                    for (int i = 0; i < mapNode.links.Count; i++)
-                    {
-                        //Make sure the other node exists and hasn't been deleted before.
-                        if (mapNode.links[i].nodeB)
-                        {
-                            //Too friccin close, get off
-                            if ((Vector3.Distance(mapNode.links[i].nodeB.gameObject.transform.position, mapNode.gameObject.transform.position) <= _maxDistance / 1.5))
-                            {
-                                DestroyImmediate(mapNode.gameObject);
-                                c++;
-                                break;
-                            }
-                        }
-                    }
+                    // for (int i = 0; i < mapNode.links.Count; i++)
+                    // {
+                    //     //Make sure the other node exists and hasn't been deleted before.
+                    //     if (mapNode.links[i].nodeB)
+                    //     {
+                    //         //Too friccin close, get off
+                    //         if ((Vector3.Distance(mapNode.links[i].nodeB.gameObject.transform.position, mapNode.gameObject.transform.position) <= _maxDistance / 1.5))
+                    //         {
+                    //             DestroyImmediate(mapNode.gameObject);
+                    //             c++;
+                    //             break;
+                    //         }
+                    //     }
+                    // }
                 }
             }
-            Debug.Log($"Removed {c} nodes that were way too close to others.");
+            Debug.Log($"Removed {c} nodes that were not connected to anything.");
             AssetDatabase.SaveAssets();
         }
 
@@ -369,7 +374,7 @@ namespace RoR2.Editor.Inspectors
 
             int controlID = GUIUtility.GetControlID(FocusType.Keyboard | FocusType.Passive);
             _cachedMapNodeList = targetType.GetNodes();
-            _maxDistance = MapNode.maxConnectionDistance;
+            //_maxDistance = MapNode.maxConnectionDistance;
             float zPainterOffset = _maxDistance / 2;
 
             if (Event.current.GetTypeForControl(controlID) == EventType.KeyDown)
@@ -495,9 +500,9 @@ namespace RoR2.Editor.Inspectors
         //N: This is not my code, this is a code of a previous community member that was banned for being abhorrent, i dont have plans to support this tool if it breaks.
         private void PaintNodes(float currentMaxDistance, float zPainterOffset, List<MapNode> cachedMapNodeList)
         {
-            for (float x = _currentHitInfo.x - _painterSize, zCount = 0; x <= _currentHitInfo.x; x += currentMaxDistance - 4, zCount++)
+            for (float x = _currentHitInfo.x - _painterSize, zCount = 0; x <= _currentHitInfo.x; x += currentMaxDistance / 2, zCount++)
             {
-                for (float z = _currentHitInfo.z - _painterSize; z <= _currentHitInfo.z; z += currentMaxDistance - 4)
+                for (float z = _currentHitInfo.z - _painterSize; z <= _currentHitInfo.z; z += currentMaxDistance / 2)
                 {
                     //Haven't found a single node that is too close, feel free to spawn.
                     //We lift the pos in case terrain is not flat...
