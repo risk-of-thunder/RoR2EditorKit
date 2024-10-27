@@ -134,7 +134,7 @@ namespace RoR2.Editor
             {
                 bool canSerialize = SerializationMediator.CanSerializeField(fInfo);
                 bool shouldSerialize = !fInfo.IsStatic || (fInfo.DeclaringType == typeBeingSerialized);
-                bool doesNotHaveAttribute = fInfo.GetCustomAttribute<NonSerializedAttribute>() == null;
+                bool doesNotHaveAttribute = !fInfo.GetCustomAttributes<NonSerializedAttribute>().Any();
                 bool notConstant = !fInfo.IsLiteral;
                 return canSerialize && shouldSerialize && doesNotHaveAttribute && notConstant;
             });
