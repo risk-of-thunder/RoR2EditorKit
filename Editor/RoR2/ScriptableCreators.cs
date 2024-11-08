@@ -4,8 +4,9 @@ using UnityEditor;
 using UnityEngine;
 using System.IO;
 using UnityEditor.ProjectWindowCallback;
+using IOPath = System.IO.Path;
 
-namespace RoR2EditorKit.RoR2Related
+namespace RoR2.Editor
 {
     internal static class ScriptableCreators
     {
@@ -87,9 +88,9 @@ namespace RoR2EditorKit.RoR2Related
             {
                 path = "Assets";
             }
-            else if (Path.GetExtension(path) != "")
+            else if (IOPath.GetExtension(path) != "")
             {
-                path = path.Replace(Path.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject)), "");
+                path = path.Replace(IOPath.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject)), "");
             }
             var name = typeof(T).Name;
             string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath($"{path}/{name}.asset");

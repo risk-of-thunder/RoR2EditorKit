@@ -7,7 +7,8 @@
         "GUID:48abf88f565f4bb4fb35fbe2385f0894",
         "GUID:b04f7ec21bb6ebe43a85599e36f30cff",
         "GUID:7b6797d0f5adde64d8f71e4e56cbe2a1",
-        "GUID:c5ecc461727906345a35491a0440694f"
+        "GUID:c5ecc461727906345a35491a0440694f",
+        "GUID:fb8ce2e2486231249a0954d5da518927"
     ],
     "includePlatforms": [
         "Editor"
@@ -17,7 +18,9 @@
     "overrideReferences": true,
     "precompiledReferences": [
         "RoR2.dll",
-        "BepInEx.dll"
+        "BepInEx.dll",
+        "HGCSharpUtils.dll",
+        "HGUnityUtils.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [

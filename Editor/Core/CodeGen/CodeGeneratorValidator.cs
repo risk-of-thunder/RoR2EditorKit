@@ -90,6 +90,7 @@ namespace RoR2.Editor.CodeGen
             AssetDatabase.MakeEditable(path);
 
             File.WriteAllText(path, code);
+            AssetDatabase.ImportAsset(path);
         }
 
 
@@ -109,6 +110,8 @@ namespace RoR2.Editor.CodeGen
             {
                 yield return null;
             }
+
+            AssetDatabase.ImportAsset(path);
         }
 
 

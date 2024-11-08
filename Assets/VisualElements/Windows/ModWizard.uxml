@@ -6,6 +6,7 @@
         <uie:PropertyField name="ModName" binding-path="modName" />
         <uie:PropertyField name="HumanReadableModName" binding-path="humanReadableModName" />
         <uie:PropertyField name="ModDescription" binding-path="modDescription" />
+        <uie:PropertyField name="ModURL" binding-path="modURL" />
         <uie:PropertyField name="AssemblyDefinitionReferences" binding-path="assemblyDefinitionReferences" style="max-height: 220px;" />
         <uie:PropertyField binding-path="addAllR2APIAssemblies" label="Add R2API Assemblies" name="AddAllR2APIAssemblies" />
     </RoR2.Editor.EqualLabelWidthContainer>

@@ -72,5 +72,26 @@ namespace RoR2.Editor
             }
             throw new ArgumentException($"{asset} is not part of the AssetDatabase and as such has no GUID", nameof(asset));
         }
+
+        /// <summary>
+        /// Returns the AssetPath of this AssetGUID
+        /// 
+        /// <para>See also <see cref="ToString(bool)"/></para>
+        /// </summary>
+        /// <returns>The AssetPath of this AssetGUID</returns>
+        public override string ToString()
+        {
+            return ToString(false);
+        }
+
+        /// <summary>
+        /// Custom ToString option that can be used to either return the <see cref="guid"/> in its hexadecimal representation, or to return the AssetPath for the guid.
+        /// </summary>
+        /// <param name="returnGUIDAsString">If true, the GUID is returned using its hexadecimal representation, otherwise the asset path is returned</param>
+        /// <returns>If <paramref name="returnGUIDAsString"/> is true, the GUID is returned using its hexadecimal representation, otherwise the asset path is returned</returns>
+        public string ToString(bool returnGUIDAsString)
+        {
+            return returnGUIDAsString ? guid.ToString() : AssetDatabase.GUIDToAssetPath(guid);
+        }
     }
 }

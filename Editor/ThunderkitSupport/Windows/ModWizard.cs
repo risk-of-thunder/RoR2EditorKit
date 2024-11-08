@@ -19,6 +19,7 @@ using BepInEx.Logging;
 using ThunderKit.Core.Manifests;
 using ThunderKit.Core.Manifests.Datum;
 using ThunderKit.Core.Manifests.Datums;
+using ThunderKit.Integrations.Thunderstore;
 
 namespace RoR2.Editor.Windows
 {
@@ -35,6 +36,7 @@ namespace RoR2.Editor.Windows
         public string modName;
         public string humanReadableModName;
         public string modDescription;
+        public string modURL;
         public bool addAllR2APIAssemblies;
         public List<AssemblyDefinitionAsset> assemblyDefinitionReferences = new List<AssemblyDefinitionAsset>();
         public List<string> precompiledAssemblyReferences = new List<string>();
@@ -50,6 +52,9 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
         private string _assetBundleFolder;
         private AssemblyDefinitionAsset _modAssemblyDef;
         private string[] _allReferencedAssembliesFromModAssemblyDefinition;
+        private string[] _allReferencedAssemblyPaths;
+        private UnityEditor.Compilation.Assembly[] _assembliesWeDependOn;
+        private UnityEngine.Object[] _manifestFiles;
         private ManifestIdentity _modIdentity;
         
         [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Wizards/Mod")]
@@ -127,6 +132,7 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
             _wizardCoroutineHelper.AddStep(CreateAssemblyDef(), "Writing AssemblyDef");
             _wizardCoroutineHelper.AddStep(CreateMainClass(), "Writing Main Class");
             _wizardCoroutineHelper.AddStep(CreateContentProvider(), "Writing Content Provider");
+            _wizardCoroutineHelper.AddStep(CreateFiles(), "Creating ReadMe, Changelog and Icon");
             _wizardCoroutineHelper.AddStep(CreateManifest(), "Creating Manifest");
             _wizardCoroutineHelper.AddStep(ComputeManifestDependencies(), "Computing Manifest Dependencies");
         }
@@ -186,6 +192,8 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
 
         private IEnumerator CreateAssemblyDef()
         {
+            List<string> referencedAssemblyPaths = new List<string>();
+
             var def = new ThunderKit.Core.Data.AssemblyDef();
             def.name = modName;
             def.references = assemblyDefinitionReferences.Select(asmdef => $"GUID:" + AssetDatabaseUtil.GetAssetGUIDString(asmdef)).ToArray();
@@ -206,12 +214,16 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
                 }
             }
 
+            referencedAssemblyPaths.AddRange(def.precompiledReferences.Select(CompilationPipeline.GetPrecompiledAssemblyPathFromAssemblyName));
+
             def.autoReferenced = true;
 
             List<string> assemblyReferencesFromAssemblyDefinitionAssetReferences = def.references
                 .Select(guid =>
                 {
                     var substring = guid.Substring("GUID:".Length);
+                    var path = AssetDatabase.GUIDToAssetPath(substring);
+                    referencedAssemblyPaths.Add(IOPath.GetFullPath(path));
                     return AssetDatabaseUtil.LoadAssetFromGUID<AssemblyDefinitionAsset>(substring);
                 })
                 .Select(asset => JsonUtility.FromJson<ThunderKit.Core.Data.AssemblyDef>(asset.text))
@@ -236,6 +248,8 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
             AssetDatabase.ImportAsset(projectRelativePath);
             yield return 1f;
             _modAssemblyDef = AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>(projectRelativePath);
+            _allReferencedAssemblyPaths = referencedAssemblyPaths.ToArray();
+            _assembliesWeDependOn = CompilationPipeline.GetAssemblies().Where(a => _allReferencedAssembliesFromModAssemblyDefinition.Contains(a.name)).ToArray();
             yield break;
         }
 
@@ -261,10 +275,11 @@ using UnityEngine;");
                 writer.BeginBlock(); //namespace Begin
 
                 writer.WriteLine("#region Dependencies");
-                var subroutine = WriteBepInDependencies(writer);
+                var subroutine = WriteTopLevelBepInDependencies(writer);
                 while(subroutine.MoveNext())
                 {
-                    yield return subroutine.Current;
+                    float subroutineProgress = (float)subroutine.Current;
+                    yield return R2EKMath.Remap(subroutineProgress, 0, 1, 0, 0.5f);
                 }
                 writer.WriteLine("#endregion");
 
@@ -319,25 +334,54 @@ new {modName}Content();");
             }
             yield break;
 
-            IEnumerator WriteBepInDependencies(Writer writer)
+            IEnumerator WriteTopLevelBepInDependencies(Writer writer)
             {
-                var baseUnityPlugins = TypeCache.GetTypesWithAttribute(typeof(BepInEx.BepInPlugin));
-                int processedBUPS = 0; //Toad BUP sound
-                foreach(Type baseUnityPlugin in baseUnityPlugins)
+                // Retrieve all types with the BepInPlugin attribute
+                var types = TypeCache.GetTypesWithAttribute<BepInPlugin>();
+
+                // Dictionary to store plugins and their BepInDependency attributes
+                Dictionary<BepInPlugin, BepInDependency[]> pluginToDependencies = new Dictionary<BepInPlugin, BepInDependency[]>();
+                Dictionary<string, BepInPlugin> guidToPlugin = new Dictionary<string, BepInPlugin>();
+
+                int foreachIterationCount = 0;
+                foreach (var type in types)
                 {
-                    yield return R2EKMath.Remap(processedBUPS, 0, baseUnityPlugins.Count, 0, 0.5f);
-
-                    System.Reflection.Assembly assembly = baseUnityPlugin.Assembly;
-                    var fileName = IOPath.GetFileNameWithoutExtension(assembly.Location);
-
-                    //We're referencing this assembly, write bepindependency attribute.
-                    if(_allReferencedAssembliesFromModAssemblyDefinition.Contains(fileName))
+                    yield return R2EKMath.Remap(foreachIterationCount, 0, types.Count, 0, 0.3f);
+                    var assembly = type.Assembly;
+                    var assemblyName = IOPath.GetFileNameWithoutExtension(assembly.Location);
+                    if (!_allReferencedAssembliesFromModAssemblyDefinition.Contains(assemblyName))
                     {
-                        var bepInPlugin = baseUnityPlugin.GetCustomAttribute<BepInPlugin>();
-                        writer.WriteLine($"[BepInDependency(\"{bepInPlugin.GUID}\")]");
+                        foreachIterationCount++;
+                        continue;
                     }
 
-                    processedBUPS++;
+                    var attribute = type.GetCustomAttribute<BepInPlugin>();
+                    guidToPlugin.Add(attribute.GUID, attribute);
+
+                    var dependencies = type.GetCustomAttributes<BepInDependency>();
+
+                    pluginToDependencies.Add(attribute, dependencies.ToArray());
+                    foreachIterationCount++;
+                }
+
+                HashSet<string> allDependencies = new HashSet<string>();
+                foreachIterationCount = 0;
+                foreach(var (plugin, dependencies) in pluginToDependencies)
+                {
+                    yield return R2EKMath.Remap(foreachIterationCount, 0, pluginToDependencies.Count, 0.3f, 0.6f);
+                    foreach(var dependency in dependencies)
+                    {
+                        allDependencies.Add(dependency.DependencyGUID);
+                    }
+                }
+
+                foreachIterationCount = 0;
+                List<BepInPlugin> topLevelDependencies = pluginToDependencies.Keys.Where(k => !allDependencies.Contains(k.GUID)).ToList();
+                foreach(var topLevelDependency in topLevelDependencies)
+                {
+                    yield return R2EKMath.Remap(foreachIterationCount, 0, topLevelDependencies.Count, 0.6f, 1f);
+                    writer.WriteLine($"[BepInDependency(\"{topLevelDependency.GUID}\")]");
+                    foreachIterationCount++;
                 }
                 yield break;
             }
@@ -394,8 +438,8 @@ using System.Collections;");
                 writer.WriteVerbatim(
     @$"public string identifier => {modName}Main.GUID;
 
-// public static ReadOnlyContentPack readOnlyContentPack => new ReadOnlyContentPack({helper.MakeIdentifierPascalCase(modName)}ContentPack);
-// internal static ContentPack {helper.MakeIdentifierPascalCase(modName)}ContentPack {{ get; }} = new ContentPack(); */");
+public static ReadOnlyContentPack readOnlyContentPack => new ReadOnlyContentPack({helper.MakeIdentifierPascalCase(modName)}ContentPack);
+internal static ContentPack {helper.MakeIdentifierPascalCase(modName)}ContentPack {{ get; }} = new ContentPack();");
 
                 writer.WriteLine();
 
@@ -456,12 +500,58 @@ yield break;");
             yield break;
         }
 
+        private IEnumerator CreateFiles()
+        {
+            List<UnityEngine.Object> files = new List<UnityEngine.Object>();
+
+            string directory = IOPath.GetFullPath(_folderOutput);
+            string projectRelativePath = "";
+
+            string readmePath = IOPath.Combine(directory, $"README.md");
+            using(var fs = File.CreateText(readmePath))
+            {
+                var task = fs.WriteAsync(@$"# {humanReadableModName} - {modDescription}");
+                while (!task.IsCompleted)
+                    yield return 0.33f;
+            }
+            projectRelativePath = FileUtil.GetProjectRelativePath(IOUtils.FormatPathForUnity(readmePath));
+            AssetDatabase.ImportAsset(projectRelativePath);
+            files.Add(AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(projectRelativePath));
+
+            string changelogPath = IOPath.Combine(directory, "CHANGELOG.md");
+            using (var fs = File.CreateText(changelogPath))
+            {
+                var task = fs.WriteAsync(
+@$"# 0.0.1
+* Initial Release");
+                while (!task.IsCompleted)
+                    yield return 0.66f;
+            }
+            projectRelativePath = FileUtil.GetProjectRelativePath(IOUtils.FormatPathForUnity(changelogPath));
+            AssetDatabase.ImportAsset(projectRelativePath);
+            files.Add(AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(projectRelativePath));
+
+            string iconPath = IOPath.Combine(directory, $"icon.png");
+            projectRelativePath = FileUtil.GetProjectRelativePath(IOUtils.FormatPathForUnity(iconPath));
+            AssetDatabase.CopyAsset(R2EKConstants.AssetGUIDs.r2ekIcon.ToString(), projectRelativePath);
+            AssetDatabase.ImportAsset(projectRelativePath);
+            files.Add(AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(projectRelativePath));
+
+            yield return 0.99f;
+
+            _manifestFiles = files.ToArray();
+
+            yield return 1f;
+        }
+
         private IEnumerator CreateManifest()
         {
             var manifest = CreateInstance<Manifest>();
-            AssetDatabase.CreateAsset(manifest, IOUtils.GenerateUniqueFileName(_folderOutput, $"{modName}Manifest", ".asset"));
 
-            yield return 0.33f;
+            string path = IOUtils.GenerateUniqueFileName(_folderOutput, $"{modName}Manifest", ".asset");
+            AssetDatabase.CreateAsset(manifest, path);
+
+            yield return 0.15f;
 
             manifest.Identity = CreateInstance<ManifestIdentity>();
             _modIdentity = manifest.Identity;
@@ -471,9 +561,10 @@ yield break;");
             _modIdentity.Name = modName;
             _modIdentity.Description = modDescription;
             _modIdentity.Version = "0.0.1";
+            _modIdentity.StagingPaths = new string[1] { "<ManifestPluginStaging>" };
             manifest.InsertElement(manifest.Identity, 0);
 
-            yield return 0.66f;
+            yield return 0.3f;
 
             var bundleDatum = CreateInstance<AssetBundleDefinitions>();
             bundleDatum.assetBundles = new AssetBundleDefinition[]
@@ -484,33 +575,53 @@ yield break;");
                     assets = new UnityEngine.Object[] { AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(_assetBundleFolder) },
                 },
             };
+            bundleDatum.StagingPaths = new string[1] { "<ManifestPluginStaging>" };
             manifest.InsertElement(bundleDatum, 1);
 
-            yield return 0.99f;
+            yield return 0.45f;
 
             var assemblyDatum = CreateInstance<AssemblyDefinitions>();
             assemblyDatum.definitions = new AssemblyDefinitionAsset[]
             {
                 _modAssemblyDef
             };
-
+            assemblyDatum.StagingPaths = new string[1] { "<ManifestPluginStaging>" };
             manifest.InsertElement(assemblyDatum, 2);
-            yield return 1f;
+
+            yield return 0.6f;
+
+            var files = CreateInstance<Files>();
+            files.files = HG.ArrayUtils.Clone(_manifestFiles);
+            files.includeMetaFiles = false;
+            files.StagingPaths = new string[1] { "<ManifestPluginStaging>" };
+            manifest.InsertElement(files, 3);
+
+            yield return 0.75f;
+
+            var thunderstoreData = CreateInstance<ThunderstoreData>();
+            thunderstoreData.url = modURL;
+            thunderstoreData.StagingPaths = new string[1] { "<ManifestPluginStaging>" };
+            manifest.InsertElement(thunderstoreData, 4);
+
+            yield return 0.9f;
+
+            AssetDatabase.ImportAsset(path);
         }
 
         private IEnumerator ComputeManifestDependencies()
         {
             List<Manifest> manifestsFound = new List<Manifest>();
 
-            var assemblyPaths = assemblyDefinitionReferences.Select(AssetDatabase.GetAssetPath).Where(R2EKExtensions.IsNullOrEmptyOrWhiteSpace).Select(IOPath.GetFullPath).Concat(_defaultPrecompiledAssemblies.Select(CompilationPipeline.GetPrecompiledAssemblyPathFromAssemblyName)).ToArray();
-
             string[] stopPoints = new string[] { "PackageCache", "Packages", "Assets" };
 
-            for(int i = 0; i < assemblyPaths.Length; i++)
+            for(int i = 0; i < _allReferencedAssemblyPaths.Length; i++)
             {
-                var assemblyPath = assemblyPaths[i];
+                var assemblyPath = _allReferencedAssemblyPaths[i];
+                if (assemblyPath.IsNullOrEmptyOrWhiteSpace())
+                    continue;
+
                 string currentDirToSearch = IOPath.GetDirectoryName(assemblyPath);
-                yield return R2EKMath.Remap(i, 0, assemblyPaths.Length - 1, 0, 0.5f);
+                yield return R2EKMath.Remap(i, 0, _allReferencedAssemblyPaths.Length - 1, 0, 0.5f);
 
                 while(!stopPoints.Contains(currentDirToSearch.Split('\\').Last()))
                 {
@@ -561,6 +672,8 @@ yield break;");
             _assetBundleFolder = "";
             _modAssemblyDef = null;
             _allReferencedAssembliesFromModAssemblyDefinition = Array.Empty<string>();
+            _allReferencedAssemblyPaths = Array.Empty<string>();
+            _manifestFiles = Array.Empty<UnityEngine.Object>();
             _modIdentity = null;
         }
 
