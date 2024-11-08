@@ -14,6 +14,8 @@
 
 * Implemented a Decorator Drawer for ``ShowFieldObsoleteAttribute``
 * Reduced the overall real estate for ``NamedObjectReferencePropertyDrawer``'s labels
+* Removed ``Remove Node Excess`` and replaced it with ``Remove Unconnected Nodes`` (Thanks Villiger)
+* Fixed an issue where the ``EntityStateConfiguration`` inspector would fail to properly display its fields (Thanks I-Eye)
 
 ### ThunderKitSupport Changes
 
