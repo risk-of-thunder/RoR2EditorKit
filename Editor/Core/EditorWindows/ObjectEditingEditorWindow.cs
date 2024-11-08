@@ -14,7 +14,7 @@ namespace RoR2.Editor
         protected override void OnDisable()
         {
             base.OnDisable();
-            if(serializedObject != null && serializedObject.hasModifiedProperties)
+            if (serializedObject != null && serializedObject.hasModifiedProperties)
             {
                 serializedObject.ApplyModifiedProperties();
             }

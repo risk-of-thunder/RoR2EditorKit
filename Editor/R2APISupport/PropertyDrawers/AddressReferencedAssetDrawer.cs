@@ -1,10 +1,5 @@
 #if R2EK_R2API_ADDRESSABLES
 using R2API.AddressReferencedAssets;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 

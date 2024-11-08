@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace RoR2.Editor
-{ 
+{
     internal class HitBoxGizmoDrawer
     {
         private static Mesh cubeMesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");

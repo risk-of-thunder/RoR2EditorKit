@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 
 namespace RoR2.Editor
@@ -63,7 +59,7 @@ namespace RoR2.Editor
         /// <param name="asset"></param>
         public static implicit operator AssetGUID<T>(T asset)
         {
-            if(AssetDatabase.Contains(asset))
+            if (AssetDatabase.Contains(asset))
             {
                 return new AssetGUID<T>
                 {

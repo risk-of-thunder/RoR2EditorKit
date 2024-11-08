@@ -41,7 +41,7 @@ namespace RoR2.Editor.PropertyDrawers
             var allEnumValues = Enum.GetValues(typeof(DirectorAPI.Stage));
             foreach (DirectorAPI.Stage value in allEnumValues)
             {
-                if(stageValue.HasFlag(value))
+                if (stageValue.HasFlag(value))
                 {
                     tooltipBuilder.Append(value.ToString());
                     tooltipBuilder.Append(" | ");
@@ -49,7 +49,7 @@ namespace RoR2.Editor.PropertyDrawers
                 }
             }
 
-            if(valCount == allEnumValues.Length)
+            if (valCount == allEnumValues.Length)
             {
                 label = "All...";
             }
@@ -57,7 +57,7 @@ namespace RoR2.Editor.PropertyDrawers
             {
                 label = "Mixed...";
             }
-            else if(valCount == 1)
+            else if (valCount == 1)
             {
                 label = Enum.GetName(typeof(DirectorAPI.Stage), stageValue);
             }
@@ -81,11 +81,11 @@ namespace RoR2.Editor.PropertyDrawers
 
             float x = 0;
             float y = 0;
-            foreach(var option in _optionNames)
+            foreach (var option in _optionNames)
             {
                 var vector = EditorStyles.label.CalcSize(new GUIContent(option));
                 var possiblyBiggerX = vector.x;
-                
+
 
                 x = Mathf.Max(x, possiblyBiggerX);
                 y += EditorGUIUtility.singleLineHeight;
@@ -106,18 +106,18 @@ namespace RoR2.Editor.PropertyDrawers
 
             public override void OnGUI(Rect rect)
             {
-                for(int i = 0; i < _optionNames.Length; i++)
+                for (int i = 0; i < _optionNames.Length; i++)
                 {
                     var optionName = _optionNames[i];
                     bool previousVal = ComputePreviousBoolValForCurrent(i);
 
                     EditorGUI.BeginChangeCheck();
                     bool newVal = GUILayout.Toggle(previousVal, optionName);
-                    if(EditorGUI.EndChangeCheck())
+                    if (EditorGUI.EndChangeCheck())
                     {
-                        if(i == 0) //Handles "None" option
+                        if (i == 0) //Handles "None" option
                         {
-                            if(newVal == true)
+                            if (newVal == true)
                             {
                                 _maskValue = _optionValues[i];
                                 onValueChanged?.Invoke(_maskValue);
@@ -128,9 +128,9 @@ namespace RoR2.Editor.PropertyDrawers
                             onValueChanged?.Invoke(_maskValue);
                             continue;
                         }
-                        else if(i == _optionNames.Length - 1) //Handles "All" option
+                        else if (i == _optionNames.Length - 1) //Handles "All" option
                         {
-                            if(newVal == true)
+                            if (newVal == true)
                             {
                                 _maskValue = _optionValues[i];
                                 onValueChanged?.Invoke(_maskValue);
@@ -143,13 +143,13 @@ namespace RoR2.Editor.PropertyDrawers
                         }
 
                         //It has been selected, and its not already in the mask
-                        if(newVal == true && !_maskValue.HasFlag(_optionValues[i]))
+                        if (newVal == true && !_maskValue.HasFlag(_optionValues[i]))
                         {
                             _maskValue |= _optionValues[i];
                             onValueChanged?.Invoke(_maskValue);
                             continue;
                         }//It has been deselected, and its in the mask
-                        else if(newVal == false && _maskValue.HasFlag(_optionValues[i]))
+                        else if (newVal == false && _maskValue.HasFlag(_optionValues[i]))
                         {
                             _maskValue &= ~_optionValues[i];
                             onValueChanged?.Invoke(_maskValue);
@@ -162,11 +162,11 @@ namespace RoR2.Editor.PropertyDrawers
             private bool ComputePreviousBoolValForCurrent(int i)
             {
                 //Do a direct comparasion for All and None options, use HasFlag for the rest.
-                if(i == 0)
+                if (i == 0)
                 {
                     return _maskValue == _optionValues[i];
                 }
-                else if(i == _optionNames.Length - 1)
+                else if (i == _optionNames.Length - 1)
                 {
                     return _maskValue == _optionValues[i];
                 }

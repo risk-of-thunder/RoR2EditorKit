@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine.UIElements;
-using UnityEngine;
 using UnityEditor;
-using UnityEditor.UIElements;
-using Object = UnityEngine.Object;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace RoR2.Editor
 {
@@ -167,10 +161,15 @@ namespace RoR2.Editor
         /// A button that can be clicked to dismiss this helpbox.
         /// </summary>
         public Button dismissButton { get; }
-        
-        private void Init(AttachToPanelEvent evt)
+
+        private void OnAttach(AttachToPanelEvent evt)
         {
             dismissButton.clicked += Detach;
+        }
+
+        private void OnDetach(DetachFromPanelEvent evt)
+        {
+            dismissButton.clicked -= Detach;
         }
 
         private void Detach()
@@ -190,12 +189,13 @@ namespace RoR2.Editor
             label = this.Q<Label>("Label");
             dismissButton = this.Q<Button>();
 
-            RegisterCallback<AttachToPanelEvent>(Init);
+            RegisterCallback<AttachToPanelEvent>(OnAttach);
+            RegisterCallback<DetachFromPanelEvent>(OnDetach);
         }
 
         ~ExtendedHelpBox()
         {
-            UnregisterCallback<AttachToPanelEvent>(Init);
+            UnregisterCallback<AttachToPanelEvent>(OnAttach);
         }
 
 
@@ -212,7 +212,7 @@ namespace RoR2.Editor
             dismissButton = this.Q<Button>();
 
             ContextualMenuPopulateEvent = contextMenuPopulateEvent;
-            RegisterCallback<AttachToPanelEvent>(Init);
+            RegisterCallback<AttachToPanelEvent>(OnAttach);
         }
 
         /// <summary>
@@ -231,7 +231,7 @@ namespace RoR2.Editor
             this.messageType = messageType;
             this.messageIsExplicit = messageIsExplicit;
             this.isDismissable = canBeDismissed;
-            RegisterCallback<AttachToPanelEvent>(Init);
+            RegisterCallback<AttachToPanelEvent>(OnAttach);
         }
 
         /// <summary>
@@ -251,7 +251,7 @@ namespace RoR2.Editor
             this.messageIsExplicit = messageIsExplicit;
             this.isDismissable = canBeDismissed;
             ContextualMenuPopulateEvent = contextMenuPopulateEvent;
-            RegisterCallback<AttachToPanelEvent>(Init);
+            RegisterCallback<AttachToPanelEvent>(OnAttach);
         }
 
         public new class UxmlFactory : UxmlFactory<ExtendedHelpBox, UxmlTraits> { }

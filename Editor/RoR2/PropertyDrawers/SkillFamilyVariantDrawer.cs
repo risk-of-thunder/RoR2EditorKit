@@ -1,9 +1,4 @@
 ﻿using RoR2.Skills;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
@@ -28,7 +23,7 @@ namespace RoR2.Editor.PropertyDrawers
             totalPosForUnlockableDefRect.x = baseRectForEach.xMax;
             DrawPropertyFieldWithSnugLabel(totalPosForUnlockableDefRect, unlockableDefProp, unlockableDefLabel);
         }
-        
+
         /*public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var skillDefProp = property.FindPropertyRelative("skillDef");

@@ -1,5 +1,4 @@
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
 
 namespace RoR2.Editor.Inspectors
@@ -20,14 +19,14 @@ namespace RoR2.Editor.Inspectors
         }
         protected override void DrawIMGUI()
         {
-            if(IMGUIUtil.CreateFieldForSetting(inspectorProjectSettings, SETTING_NAME, true))
+            if (IMGUIUtil.CreateFieldForSetting(inspectorProjectSettings, SETTING_NAME, true))
             {
                 AutoCalculateJumpVelocity();
             }
             EditorGUI.BeginChangeCheck();
             EditorGUILayout.PropertyField(_targetElevationTransformProperty);
             EditorGUILayout.PropertyField(_timeProperty);
-            if(EditorGUI.EndChangeCheck())
+            if (EditorGUI.EndChangeCheck())
             {
                 AutoCalculateJumpVelocity();
             }
@@ -46,7 +45,7 @@ namespace RoR2.Editor.Inspectors
                 return;
 
             Transform t = _targetElevationTransformProperty.objectReferenceValue as Transform;
-            if(!t)
+            if (!t)
             {
                 Debug.LogError($"Cannot calculate jump velocity since there is no Transform assigned to Target Elevation Transform.");
                 return;

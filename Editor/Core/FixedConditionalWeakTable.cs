@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 ///Taken from RoR2BepinexPack, credit goes to KingEnderBrine
 ///https://github.com/risk-of-thunder/RoR2BepInExPack/blob/dlc1/RoR2BepInExPack/Utilities/FixedConditionalWeakTable.cs

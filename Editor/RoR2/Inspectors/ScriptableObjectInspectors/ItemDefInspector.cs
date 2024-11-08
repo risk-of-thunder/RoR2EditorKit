@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEditor;
-using UnityEditor.Graphs;
+﻿using UnityEditor;
 using UnityEditor.UIElements;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace RoR2.Editor.Inspectors
@@ -14,7 +7,7 @@ namespace RoR2.Editor.Inspectors
     [CustomEditor(typeof(ItemDef))]
     public class ItemDefInspector : VisualElementScriptableObjectInspector<ItemDef>
     {
-        
+
 
         private SerializedProperty deprecatedTierEnumProperty;
         private SerializedProperty nameTokenProperty;
@@ -29,7 +22,7 @@ namespace RoR2.Editor.Inspectors
             pickupTokenProperty = serializedObject.FindProperty(nameof(ItemDef.pickupToken));
             descTokenProperty = serializedObject.FindProperty(nameof(ItemDef.descriptionToken));
             loreTokenProperty = serializedObject.FindProperty(nameof(ItemDef.loreToken));
-            
+
             templateInstanceRoot.Q<PropertyField>("DeprecatedTier").RegisterCallback<ChangeEvent<string>>(OnPropertyFieldChanged);
             itemTierDefField = templateInstanceRoot.Q<PropertyField>("ItemTierDef");
             OnPropertyFieldChanged(null);

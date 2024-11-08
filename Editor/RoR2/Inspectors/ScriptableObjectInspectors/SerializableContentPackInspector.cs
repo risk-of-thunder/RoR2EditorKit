@@ -1,7 +1,5 @@
 ﻿using RoR2.ContentManagement;
 using UnityEditor;
-using UnityEditor.UIElements;
-using UnityEngine.UIElements;
 
 namespace RoR2.Editor.Inspectors
 {

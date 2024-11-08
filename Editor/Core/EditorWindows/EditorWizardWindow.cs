@@ -2,8 +2,8 @@ using System.Collections;
 using Unity.EditorCoroutines.Editor;
 using UnityEditor;
 using UnityEditor.UIElements;
-using UnityEngine.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace RoR2.Editor
 {
@@ -74,7 +74,7 @@ namespace RoR2.Editor
 
             SetupControls();
 
-            if(requiresTokenPrefix)
+            if (requiresTokenPrefix)
             {
                 Label label = new Label();
                 label.name = "TokenPrefixNotice";
@@ -104,7 +104,7 @@ namespace RoR2.Editor
         /// <param name="title">The text to display on the progress bar</param>
         public void UpdateProgress(float zeroTo1Progress, string title = null)
         {
-            if(_coroutine == null)
+            if (_coroutine == null)
             {
                 Debug.Log($"Cannot update progress when wizard is not running.");
                 return;
@@ -152,11 +152,11 @@ namespace RoR2.Editor
 
         private void StartCoroutine()
         {
-            if(requiresTokenPrefix)
+            if (requiresTokenPrefix)
             {
-                if(!R2EKSettings.instance.tokenExists)
+                if (!R2EKSettings.instance.tokenExists)
                 {
-                    if(EditorUtility.DisplayDialog("No Token Prefix", "This wizard requires a Token Prefix to run properly, Token prefixes are used in LanguageToken generation to ensure unique tokens in the modding ecosystem. You can click the left button below to open the R2EKSettings window to set a Token prefix.", "Open Settings", "Close"))
+                    if (EditorUtility.DisplayDialog("No Token Prefix", "This wizard requires a Token Prefix to run properly, Token prefixes are used in LanguageToken generation to ensure unique tokens in the modding ecosystem. You can click the left button below to open the R2EKSettings window to set a Token prefix.", "Open Settings", "Close"))
                     {
                         SettingsService.OpenProjectSettings("Project/RoR2EditorKit");
                     }
@@ -164,12 +164,12 @@ namespace RoR2.Editor
                 }
             }
 
-            if(!ValidateData())
+            if (!ValidateData())
             {
                 return;
             }
 
-            if(_coroutine != null)
+            if (_coroutine != null)
             {
                 return;
             }
@@ -190,7 +190,7 @@ namespace RoR2.Editor
             var wizardCoroutine = RunWizardCoroutine();
             try
             {
-                while(wizardCoroutine.MoveNext())
+                while (wizardCoroutine.MoveNext())
                 {
                     yield return wizardCoroutine.Current;
                 }
@@ -215,7 +215,7 @@ namespace RoR2.Editor
 
         private void CloseInternal()
         {
-            if(_coroutine != null)
+            if (_coroutine != null)
             {
                 this.StopCoroutine(_coroutine);
                 CleanupInternal();

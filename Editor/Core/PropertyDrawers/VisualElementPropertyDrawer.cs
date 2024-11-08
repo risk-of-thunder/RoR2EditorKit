@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -22,7 +17,7 @@ namespace RoR2.Editor
         {
             get
             {
-                if(_rootVisualElement == null)
+                if (_rootVisualElement == null)
                 {
                     _rootVisualElement = new VisualElement();
                     _rootVisualElement.name = $"{typeof(T).Name}_RootElement";

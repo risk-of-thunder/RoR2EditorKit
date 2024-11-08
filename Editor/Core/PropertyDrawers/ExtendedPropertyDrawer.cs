@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -61,7 +57,7 @@ namespace RoR2.Editor
         {
             get
             {
-                if(typeof(PropertyAttribute).IsAssignableFrom(typeof(T)))
+                if (typeof(PropertyAttribute).IsAssignableFrom(typeof(T)))
                 {
                     return (T)(object)attribute;
                 }
@@ -69,7 +65,7 @@ namespace RoR2.Editor
             }
             set
             {
-                if(typeof(PropertyAttribute).IsAssignableFrom(typeof(T)))
+                if (typeof(PropertyAttribute).IsAssignableFrom(typeof(T)))
                 {
                     throw new NotSupportedException("Cannot modify attribute values.");
                 }

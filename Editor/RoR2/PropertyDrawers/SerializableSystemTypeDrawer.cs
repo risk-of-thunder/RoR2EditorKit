@@ -1,8 +1,5 @@
-﻿using EntityStates;
-using HG;
+﻿using HG;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
@@ -37,7 +34,7 @@ namespace RoR2.Editor.PropertyDrawers
         private Type GetBaseType()
         {
             var attribute = fieldInfo.GetCustomAttribute<SerializableSystemType.RequiredBaseTypeAttribute>();
-            if(attribute != null)
+            if (attribute != null)
             {
                 return attribute.type;
             }

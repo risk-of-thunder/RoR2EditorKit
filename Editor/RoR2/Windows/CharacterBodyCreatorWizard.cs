@@ -37,7 +37,7 @@ namespace RoR2.Editor.Windows
         public List<SerializableSystemType> extraComponents;
         public bool ignoreExtraComponentDuplicates;
 
-        protected override string wizardTitleTooltip => 
+        protected override string wizardTitleTooltip =>
 @"The CharacterBodyWizard is a Wizard that creates a fully working CharacterBody from a Template.
 
 The resulting prefab contains the necesary components for it's specified type, a minimum of 3 EntityStateMachines and a minimum of 4 GenericSkills, alongside an instantiated model for the FBX. This wizard does not set up complex hurtBoxes or ragdoll controllers.";
@@ -79,7 +79,7 @@ The resulting prefab contains the necesary components for it's specified type, a
 
         protected override bool ValidateData()
         {
-            if(string.IsNullOrEmpty(characterName) || string.IsNullOrWhiteSpace(characterName))
+            if (string.IsNullOrEmpty(characterName) || string.IsNullOrWhiteSpace(characterName))
             {
                 Debug.LogWarning($"Cannot run wizard because the CharacterName is not Valid.");
                 return false;
@@ -89,7 +89,7 @@ The resulting prefab contains the necesary components for it's specified type, a
 
         protected override IEnumerator RunWizardCoroutine()
         {
-            while(_wizardCoroutineHelper.MoveNext())
+            while (_wizardCoroutineHelper.MoveNext())
             {
                 yield return _wizardCoroutineHelper.Current;
             }
@@ -132,7 +132,7 @@ The resulting prefab contains the necesary components for it's specified type, a
             var stateOnHurt = _copiedBody.GetComponent<SetStateOnHurt>();
             var deathBehaviour = _copiedBody.GetComponent<CharacterDeathBehavior>();
 
-            for(int i = 0; i < stateMachines.Count; i++)
+            for (int i = 0; i < stateMachines.Count; i++)
             {
                 var stateMachineName = stateMachines[i];
                 yield return R2EKMath.Remap(i, 0, stateMachines.Count - 1, 0, 1);
@@ -180,7 +180,7 @@ The resulting prefab contains the necesary components for it's specified type, a
             }
             yield return 1f;
 
-            if(networker)
+            if (networker)
             {
                 networkerSerializedObject.ApplyModifiedProperties();
             }
@@ -292,7 +292,7 @@ The resulting prefab contains the necesary components for it's specified type, a
             GameObject modelBase = _copiedBody.transform.Find("ModelBase").gameObject;
             GameObject mdlGameObject = modelBase.transform.GetChild(0).gameObject;
 
-            if(modelFBX)
+            if (modelFBX)
             {
                 GameObject fbxPrefabInstance = (GameObject)PrefabUtility.InstantiatePrefab(modelFBX, modelBase.transform);
 
@@ -300,14 +300,14 @@ The resulting prefab contains the necesary components for it's specified type, a
 
                 Debug.Log($"Instantiated {fbxPrefabInstance} and transfered components, ensuring proper references between model and body components...");
                 var bodyComponents = _copiedBody.GetComponents<MonoBehaviour>();
-                for(int i = 0; i < bodyComponents.Length; i++)
+                for (int i = 0; i < bodyComponents.Length; i++)
                 {
                     var bodyComponent = bodyComponents[i];
                     var componentIterationProgress = R2EKMath.Remap(i, 0, bodyComponents.Length, 0, 0.5f);
                     yield return componentIterationProgress;
 
                     FieldInfo[] fields = bodyComponent.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f => f.IsPublic || f.GetCustomAttribute<SerializeField>() != null).ToArray();
-                    for(int j = 0; j < fields.Length; j++)
+                    for (int j = 0; j < fields.Length; j++)
                     {
                         FieldInfo field = fields[j];
                         yield return R2EKMath.Remap(j, 0, fields.Length - 1, 0, 0.1f) + componentIterationProgress;
@@ -339,7 +339,7 @@ The resulting prefab contains the necesary components for it's specified type, a
                 Debug.Log("Created a simple capsule as a character model.");
             }
 
-            if(simpleHurtBox)
+            if (simpleHurtBox)
             {
                 yield return 0.55;
                 var hurtBoxGameObject = new GameObject("MainHurtBox");
@@ -360,7 +360,7 @@ The resulting prefab contains the necesary components for it's specified type, a
 
             var characterModel = mdlGameObject.GetComponent<CharacterModel>();
             var renderers = mdlGameObject.GetComponentsInChildren<Renderer>();
-            for(int i = 0; i < renderers.Length; i++)
+            for (int i = 0; i < renderers.Length; i++)
             {
                 var renderer = renderers[i];
                 yield return R2EKMath.Remap(i, 0, renderers.Length, 0.55f, 1);
@@ -410,7 +410,7 @@ The resulting prefab contains the necesary components for it's specified type, a
             AssetDatabase.StartAssetEditing();
             try
             {
-                for(int i = 0; i < _createdSkillDefs.Count; i++)
+                for (int i = 0; i < _createdSkillDefs.Count; i++)
                 {
                     var skillDef = _createdSkillDefs[i];
                     yield return R2EKMath.Remap(i, 0, _createdSkillDefs.Count - 1, 0.33f, 0.66f);
@@ -432,7 +432,7 @@ The resulting prefab contains the necesary components for it's specified type, a
             AssetDatabase.StartAssetEditing();
             try
             {
-                for(int i = 0; i < _createdSkillFamilies.Count; i++)
+                for (int i = 0; i < _createdSkillFamilies.Count; i++)
                 {
                     var skillFamily = _createdSkillFamilies[i];
                     yield return R2EKMath.Remap(i, 0, _createdSkillFamilies.Count - 1, 0.75f, 0.99f);
@@ -460,13 +460,13 @@ The resulting prefab contains the necesary components for it's specified type, a
 
         protected override void Cleanup()
         {
-            foreach(var sd in _createdSkillDefs)
+            foreach (var sd in _createdSkillDefs)
             {
-                if(string.IsNullOrEmpty(AssetDatabase.GetAssetPath(sd)))
+                if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(sd)))
                     DestroyImmediate(sd);
             }
 
-            foreach(var sf in _createdSkillFamilies)
+            foreach (var sf in _createdSkillFamilies)
             {
                 if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(sf)))
                     DestroyImmediate(sf);

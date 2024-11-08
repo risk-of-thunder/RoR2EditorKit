@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -21,7 +20,7 @@ namespace RoR2.Editor
         /// <param name="defaultValue">a defualt value, in case the setting does not exist in the collection</param>
         public static void ConnectWithSetting<T>(this INotifyValueChanged<T> notifyValueChanged, EditorSettingCollection setting, string settingName, T defaultValue = default(T))
         {
-            if(!EditorStringSerializer.CanSerializeType<T>())
+            if (!EditorStringSerializer.CanSerializeType<T>())
             {
                 Debug.LogError($"Cannot connect element {notifyValueChanged} to editor settings, requested type {typeof(T).Name} is not supported.");
                 return;
@@ -36,7 +35,7 @@ namespace RoR2.Editor
         private static void OnValueChanged<T>(ChangeEvent<T> evt)
         {
             VisualElement target = (VisualElement)evt.target;
-            if(_elementToData.TryGetValue(target, out var data))
+            if (_elementToData.TryGetValue(target, out var data))
             {
                 data.setting.SetSettingValue(data.settingName, evt.newValue);
             }

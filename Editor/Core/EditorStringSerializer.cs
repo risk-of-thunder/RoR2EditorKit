@@ -1,9 +1,9 @@
 ﻿using System;
-using UnityEngine;
 using System.Collections.Generic;
-using Debug = UnityEngine.Debug;
 using System.Globalization;
 using System.Linq;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace RoR2.Editor
 {
@@ -386,7 +386,7 @@ namespace RoR2.Editor
             {
                 deserializer = txt =>
                 {
-                    if(TrySplit<Quaternion>(txt, 4, out var output))
+                    if (TrySplit<Quaternion>(txt, 4, out var output))
                     {
                         Quaternion quat = new Quaternion
                         {

@@ -1,10 +1,8 @@
-using System.Collections.Generic;
 using System;
-using System.Collections;
+using System.Collections.Generic;
+using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEditor.IMGUI.Controls;
-using System.Linq;
-using UnityEditor;
 using UnityEngine;
 
 namespace RoR2.Editor
@@ -24,11 +22,11 @@ namespace RoR2.Editor
             var rootItem = new Item(rootItemKey, rootItemKey, rootItemKey);
             items.Add(rootItemKey, rootItem);
             items.Add("None", new Item("None", string.Empty, string.Empty));
-            foreach(var data in _precompiledAssemblyDatas)
+            foreach (var data in _precompiledAssemblyDatas)
             {
                 var assemblyName = data.name;
                 var itemPath = FileUtil.GetProjectRelativePath(data.path);
-                while(true)
+                while (true)
                 {
                     var lastDashIndex = itemPath.LastIndexOf('/');
                     if (!items.ContainsKey(itemPath))
@@ -44,13 +42,13 @@ namespace RoR2.Editor
                 }
             }
 
-            foreach(var item in items)
+            foreach (var item in items)
             {
                 if (item.Key == rootItemKey)
                     continue;
 
                 var itemFullName = item.Key;
-                if(itemFullName.LastIndexOf('/') == -1)
+                if (itemFullName.LastIndexOf('/') == -1)
                 {
                     rootItem.AddChild(item.Value);
                 }

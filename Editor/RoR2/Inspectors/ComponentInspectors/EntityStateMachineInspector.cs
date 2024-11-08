@@ -6,7 +6,7 @@ namespace RoR2.Editor.Inspectors
     [CustomEditor(typeof(EntityStateMachine))]
     public class EntityStateMachineInspector : VisualElementComponentInspector<EntityStateMachine>
     {
-        
+
         private SerializedProperty _customNameProperty;
         private SerializedProperty _initialStateTypeProperty;
         private SerializedProperty _mainStateTypeProperty;
@@ -31,7 +31,7 @@ namespace RoR2.Editor.Inspectors
                     var initial = _initialStateTypeProperty.FindPropertyRelative("_typeName");
                     var main = _mainStateTypeProperty.FindPropertyRelative("_typeName");
 
-                    switch(_customNameProperty.stringValue)
+                    switch (_customNameProperty.stringValue)
                     {
                         case "Body":
                             initial.stringValue = typeof(EntityStates.GenericCharacterSpawnState).AssemblyQualifiedName;

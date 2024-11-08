@@ -1,9 +1,4 @@
 ﻿using RoR2.Skills;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 
 namespace RoR2.Editor.Inspectors

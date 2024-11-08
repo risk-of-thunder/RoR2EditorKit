@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
-using UnityEditor.Experimental;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -43,12 +39,12 @@ namespace RoR2.Editor
             var packageTemplate = LoadTemplate(templateName, templatePathValidator);
             var templatePath = AssetDatabase.GetAssetPath(packageTemplate);
 
-            if(packageTemplate == null)
+            if (packageTemplate == null)
             {
                 Debug.LogError($"Could not find Template {templateName}");
                 Label errorLabel = new Label($"Could not find Template {templateName}");
 
-                if(target != null)
+                if (target != null)
                 {
                     target.Add(errorLabel);
                     return errorLabel;
@@ -58,7 +54,7 @@ namespace RoR2.Editor
 
             VisualElement instance = target;
 
-            if(instance == null)
+            if (instance == null)
             {
                 instance = packageTemplate.CloneTree();
             }
@@ -80,12 +76,12 @@ namespace RoR2.Editor
         /// <returns>The visual tree template</returns>
         public VisualTreeAsset LoadTemplate(string templateName, TemplatePathValidator validator = null)
         {
-            if(_templateTreeDictionary.Count == 0)
+            if (_templateTreeDictionary.Count == 0)
             {
                 ReloadDictionary();
             }
 
-            if(_templateTreeDictionary.TryGetValue(templateName, out var asset))
+            if (_templateTreeDictionary.TryGetValue(templateName, out var asset))
             {
                 return asset;
             }
@@ -104,7 +100,7 @@ namespace RoR2.Editor
                 .FirstOrDefault();
 
             var visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(templatePath);
-            if(visualTreeAsset)
+            if (visualTreeAsset)
             {
                 _serializedDictionary.Add(new TemplateNameToUXMLGuid { k_templateName = templateName, v_guid = AssetDatabaseUtil.GetAssetGUID(visualTreeAsset) });
                 _templateTreeDictionary.Add(templateName, visualTreeAsset);
@@ -117,12 +113,12 @@ namespace RoR2.Editor
         {
             _templateTreeDictionary = new Dictionary<string, VisualTreeAsset>();
             bool hasChanges = false;
-            for(int i = _serializedDictionary.Count - 1; i >= 0; i--)
+            for (int i = _serializedDictionary.Count - 1; i >= 0; i--)
             {
                 TemplateNameToUXMLGuid template = _serializedDictionary[i];
 
                 VisualTreeAsset asset = AssetDatabaseUtil.LoadAssetFromGUID<VisualTreeAsset>(template.v_guid);
-                if(!asset)
+                if (!asset)
                 {
                     Debug.LogError("Cannot find VisualTreeAsset for template " + template.k_templateName);
                     _serializedDictionary.RemoveAt(i);
@@ -149,7 +145,7 @@ namespace RoR2.Editor
         /// Represents a predicate that's used to validate a potential UXML asseet.
         /// </summary>
         public delegate bool TemplatePathValidator(string path);
-        
+
         [Serializable]
         private struct TemplateNameToUXMLGuid
         {
@@ -167,7 +163,7 @@ namespace RoR2.Editor
         {
             static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
             {
-                if(_didDomainReload)
+                if (_didDomainReload)
                 {
                     _didDomainReload = false;
                     Debug.Log("Reloading Visual Element Template Finder.");

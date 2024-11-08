@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Unity.EditorCoroutines.Editor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -49,14 +48,14 @@ namespace RoR2.Editor
 
         private void RecalculateMaxSize()
         {
-            if(_labelsToEqualize.Count == 0)
+            if (_labelsToEqualize.Count == 0)
             {
                 _maxWidth = -1;
                 return;
             }
 
             _maxWidth = 0;
-            foreach(var label in _labelsToEqualize)
+            foreach (var label in _labelsToEqualize)
             {
                 var textSize = label.MeasureTextSize(label.text, 0, MeasureMode.Undefined, 0, MeasureMode.Undefined);
                 textSize.x += 20;
@@ -77,10 +76,10 @@ namespace RoR2.Editor
 
         private static IEnumerator QueryCoroutine()
         {
-            while(true)
+            while (true)
             {
                 yield return new EditorWaitForSeconds(3f);
-                foreach(var instance in _attachedInstances)
+                foreach (var instance in _attachedInstances)
                 {
                     instance.QueryLabels();
                     instance.RecalculateMaxSize();
@@ -106,15 +105,15 @@ namespace RoR2.Editor
 
         private static void _attachedInstances_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            if(_attachedInstances.Count == 0)
+            if (_attachedInstances.Count == 0)
             {
-                if(_queryCoroutine != null)
+                if (_queryCoroutine != null)
                 {
                     EditorCoroutineUtility.StopCoroutine(_queryCoroutine);
                     _queryCoroutine = null;
                 }
             }
-            else if(_queryCoroutine == null)
+            else if (_queryCoroutine == null)
             {
                 _queryCoroutine = EditorCoroutineUtility.StartCoroutineOwnerless(QueryCoroutine());
             }

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.Rendering;
 
 //I hate that this exists, but we cant add easily an inspector to a material, and ror2ek's system is fucking awful honestly. To the shadowrealm it goes.

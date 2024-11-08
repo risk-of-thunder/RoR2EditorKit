@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -67,7 +64,7 @@ namespace RoR2.Editor
         {
             EditorGUI.BeginChangeCheck();
             var v = EditorGUILayout.PropertyField(property, label, drawChildren);
-            if(EditorGUI.EndChangeCheck())
+            if (EditorGUI.EndChangeCheck())
             {
                 onValueChanged(property);
             }
@@ -170,14 +167,14 @@ namespace RoR2.Editor
         /// <returns>True if the setting was changed, false otherwise</returns>
         public static bool CreateFieldForSetting(EditorSettingCollection setting, string settingName, Type valueType, object defaultValue = default)
         {
-            if(!CanDrawFieldFromType(valueType) || !EditorStringSerializer.CanSerializeType(valueType))
+            if (!CanDrawFieldFromType(valueType) || !EditorStringSerializer.CanSerializeType(valueType))
             {
                 EditorGUILayout.LabelField($"Cannot create a field for setting with a value type of {valueType.FullName}");
                 return false;
             }
 
             object value = setting.GetOrCreateSetting(settingName, defaultValue);
-            if(DrawFieldOfType(valueType, new GUIContent(ObjectNames.NicifyVariableName(settingName)), value, out var newValue))
+            if (DrawFieldOfType(valueType, new GUIContent(ObjectNames.NicifyVariableName(settingName)), value, out var newValue))
             {
                 setting.SetSettingValue(settingName, newValue);
                 return true;
@@ -193,13 +190,13 @@ namespace RoR2.Editor
             {
                 EditorGUI.BeginChangeCheck();
                 var valueAsInt = EditorGUILayout.IntField(l, (short)v);
-                if(EditorGUI.EndChangeCheck())
+                if (EditorGUI.EndChangeCheck())
                 {
-                    if(valueAsInt > short.MaxValue)
+                    if (valueAsInt > short.MaxValue)
                     {
                         valueAsInt = short.MaxValue;
                     }
-                    else if(valueAsInt < short.MinValue)
+                    else if (valueAsInt < short.MinValue)
                     {
                         valueAsInt = short.MinValue;
                     }
@@ -210,13 +207,13 @@ namespace RoR2.Editor
             {
                 EditorGUI.BeginChangeCheck();
                 var valueAsInt = EditorGUILayout.IntField(l, (ushort)v);
-                if(EditorGUI.EndChangeCheck())
+                if (EditorGUI.EndChangeCheck())
                 {
-                    if(valueAsInt > ushort.MaxValue)
+                    if (valueAsInt > ushort.MaxValue)
                     {
                         valueAsInt = ushort.MaxValue;
                     }
-                    else if(valueAsInt < 0)
+                    else if (valueAsInt < 0)
                     {
                         valueAsInt = 0;
                     }
@@ -274,7 +271,7 @@ namespace RoR2.Editor
                 var stringValue = EditorGUILayout.TextField(l, (string)v);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    if(stringValue.Length > 0)
+                    if (stringValue.Length > 0)
                     {
                         return stringValue[0];
                     }

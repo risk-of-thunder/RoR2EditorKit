@@ -2,9 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
@@ -59,7 +57,7 @@ namespace RoR2.Editor.CodeGen
         public static IEnumerator<bool?> ValidateCoroutine(ValidationData data)
         {
             var code = data.code.ToString();
-            if(File.Exists(data.desiredOutputPath))
+            if (File.Exists(data.desiredOutputPath))
             {
                 var existingCode = File.ReadAllText(data.desiredOutputPath);
                 if (existingCode == code || WithAllWhitespaceStripped(existingCode) == WithAllWhitespaceStripped(code))
@@ -70,7 +68,7 @@ namespace RoR2.Editor.CodeGen
             }
 
             var subroutine = CheckOutCoroutine(data.desiredOutputPath, code);
-            while(subroutine.MoveNext())
+            while (subroutine.MoveNext())
             {
                 yield return null;
             }
@@ -103,10 +101,10 @@ namespace RoR2.Editor.CodeGen
             if (path.StartsWith(projectPath) && path.Length > projectPath.Length &&
                 (path[projectPath.Length] == '/' || path[projectPath.Length] == '\\'))
                 path = path.Substring(0, projectPath.Length + 1);
-                AssetDatabase.MakeEditable(path);
+            AssetDatabase.MakeEditable(path);
 
             var task = File.WriteAllTextAsync(path, code);
-            while(!task.IsCompleted)
+            while (!task.IsCompleted)
             {
                 yield return null;
             }

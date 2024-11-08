@@ -1,9 +1,5 @@
 ﻿using EntityStates;
-using HG;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -18,7 +14,7 @@ namespace RoR2.Editor.PropertyDrawers
 
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            if(!IsFullyQualified(property))
+            if (!IsFullyQualified(property))
             {
                 FullyQualify(property);
             }
@@ -45,7 +41,7 @@ namespace RoR2.Editor.PropertyDrawers
         {
             var p = property.FindPropertyRelative("_typeName");
             var typeName = p.stringValue;
-            var t = Type.GetType($"{typeName}, RoR2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null"); 
+            var t = Type.GetType($"{typeName}, RoR2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
 
             if (t != null) //Type found, fully qualify it.
             {

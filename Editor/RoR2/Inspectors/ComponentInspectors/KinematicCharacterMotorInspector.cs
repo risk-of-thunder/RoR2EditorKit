@@ -12,7 +12,7 @@ namespace RoR2.Editor.Inspectors
         {
             EditorGUI.BeginChangeCheck();
             DrawDefaultInspector();
-            if(EditorGUI.EndChangeCheck())
+            if (EditorGUI.EndChangeCheck())
             {
                 targetType.ValidateData();
             }

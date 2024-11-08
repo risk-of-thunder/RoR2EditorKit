@@ -1,13 +1,10 @@
 using RoR2.Navigation;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using static UnityEngine.GridBrushBase;
 using IOPath = System.IO.Path;
 
 namespace RoR2.Editor.Windows
@@ -70,7 +67,7 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
 
         protected override bool ValidateData()
         {
-            if(stageName.IsNullOrEmptyOrWhiteSpace())
+            if (stageName.IsNullOrEmptyOrWhiteSpace())
             {
                 Debug.LogError($"Cannot run wizard because the Stage Name is null, empty or whitespace.");
                 return false;
@@ -82,10 +79,10 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
             }
             return true;
         }
-        
+
         protected override IEnumerator RunWizardCoroutine()
         {
-            while(_wizardCoroutineHelper.MoveNext())
+            while (_wizardCoroutineHelper.MoveNext())
             {
                 yield return _wizardCoroutineHelper.Current;
             }
@@ -125,7 +122,7 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
             _sceneInfoGO = sceneInfo.gameObject;
             var serializedObject = new SerializedObject(sceneInfo);
 
-            for(int i = 0; i < mapNodeGroupObjects.Length; i++)
+            for (int i = 0; i < mapNodeGroupObjects.Length; i++)
             {
                 var gameObject = mapNodeGroupObjects[i];
                 Debug.Log($"Creating Node Graph for {gameObject}");
@@ -175,7 +172,7 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
             var stageInfoSerializedObject = new SerializedObject(stageInfo);
 
             string[] poolNames = new string[] { $"dccspool{stageName}Monsters", $"dccspool{stageName}Interactables" };
-            for(int i = 0; i < poolNames.Length; i++)
+            for (int i = 0; i < poolNames.Length; i++)
             {
                 var poolName = poolNames[i];
                 yield return R2EKMath.Remap(i, 0, poolNames.Length - 1, 0, 1);

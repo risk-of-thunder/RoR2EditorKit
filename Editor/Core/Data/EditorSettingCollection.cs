@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEditor;
@@ -59,7 +58,7 @@ namespace RoR2.Editor
         /// </summary>
         public void SaveSettings()
         {
-            if(_settingType == EditorSettingManager.SettingType.Custom)
+            if (_settingType == EditorSettingManager.SettingType.Custom)
             {
                 EditorSettingManager.GetEditorSettingProvider(_settingProviderName).SaveSettings();
                 return;
@@ -87,7 +86,7 @@ namespace RoR2.Editor
         {
             int id = settingName.GetHashCode();
 
-            for(int i = 0; i < _serializedSettings.Length; i++)
+            for (int i = 0; i < _serializedSettings.Length; i++)
             {
                 ref var setting = ref _serializedSettings[i];
                 if (setting._settingID != id)
@@ -108,7 +107,7 @@ namespace RoR2.Editor
         public T GetOrCreateSetting<T>(string settingName, T defaultValue = default)
         {
             int id = settingName.GetHashCode();
-            for(int i = 0; i < _serializedSettings.Length; i++)
+            for (int i = 0; i < _serializedSettings.Length; i++)
             {
                 ref var setting = ref _serializedSettings[i];
                 if (setting._settingID != id)
@@ -129,13 +128,13 @@ namespace RoR2.Editor
         public void SetSettingValue(string settingName, object newValue)
         {
             int id = settingName.GetHashCode();
-            for(int i = 0; i < _serializedSettings.Length; i++)
+            for (int i = 0; i < _serializedSettings.Length; i++)
             {
                 ref var setting = ref _serializedSettings[i];
                 if (setting._settingID != id)
                     continue;
 
-                if(setting.boxedValue != newValue)
+                if (setting.boxedValue != newValue)
                 {
                     setting.boxedValue = newValue;
                     SaveSettings();

@@ -1,6 +1,5 @@
 using Microsoft.CSharp;
 using System;
-using System.Linq;
 using System.Text;
 
 namespace RoR2.Editor.CodeGen
@@ -83,7 +82,7 @@ namespace RoR2.Editor.CodeGen
             return _codeProvider.CreateValidIdentifier(identifier).Replace(" ", "");
         }
 
-        
+
         /// <summary>
         /// Creates a "camelCase" style identifier for the given string
         /// </summary>

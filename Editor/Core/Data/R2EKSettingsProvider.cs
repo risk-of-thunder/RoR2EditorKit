@@ -1,11 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 using UnityEditor;
-using RoR2.Editor;
-using UnityEngine.UIElements;
 using UnityEditor.UIElements;
-using UnityEditor.IMGUI.Controls;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace RoR2.Editor
 {
@@ -33,13 +30,17 @@ namespace RoR2.Editor
             base.OnActivate(searchContext, rootElement);
             VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(R2EKSettings), rootElement);
 
-            if(_settings.isFirstTimeBoot)
+            if (!_settings.hasHelpBoxBeenDismissed)
             {
                 var center = rootElement.Q<VisualElement>("Center");
-                var welcome = new ExtendedHelpBox("Thanks for downloading and using Risk of Rain 2 EditorKit. Inside this window you can see the settings to modify how RoR2EditorKit functions inside your project.\nRoR2EditorKit is a team effort by the community, mostly developed by Nebby1999 on discord. Consider donating to him for his dedication.\n\nThis window will only open once when installed, and this HelpBox will only show this time.", MessageType.Info, true, true);
+                var welcome = new ExtendedHelpBox("Thanks for downloading and using Risk of Rain 2 EditorKit. Inside this window you can see the settings to modify how RoR2EditorKit functions inside your project.\r\nRoR2EditorKit is a team effort by the community, mostly developed by Nebby1999 on discord. Consider donating to him for his dedication.\r\n\r\nThis window will open every domain reload until this help-box is dismissed.", MessageType.Info, true, true);
+                welcome.dismissButton.clicked += () =>
+                {
+                    _settings.hasHelpBoxBeenDismissed = true;
+                    Save();
+                };
                 center.Add(welcome);
                 welcome.SendToBack();
-                _settings.isFirstTimeBoot = false;
                 Save();
             }
 
@@ -69,15 +70,6 @@ namespace RoR2.Editor
             base.OnDeactivate();
             _serializedObject.ApplyModifiedProperties();
             Save();
-
-            /*if(_settings.enableGameMaterialSystem && !ScriptingSymbolManager.ContainsDefine("R2EK_GAME_MATERIAL_SYSTEM"))
-            {
-                ScriptingSymbolManager.AddScriptingDefine("R2EK_GAME_MATERIAL_SYSTEM");
-            }
-            else if(!_settings.enableGameMaterialSystem && ScriptingSymbolManager.ContainsDefine("R2EK_GAME_MATERIAL_SYSTEM"))
-            {
-                ScriptingSymbolManager.RemoveScriptingDefine("R2EK_GAME_MATERIAL_SYSTEM");
-            }*/
         }
 
         private void Save()

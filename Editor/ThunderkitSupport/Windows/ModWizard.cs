@@ -1,25 +1,24 @@
 #if BBEPIS_BEPINEXPACK
+using BepInEx;
+using BepInEx.Logging;
+using RoR2.Editor.CodeGen;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Compilation;
-using UnityEditorInternal;
-using UnityEngine;
-using UnityEditor;
-using UnityEngine.UIElements;
-using System.Linq;
-using UnityEditor.UIElements;
 using System.IO;
-using IOPath = System.IO.Path;
-using RoR2.Editor.CodeGen;
-using BepInEx;
+using System.Linq;
 using System.Reflection;
-using System.Linq.Expressions;
-using BepInEx.Logging;
 using ThunderKit.Core.Manifests;
 using ThunderKit.Core.Manifests.Datum;
 using ThunderKit.Core.Manifests.Datums;
 using ThunderKit.Integrations.Thunderstore;
+using UnityEditor;
+using UnityEditor.Compilation;
+using UnityEditor.UIElements;
+using UnityEditorInternal;
+using UnityEngine;
+using UnityEngine.UIElements;
+using IOPath = System.IO.Path;
 
 namespace RoR2.Editor.Windows
 {
@@ -56,7 +55,7 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
         private UnityEditor.Compilation.Assembly[] _assembliesWeDependOn;
         private UnityEngine.Object[] _manifestFiles;
         private ManifestIdentity _modIdentity;
-        
+
         [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Wizards/Mod")]
         private static void OpenWindow() => Open<ModWizard>(null);
 
@@ -79,7 +78,7 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
             {
                 var rect = EditorGUILayout.BeginHorizontal();
                 GUILayout.Label("Assembly " + index, GUILayout.ExpandWidth(false));
-                if(EditorGUILayout.DropdownButton(new GUIContent(precompiledAssemblyReferences[index], CompilationPipeline.GetPrecompiledAssemblyPathFromAssemblyName(precompiledAssemblyReferences[index])), FocusType.Passive))
+                if (EditorGUILayout.DropdownButton(new GUIContent(precompiledAssemblyReferences[index], CompilationPipeline.GetPrecompiledAssemblyPathFromAssemblyName(precompiledAssemblyReferences[index])), FocusType.Passive))
                 {
                     Rect labelRect = GUILayoutUtility.GetLastRect();
 
@@ -119,7 +118,7 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
                 assemblyDefinitionReferences.Add(guid);
             }
 
-            foreach(var assemblyName in _defaultPrecompiledAssemblies)
+            foreach (var assemblyName in _defaultPrecompiledAssemblies)
             {
                 if (CompilationPipeline.GetPrecompiledAssemblyPathFromAssemblyName(assemblyName).IsNullOrEmptyOrWhiteSpace())
                     continue;
@@ -139,25 +138,25 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
 
         protected override bool ValidateData()
         {
-            if(authorName.IsNullOrEmptyOrWhiteSpace())
+            if (authorName.IsNullOrEmptyOrWhiteSpace())
             {
                 Debug.LogError($"Cannot run wizard, authorName is not valid.");
                 return false;
             }
 
-            if(modName.IsNullOrEmptyOrWhiteSpace())
+            if (modName.IsNullOrEmptyOrWhiteSpace())
             {
                 Debug.LogError($"Cannot run wizard, modName is not valid");
                 return false;
             }
 
-            if(humanReadableModName.IsNullOrEmptyOrWhiteSpace())
+            if (humanReadableModName.IsNullOrEmptyOrWhiteSpace())
             {
                 Debug.LogError($"Cannot run wizard, humanReadableModName is not valid");
                 return false;
             }
 
-            if(modDescription.IsNullOrEmptyOrWhiteSpace())
+            if (modDescription.IsNullOrEmptyOrWhiteSpace())
             {
                 Debug.LogError($"Cannot run wizard, modDescription is not valid");
                 return false;
@@ -170,7 +169,7 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
             EditorApplication.LockReloadAssemblies();
             try
             {
-                while(_wizardCoroutineHelper.MoveNext())
+                while (_wizardCoroutineHelper.MoveNext())
                 {
                     yield return _wizardCoroutineHelper.Current;
                 }
@@ -238,7 +237,7 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
             using (var fs = File.CreateText(assemblyDefPath))
             {
                 var task = fs.WriteAsync(EditorJsonUtility.ToJson(def, true));
-                while(!task.IsCompleted)
+                while (!task.IsCompleted)
                 {
                     yield return 0.75f;
                 }
@@ -260,7 +259,7 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
                 buffer = new System.Text.StringBuilder()
             };
             var outputFileName = string.Empty;
-            using(CodeGeneratorHelper helper = new CodeGeneratorHelper())
+            using (CodeGeneratorHelper helper = new CodeGeneratorHelper())
             {
                 var className = modName + "Main";
                 var fileName = className + ".cs";
@@ -270,13 +269,13 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
 @"using BepInEx;
 using System.IO;
 using UnityEngine;");
-                
+
                 writer.WriteLine($"namespace {helper.MakeIdentifierPascalCase(modName)}");
                 writer.BeginBlock(); //namespace Begin
 
                 writer.WriteLine("#region Dependencies");
                 var subroutine = WriteTopLevelBepInDependencies(writer);
-                while(subroutine.MoveNext())
+                while (subroutine.MoveNext())
                 {
                     float subroutineProgress = (float)subroutine.Current;
                     yield return R2EKMath.Remap(subroutineProgress, 0, 1, 0, 0.5f);
@@ -297,7 +296,7 @@ public const string VERSION = ""0.0.1"";");
 @$"public static PluginInfo pluginInfo {{ get; private set; }}
 public static {className} instance {{ get; private set; }}
 internal static AssetBundle assetBundle {{ get; private set; }}
-internal static string assetBundleDir => Path.Combine(Path.GetDirectoryName(pluginInfo.Location), ""assetbundles"");");
+internal static string assetBundleDir => Path.Combine(Path.GetDirectoryName(pluginInfo.Location), ""{modName}Assets"");");
 
                 writer.WriteLine();
                 writer.WriteLine("private void Awake()");
@@ -307,12 +306,12 @@ internal static string assetBundleDir => Path.Combine(Path.GetDirectoryName(plug
 @$"instance = this;
 pluginInfo = Info;
 new {modName}Content();");
-                
+
 
                 writer.EndBlock(); //Awake end
 
                 subroutine = WriteInternalStaticLogs(writer);
-                while(subroutine.MoveNext())
+                while (subroutine.MoveNext())
                 {
                     yield return subroutine.Current;
                 }
@@ -328,7 +327,7 @@ new {modName}Content();");
                 desiredOutputPath = IOPath.GetFullPath(combinedPath)
             };
             var validationSubroutine = CodeGeneratorValidator.ValidateCoroutine(validationData);
-            while(validationSubroutine.MoveNext())
+            while (validationSubroutine.MoveNext())
             {
                 yield return validationSubroutine.Current;
             }
@@ -366,10 +365,10 @@ new {modName}Content();");
 
                 HashSet<string> allDependencies = new HashSet<string>();
                 foreachIterationCount = 0;
-                foreach(var (plugin, dependencies) in pluginToDependencies)
+                foreach (var (plugin, dependencies) in pluginToDependencies)
                 {
                     yield return R2EKMath.Remap(foreachIterationCount, 0, pluginToDependencies.Count, 0.3f, 0.6f);
-                    foreach(var dependency in dependencies)
+                    foreach (var dependency in dependencies)
                     {
                         allDependencies.Add(dependency.DependencyGUID);
                     }
@@ -377,7 +376,7 @@ new {modName}Content();");
 
                 foreachIterationCount = 0;
                 List<BepInPlugin> topLevelDependencies = pluginToDependencies.Keys.Where(k => !allDependencies.Contains(k.GUID)).ToList();
-                foreach(var topLevelDependency in topLevelDependencies)
+                foreach (var topLevelDependency in topLevelDependencies)
                 {
                     yield return R2EKMath.Remap(foreachIterationCount, 0, topLevelDependencies.Count, 0.6f, 1f);
                     writer.WriteLine($"[BepInDependency(\"{topLevelDependency.GUID}\")]");
@@ -390,7 +389,7 @@ new {modName}Content();");
             {
                 Array enumValues = Enum.GetValues(typeof(LogLevel));
                 int enumValuesProcessed = 0;
-                foreach(LogLevel enumValue in Enum.GetValues(typeof(LogLevel)))
+                foreach (LogLevel enumValue in Enum.GetValues(typeof(LogLevel)))
                 {
                     yield return R2EKMath.Remap(enumValuesProcessed, 0, enumValues.Length, 0.5f, 1f);
 
@@ -459,7 +458,7 @@ while(!asyncOperation.isDone)
                 writer.WriteLine($"public IEnumerator GenerateContentPackAsync(GetContentPackAsyncArgs args)"); //Generate content pack method begin
                 writer.BeginBlock();
                 writer.WriteVerbatim(
-$@"// ContentPack.Copy({helper.MakeIdentifierPascalCase(modName)}ContentPack, args.output);
+$@" ContentPack.Copy({helper.MakeIdentifierPascalCase(modName)}ContentPack, args.output);
 args.ReportProgress(1f);
 yield break;");
                 writer.EndBlock(); //generate content pack method end;
@@ -508,7 +507,7 @@ yield break;");
             string projectRelativePath = "";
 
             string readmePath = IOPath.Combine(directory, $"README.md");
-            using(var fs = File.CreateText(readmePath))
+            using (var fs = File.CreateText(readmePath))
             {
                 var task = fs.WriteAsync(@$"# {humanReadableModName} - {modDescription}");
                 while (!task.IsCompleted)
@@ -614,7 +613,7 @@ yield break;");
 
             string[] stopPoints = new string[] { "PackageCache", "Packages", "Assets" };
 
-            for(int i = 0; i < _allReferencedAssemblyPaths.Length; i++)
+            for (int i = 0; i < _allReferencedAssemblyPaths.Length; i++)
             {
                 var assemblyPath = _allReferencedAssemblyPaths[i];
                 if (assemblyPath.IsNullOrEmptyOrWhiteSpace())
@@ -623,7 +622,7 @@ yield break;");
                 string currentDirToSearch = IOPath.GetDirectoryName(assemblyPath);
                 yield return R2EKMath.Remap(i, 0, _allReferencedAssemblyPaths.Length - 1, 0, 0.5f);
 
-                while(!stopPoints.Contains(currentDirToSearch.Split('\\').Last()))
+                while (!stopPoints.Contains(currentDirToSearch.Split('\\').Last()))
                 {
                     yield return null;
                     var files = Directory.GetFiles(currentDirToSearch, "*.asset", SearchOption.TopDirectoryOnly);
@@ -651,12 +650,12 @@ yield break;");
             }
 
             HashSet<Manifest> dependentManifests = new HashSet<Manifest>();
-            for(int i = 0; i < manifestsFound.Count; i++)
+            for (int i = 0; i < manifestsFound.Count; i++)
             {
                 var foundManifest = manifestsFound[i];
                 yield return R2EKMath.Remap(i, 0, manifestsFound.Count - 1, 0.5f, 1f);
 
-                foreach(var dependency in foundManifest.Identity.Dependencies)
+                foreach (var dependency in foundManifest.Identity.Dependencies)
                 {
                     dependentManifests.Add(dependency);
                 }
@@ -685,6 +684,9 @@ yield break;");
                 "2bafac87e7f4b9b418d9448d219b01ab", //UGUI
                 "6055be8ebefd69e48b49212b09b47b2f", //TMP
                 "d60799ab2a985554ea1a39cd38695018", //PostProcessing
+                "e0cd26848372d4e5c891c569017e11f1", //Collections
+                "2665a8d13d1b3f18800f46e256720795", //Burst
+                "d8b63aba1907145bea998dd612889d6b", //Mathematics
             };
 
             _defaultPrecompiledAssemblies = new string[]
@@ -706,6 +708,7 @@ yield break;");
                 "Unity.ResourceManager.dll",
                 "MonoMod.Utils.dll",
                 "Mono.Cecil.Pdb.dll",
+                "BurstsOfRain.dll"
             };
         }
     }

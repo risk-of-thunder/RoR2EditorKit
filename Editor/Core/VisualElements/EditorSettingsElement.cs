@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace RoR2.Editor
@@ -26,7 +24,7 @@ namespace RoR2.Editor
             get => _currentlyInspectedSetting;
             set
             {
-                if(_currentlyInspectedSetting != value)
+                if (_currentlyInspectedSetting != value)
                 {
                     _currentlyInspectedSetting = value;
                     OnCurrentlyInspectedSettingChange();

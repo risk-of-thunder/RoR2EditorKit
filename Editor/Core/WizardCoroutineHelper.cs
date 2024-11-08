@@ -65,7 +65,7 @@ namespace RoR2.Editor
             yield return null;
 
             int completedSubroutines = 0;
-            while(_stepsQueue.TryDequeue(out var step))
+            while (_stepsQueue.TryDequeue(out var step))
             {
                 var subroutine = step.subroutine;
                 var stepName = step.subroutineName;
@@ -73,10 +73,10 @@ namespace RoR2.Editor
                 yield return null;
 
                 //Progress the subroutine to completion
-                while(subroutine.MoveNext())
+                while (subroutine.MoveNext())
                 {
                     //Handle yielded object.
-                    if(subroutine.Current is float f) //If float, update progress
+                    if (subroutine.Current is float f) //If float, update progress
                     {
                         wizardInstance.UpdateProgress(CalculateProgress(completedSubroutines, f), stepName);
                         yield return null;

@@ -1,9 +1,9 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System;
 using System.Linq;
-using System.Collections;
 
 namespace RoR2.Editor
 {

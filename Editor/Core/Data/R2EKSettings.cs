@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -31,11 +29,14 @@ namespace RoR2.Editor
         public bool enableNamingConventions => _enableNamingConventions;
         [SerializeField] private bool _enableNamingConventions = false;
 
+        [Obsolete("Use \"hasHelpBoxBeenDismissed\" instead")]
+        public bool isFirstTimeBoot { get => _hasHelpBoxBeenDismissed; set { } }
+
         /// <summary>
-        /// Checks if this is the first time R2EK has been booted, used to open the project settings window when the package is first installed and shows a special help box as a result.
+        /// Checks if the help box when ror2ek is first installed has been dismissed. This is used to make the project settings window open every time a domain reload is executed until the help box is dismissed.
         /// </summary>
-        public bool isFirstTimeBoot { get => _isFirstTimeBoot; set => _isFirstTimeBoot = value; }
-        [SerializeField] private bool _isFirstTimeBoot = true;
+        public bool hasHelpBoxBeenDismissed { get => _hasHelpBoxBeenDismissed; internal set => _hasHelpBoxBeenDismissed = value; }
+        [SerializeField] private bool _hasHelpBoxBeenDismissed = false;
 
         /// <summary>
         /// Checks if R2EK should purge <see cref="R2EKEditorProjectSettings"/> of orphaned settings
@@ -101,7 +102,7 @@ namespace RoR2.Editor
 
         private void ThrowIfNoToken()
         {
-            if(!tokenExists)
+            if (!tokenExists)
             {
                 throw new NullReferenceException("Token Prefix is Null, Empty or Whitespace.");
             }
@@ -121,9 +122,8 @@ namespace RoR2.Editor
         private static void ShowSettingsWindow()
         {
             EditorApplication.update -= ShowSettingsWindow;
-            if(instance._isFirstTimeBoot)
+            if (!instance.hasHelpBoxBeenDismissed)
             {
-                Debug.Log("Showing ror2ek settings.");
                 SettingsService.OpenProjectSettings("Project/RoR2EditorKit/Settings");
             }
         }

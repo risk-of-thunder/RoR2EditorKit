@@ -1,8 +1,6 @@
-﻿using EntityStates;
-using System;
+﻿using System;
 using UnityEditor;
 using UnityEditor.UIElements;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace RoR2.Editor.Inspectors
@@ -10,7 +8,7 @@ namespace RoR2.Editor.Inspectors
     [CustomEditor(typeof(EntityStateConfiguration))]
     public class EntityStateConfigurationInspector : VisualElementScriptableObjectInspector<EntityStateConfiguration>
     {
-        
+
         private SerializedProperty _stateTypeProperty;
         private PropertyField _stateTypeToConfigPropertyField;
 

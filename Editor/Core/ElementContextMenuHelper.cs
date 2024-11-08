@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -50,7 +48,7 @@ namespace RoR2.Editor
                 return wrapper;
             }
 
-            if(elementToWrap.parent == null)
+            if (elementToWrap.parent == null)
             {
                 DoWrap();
                 return wrapper;
@@ -68,7 +66,7 @@ namespace RoR2.Editor
             void DoWrap()
             {
                 wrapper = new ContextMenuWrapperElement();
-                if(data.contextualMenuIcon)
+                if (data.contextualMenuIcon)
                 {
                     wrapper.contextMenuIcon = data.contextualMenuIcon;
                 }
@@ -81,7 +79,7 @@ namespace RoR2.Editor
 
         private static bool IsElementWrapped(VisualElement element, out ContextMenuWrapperElement wrapper)
         {
-            if(element?.parent is ContextMenuWrapperElement wrapperElement)
+            if (element?.parent is ContextMenuWrapperElement wrapperElement)
             {
                 wrapper = wrapperElement;
                 return true;
@@ -92,9 +90,9 @@ namespace RoR2.Editor
 
         private static void CreateMenu(ContextMenuWrapperElement wrapperElement, ContextualMenuPopulateEvent evt)
         {
-            if(_wrapperToData.TryGetValue(wrapperElement, out var datas))
+            if (_wrapperToData.TryGetValue(wrapperElement, out var datas))
             {
-                foreach(var data in datas)
+                foreach (var data in datas)
                 {
                     evt.menu.AppendAction(data.menuName, data.menuAction, data.actionStatusCheck ?? DefaultStatusCheck, data.userData);
                 }

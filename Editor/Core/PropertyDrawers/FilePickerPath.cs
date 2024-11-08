@@ -76,10 +76,10 @@ namespace RoR2.Editor
                 EditorGUI.PropertyField(posForProp, property);
 
                 var buttonRect = new Rect(posForProp.xMax, position.y, 20, position.y);
-                if(GUI.Button(buttonRect, "...", EditorStyles.miniButton))
+                if (GUI.Button(buttonRect, "...", EditorStyles.miniButton))
                 {
                     string path = "";
-                    switch(attribute.pickerType)
+                    switch (attribute.pickerType)
                     {
                         case PickerType.OpenFile:
                             path = EditorUtility.OpenFilePanel(attribute.title, Application.dataPath, attribute.extension);
@@ -95,7 +95,7 @@ namespace RoR2.Editor
                             break;
                     }
 
-                    if(!string.IsNullOrEmpty(path))
+                    if (!string.IsNullOrEmpty(path))
                     {
                         property.stringValue = FileUtil.GetProjectRelativePath(path);
                     }
@@ -119,7 +119,7 @@ namespace RoR2.Editor
                 var button = new Button(() =>
                 {
                     string path = "";
-                    switch(attribute.pickerType)
+                    switch (attribute.pickerType)
                     {
                         case PickerType.OpenFile:
                             path = EditorUtility.OpenFilePanel(attribute.title, Application.dataPath, attribute.extension);
@@ -135,7 +135,7 @@ namespace RoR2.Editor
                             break;
                     }
 
-                    if(!string.IsNullOrEmpty(path))
+                    if (!string.IsNullOrEmpty(path))
                         textField.value = FileUtil.GetProjectRelativePath(path);
                 });
 

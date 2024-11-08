@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
-using UnityEditor.VersionControl;
 using UnityEngine;
-using static RoR2.Editor.EditorSettingManager;
 
 namespace RoR2.Editor
 {
@@ -226,7 +221,7 @@ namespace RoR2.Editor
         /// <exception cref="KeyNotFoundException">The specified name is not registered in the EditorSettingManager</exception>
         public static IEditorSettingProvider GetEditorSettingProvider(string name)
         {
-            if(!_nameToProvider.ContainsKey(name))
+            if (!_nameToProvider.ContainsKey(name))
             {
                 throw new KeyNotFoundException($"Provider with name {name} is not registered");
             }
@@ -241,7 +236,7 @@ namespace RoR2.Editor
         /// <returns>True if the provider was registered succesfully, otherwise false</returns>
         public static bool RegisterProvider(IEditorSettingProvider provider, Func<IEditorSettingProvider> providerCreator)
         {
-            if(_nameToProvider.ContainsKey(provider.providerName))
+            if (_nameToProvider.ContainsKey(provider.providerName))
             {
                 return false;
             }

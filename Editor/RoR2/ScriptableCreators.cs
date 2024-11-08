@@ -1,9 +1,8 @@
 using RoR2.Skills;
 using System;
 using UnityEditor;
-using UnityEngine;
-using System.IO;
 using UnityEditor.ProjectWindowCallback;
+using UnityEngine;
 using IOPath = System.IO.Path;
 
 namespace RoR2.Editor

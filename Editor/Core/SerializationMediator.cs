@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using System.Text;
-using System.Threading.Tasks;
 using System.Reflection;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace RoR2.Editor
@@ -38,11 +35,11 @@ namespace RoR2.Editor
         public static bool CanSerializeField(FieldInfo fInfo)
         {
             Type fieldType = fInfo.FieldType;
-            if(!typeof(UnityEngine.Object).IsAssignableFrom(fieldType) && !CanSerializeType(fieldType))
+            if (!typeof(UnityEngine.Object).IsAssignableFrom(fieldType) && !CanSerializeType(fieldType))
             {
                 return false;
             }
-            if(fInfo.IsStatic && fInfo.IsPublic)
+            if (fInfo.IsStatic && fInfo.IsPublic)
             {
                 return true;
             }
@@ -80,13 +77,13 @@ namespace RoR2.Editor
         {
             result.objectReference = null;
             result.serializedString = "";
-            
-            if(typeof(Object).IsAssignableFrom(fInfo.FieldType))
+
+            if (typeof(Object).IsAssignableFrom(fInfo.FieldType))
             {
                 result.objectReference = (Object)value;
                 return;
             }
-            if(CanSerializeType(fInfo.FieldType))
+            if (CanSerializeType(fInfo.FieldType))
             {
                 result.serializedString = SerializeInternal(fInfo.FieldType, value);
                 return;
@@ -115,7 +112,7 @@ namespace RoR2.Editor
         /// <returns>The serialized value</returns>
         public static string Serialize(Type type, object value)
         {
-            if(CanSerializeType(type))
+            if (CanSerializeType(type))
             {
                 return SerializeInternal(type, value);
             }
@@ -145,7 +142,7 @@ namespace RoR2.Editor
         /// <returns>The deserialized value</returns>
         public static object Deserialize(Type type, string input)
         {
-            if(CanSerializeType(type))
+            if (CanSerializeType(type))
             {
                 return DeserializeInternal(type, input);
             }
@@ -288,6 +285,6 @@ namespace RoR2.Editor
             void Add<T>() => _typesWeShouldSerialize.Add(typeof(T));
 #endif
 #endif
-        }      
+        }
     }
 }

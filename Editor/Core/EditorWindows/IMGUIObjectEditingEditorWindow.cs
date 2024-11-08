@@ -1,4 +1,3 @@
-using System;
 using UnityEngine.UIElements;
 
 namespace RoR2.Editor

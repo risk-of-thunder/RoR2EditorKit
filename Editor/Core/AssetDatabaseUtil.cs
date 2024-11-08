@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
@@ -20,7 +18,7 @@ namespace RoR2.Editor
         /// <returns>The asset's GUID in a hexadecimal representation, if the asset isnt within the AssetDatabase, it returns an empty string</returns>
         public static string GetAssetGUIDString(UnityEngine.Object asset)
         {
-            if(!AssetDatabase.Contains(asset))
+            if (!AssetDatabase.Contains(asset))
             {
                 Debug.LogWarning($"Object {asset} is not an Asset in the AssetDatabase");
                 return string.Empty;
@@ -110,7 +108,7 @@ namespace RoR2.Editor
         /// <typeparam name="T">The Type of asset to find</typeparam>
         /// <param name="assetNameFilter">A filter to narrow down the search results</param>
         /// <returns>An IEnumerable of all the Types found inside the AssetDatabase.</returns>
-        public static IEnumerable<T> FindAssetsByType<T>(string assetNameFilter = null) where T : UnityEngine.Object    
+        public static IEnumerable<T> FindAssetsByType<T>(string assetNameFilter = null) where T : UnityEngine.Object
         {
             List<T> assets = new List<T>();
             string[] guids;

@@ -1,13 +1,12 @@
 using RoR2.Navigation;
-using UnityEngine;
-using UnityEditor;
-using UnityEngine.UIElements;
-using UnityEditor.UIElements;
-using System;
-using System.Collections.Generic;
-using Unity.EditorCoroutines.Editor;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Unity.EditorCoroutines.Editor;
+using UnityEditor;
+using UnityEditor.UIElements;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace RoR2.Editor.Inspectors
 {
@@ -62,7 +61,7 @@ namespace RoR2.Editor.Inspectors
             _linkPreviewColor = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_linkPreviewColor), Color.yellow);
             _previewNodeInRangeColor = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_previewNodeInRangeColor), Color.yellow);
             _previewNodeOutOfRangeColor = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_previewNodeOutOfRangeColor), Color.red);
-            _placedNodeWithNoLinksColor = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_placedNodeWithNoLinksColor), (Color) new Color32
+            _placedNodeWithNoLinksColor = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_placedNodeWithNoLinksColor), (Color)new Color32
             {
                 a = 255,
                 r = 255,
@@ -248,18 +247,18 @@ namespace RoR2.Editor.Inspectors
             ReadOnlyCollection<MapNode> readOnlyCollection = nodes.AsReadOnly();
 
             var modulo = Mathf.Floor((Mathf.Log10(nodes.Count) + 1) * 2);
-            for(int i = 0; i < nodes.Count; i++)
+            for (int i = 0; i < nodes.Count; i++)
             {
                 progressBar.title = $"Building Links for Node {i} thru {i + modulo}";
                 progressBar.value = R2EKMath.Remap(i, 0, nodes.Count - 1, 0, 0.5f);
 
-                if(i % modulo == 0)
+                if (i % modulo == 0)
                     yield return null;
 
                 nodes[i].BuildLinks(readOnlyCollection, targetType.graphType);
             }
             List<SerializableBitArray> list = new List<SerializableBitArray>();
-            for(int i = 0; i < nodes.Count; i++)
+            for (int i = 0; i < nodes.Count; i++)
             {
                 float nodeIterationProgress = R2EKMath.Remap(i, 0, nodes.Count - 1, 0.5f, 1f);
                 progressBar.title = $"Testing node {i} thru {i + modulo}'s LOS with other nodes";
@@ -269,7 +268,7 @@ namespace RoR2.Editor.Inspectors
 
                 MapNode mapNode = nodes[i];
                 SerializableBitArray serializableBitArray = new SerializableBitArray(nodes.Count);
-                for(int j = 0; j < nodes.Count; j++)
+                for (int j = 0; j < nodes.Count; j++)
                 {
                     MapNode other = nodes[j];
                     serializableBitArray[j] = mapNode.TestLineOfSight(other);
@@ -290,7 +289,7 @@ namespace RoR2.Editor.Inspectors
 
         private void ClearNodes()
         {
-            if(EditorUtility.DisplayDialog("WARNING: Clear All Nodes", "Clicking this button will delete EVERY node. Are you sure you want to do this? (YOU CANNOT UNDO THIS OPERATION)", "Yes, Im sure", "No, Take me back"))
+            if (EditorUtility.DisplayDialog("WARNING: Clear All Nodes", "Clicking this button will delete EVERY node. Are you sure you want to do this? (YOU CANNOT UNDO THIS OPERATION)", "Yes, Im sure", "No, Take me back"))
             {
                 targetType.Clear();
             }
@@ -304,7 +303,7 @@ namespace RoR2.Editor.Inspectors
         private void UpdateParentGameObjectSetting(ChangeEvent<UnityEngine.Object> evt)
         {
             _parentObject = evt.newValue ? evt.newValue as GameObject : null;
-            if(evt.newValue)
+            if (evt.newValue)
             {
                 inspectorProjectSettings.SetSettingValue(nameof(parentGameObjectName), evt.newValue.name);
             }
@@ -329,7 +328,7 @@ namespace RoR2.Editor.Inspectors
 
         private void OnSceneGUI()
         {
-            if(inspectorEnabled && targetType.nodeGraph)
+            if (inspectorEnabled && targetType.nodeGraph)
             {
                 if (_bakingCoroutine == null)
                     DrawPlacerOrPainter();
@@ -354,7 +353,7 @@ namespace RoR2.Editor.Inspectors
                 EditorGUILayout.LabelField($"Press {_addOnCamPosKeyCode} to add a map node at the current camera's position", EditorStyles.boldLabel);
                 EditorGUILayout.LabelField($"Press {_deleteNearestKeyCode} to delete the nearest map node at current mouse position", EditorStyles.boldLabel);
 
-                endVertical:
+            endVertical:
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.EndVertical();
@@ -377,7 +376,7 @@ namespace RoR2.Editor.Inspectors
                 var keyCode = Event.current.keyCode;
                 if (keyCode == _addNodeKeyCode)
                 {
-                    if(_usePainter)
+                    if (_usePainter)
                     {
                         PaintNodes(_maxDistance, zPainterOffset, _cachedMapNodeList);
                     }
@@ -443,9 +442,9 @@ namespace RoR2.Editor.Inspectors
 
                 Handles.CylinderHandleCap(controlID, _currentHitInfo, rotation, _nodeCylinderSize, EventType.Repaint);
 
-                if(_usePainter)
+                if (_usePainter)
                 {
-                    if(_painterSize <= 0)
+                    if (_painterSize <= 0)
                     {
                         Handles.CylinderHandleCap(controlID, _currentHitInfo, Quaternion.Euler(90, 0, 0), _nodeCylinderSize, EventType.Repaint);
                     }

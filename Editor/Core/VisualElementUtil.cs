@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -55,7 +51,7 @@ namespace RoR2.Editor
         /// <returns></returns>
         public static VisualElement CreateControlFromType(Type type, string label, Func<object> valueGetter, DeconstructedChangeEvent changeEvent)
         {
-            if(typeof(UnityEngine.Object).IsAssignableFrom(type))
+            if (typeof(UnityEngine.Object).IsAssignableFrom(type))
             {
                 var objectField = new ObjectField(label);
                 objectField.objectType = type;
@@ -69,15 +65,15 @@ namespace RoR2.Editor
                 return objectField;
             }
 
-            if(type.IsEnum)
+            if (type.IsEnum)
             {
-                if(type.GetCustomAttribute<FlagsAttribute>() != null)
+                if (type.GetCustomAttribute<FlagsAttribute>() != null)
                 {
                     return _enumFlagsControlBuilder(label, valueGetter, changeEvent);
                 }
                 return _enumIndexControlBuilder(label, valueGetter, changeEvent);
             }
-            if(_typeToControlBuilder.TryGetValue(type, out var builder))
+            if (_typeToControlBuilder.TryGetValue(type, out var builder))
             {
                 return builder(label, valueGetter, changeEvent);
             }

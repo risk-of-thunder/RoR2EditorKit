@@ -281,7 +281,7 @@ namespace RoR2.Editor
 
                 var ctrl = CreateStringControl(fieldInfo, fieldProperty, stringValue, serializedValue);
                 ctrl.tooltip = tooltipAttribute?.tooltip ?? null;
-                if(ctrl is PropertyField pf)
+                if (ctrl is PropertyField pf)
                 {
                     pf.label = ObjectNames.NicifyVariableName(fieldInfo.Name);
                 }
@@ -296,7 +296,7 @@ namespace RoR2.Editor
 
         private void ClearUnrecognizedFieldsButton_clicked()
         {
-            foreach(var fieldRow in _unrecognizedFields.OrderByDescending(pair => pair.Value))
+            foreach (var fieldRow in _unrecognizedFields.OrderByDescending(pair => pair.Value))
             {
                 _serializedFieldsProperty.DeleteArrayElementAtIndex(fieldRow.Value);
             }
