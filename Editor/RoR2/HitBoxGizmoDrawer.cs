@@ -10,7 +10,7 @@ namespace RoR2.Editor
         private static void DrawGizmos(HitBox hitBox, GizmoType gizmoType)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireMesh(cubeMesh, hitBox.transform.position, hitBox.transform.rotation, hitBox.transform.localScale);
+            Gizmos.DrawWireMesh(cubeMesh, hitBox.transform.position, hitBox.transform.rotation, hitBox.transform.lossyScale);
         }
     }
 }
