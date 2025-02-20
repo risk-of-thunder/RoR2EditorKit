@@ -1,3 +1,4 @@
+#if R2EK_R2API_DIRECTOR
 using R2API;
 using System;
 using System.Text;
@@ -180,3 +181,4 @@ namespace RoR2.Editor.PropertyDrawers
         }
     }
 }
+#endif
