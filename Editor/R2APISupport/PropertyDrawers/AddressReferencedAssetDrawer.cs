@@ -98,6 +98,7 @@ namespace RoR2.Editor.PropertyDrawers
     }
 #if R2EK_R2API_DIRECTOR
     //-----
+    [CustomPropertyDrawer(typeof(AddressReferencedFamilyDirectorCardCategorySelection))]
     public sealed class AddressReferencedFamilyDirectorCardCategorySelectionDrawer : AddressReferencedAssetDrawer<AddressReferencedFamilyDirectorCardCategorySelection>
     {
 
