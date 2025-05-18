@@ -23,7 +23,22 @@ namespace RoR2.Editor
         /// <summary>
         /// Optional, the extension type for the File in the window when the button is clicked
         /// </summary>
-        public string extension { get; set; }
+        public string extension
+        {
+            get
+            {
+                if(_extension.StartsWith('.'))
+                {
+                    return _extension.TrimStart('.');
+                }
+                return _extension;
+            }
+            set
+            {
+                _extension = value;
+            }
+        }
+        private string _extension;
 
         /// <summary>
         /// What method from EditorUtility should be used
