@@ -110,12 +110,13 @@ namespace RoR2.Editor
                             break;
                     }
 
+
                     if (!string.IsNullOrEmpty(path))
                     {
-                        property.stringValue = FileUtil.GetProjectRelativePath(path);
+                        property.stringValue = path;
+                        property.serializedObject.ApplyModifiedProperties();
                     }
                 }
-                base.OnGUI(position, property, label);
             }
             public override VisualElement CreatePropertyGUI(SerializedProperty property)
             {
@@ -151,7 +152,10 @@ namespace RoR2.Editor
                     }
 
                     if (!string.IsNullOrEmpty(path))
-                        textField.value = FileUtil.GetProjectRelativePath(path);
+                    {
+                        property.stringValue = path;
+                        property.serializedObject.ApplyModifiedProperties();
+                    }
                 });
 
                 button.name = property.propertyPath + "FilePathButton";

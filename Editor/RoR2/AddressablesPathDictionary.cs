@@ -15,8 +15,18 @@ namespace RoR2.Editor
     [Serializable]
     public struct AddressablesPathDictionary
     {
-        private const string PATH_TO_JSON = "Assets/" + FILE_NAME + ".json";
-        private const string FILE_NAME = "lrapi_returns";
+        private const string FILE_NAME = "lrapi_returns.json";
+
+        private static string GetLrapiReturnsPath()
+        {
+            var gameExePath = R2EKPreferences.instance.GetGameExecutablePath();
+            var directory = Directory.GetParent(gameExePath).FullName;
+            var dataFolder = IOPath.Combine(directory, "Risk of Rain 2_Data");
+            var streamingAssetsFolder = IOPath.Combine(dataFolder, "StreamingAssets");
+            var filePath = IOPath.Combine(streamingAssetsFolder, FILE_NAME);
+            return filePath;
+        }
+
         public static AddressablesPathDictionary GetInstance()
         {
             if (!_instance.IsEmpty())
@@ -24,33 +34,18 @@ namespace RoR2.Editor
                 return _instance;
             }
 
-            if(!System.IO.File.Exists(PATH_TO_JSON))
+            string lrapiReturnsPath = GetLrapiReturnsPath();
+            if(!File.Exists(lrapiReturnsPath))
             {
-                if(!EditorUtility.DisplayDialog("lrapi_returns.json missing.", "Could not find the lrapi_returns.json file in your project. This file should be located in your Assets folder.\n\nIf this file doesnt exist, click \"Ok\" to open a file picker from which the file will be obtained, the file is located under your \"[GAMEROOT]/Risk of Rain 2_Data/StreamingAssets\"", "Ok", "Cancel"))
+                if(EditorUtility.DisplayDialog("LRAPI_RETURNS NOT FOUND", "The json file lrapi_returns was not found, This version of RoR2EditorKit requires the game to be at the very least post memory management update. The editor will now close.", "Ok"))
                 {
-                    return default;
+                    EditorApplication.Exit(0);
+                    return _instance;
                 }
-
-                string directory = "Assets";
-            openFilePanel:
-                var path = EditorUtility.OpenFilePanel("Select lrapi_returns file", directory, "json");
-                directory = Directory.GetParent(path).FullName;
-
-                if (IOPath.GetFileNameWithoutExtension(path) != FILE_NAME)
-                {
-                    if(!EditorUtility.DisplayDialog("Invalid file", "The file is not the lrapi_returns.json file", "Try Again", "Cancel Operation"))
-                        return default;
-
-                    goto openFilePanel;
-                }
-
-                File.Copy(path, PATH_TO_JSON);
-                AssetDatabase.ImportAsset(PATH_TO_JSON);
-                AssetDatabase.SaveAssets();
             }
 
             var stopwatch = Stopwatch.StartNew();
-            var jsonFile = System.IO.File.ReadAllText("Assets/lrapi_returns.json");
+            var jsonFile = System.IO.File.ReadAllText(lrapiReturnsPath);
 
             var JSONNode = JSON.Parse(jsonFile);
 
@@ -78,7 +73,10 @@ namespace RoR2.Editor
 
         public bool IsEmpty()
         {
-            return pathToGUIDDictionary == null || pathToGUIDDictionary.Count == 0;
+            return (pathToGUIDDictionary == null || pathToGUIDDictionary.Count == 0) || 
+                (guidToPathDictionary == null || guidToPathDictionary.Count == 0) || 
+                (paths == null || paths.Length == 0) ||
+                (guids == null || guids.Length == 0);
         }
 
         public ReadOnlyArray<string> GetAllKeys()
