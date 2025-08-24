@@ -112,6 +112,12 @@ namespace RoR2.Editor
             return null;
         }
 
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            serializedProperty = property;
+            return base.GetPropertyHeight(property, label);
+        }
+
         /// <summary>
         /// <inheritdoc cref="EditorSettingCollection.GetOrCreateSetting{T}(string, T)"/>
         /// 

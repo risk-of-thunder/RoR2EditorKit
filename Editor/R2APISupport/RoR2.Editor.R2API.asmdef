@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "GUID:a44f47cf3ada4435dbc516bad0bc86fe",
-        "GUID:60983344ee8157d4ab97c25513f789c4"
+        "GUID:60983344ee8157d4ab97c25513f789c4",
+        "GUID:779b989f917744f47872d220097e3a3e"
     ],
     "includePlatforms": [
         "Editor"
@@ -15,7 +16,6 @@
         "HGUnityUtils.dll",
         "SimpleJSON.dll",
         "RoR2.dll",
-        "com.unity.multiplayer-hlapi.Runtime.dll",
         "Unity.Addressables.dll",
         "Unity.ResourceManager.dll",
         "R2API.Core.dll",

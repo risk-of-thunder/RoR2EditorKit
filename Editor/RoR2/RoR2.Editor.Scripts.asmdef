@@ -21,7 +21,9 @@
         "Decalicious.dll",
         "KinematicCharacterController.dll",
         "LegacyResourcesAPI.dll",
-        "com.unity.multiplayer-hlapi.Runtime.dll"
+        "SimpleJSON.dll",
+        "Unity.Addressables.dll",
+        "Unity.ResourceManager.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [
@@ -32,6 +34,11 @@
             "name": "riskofrain2",
             "expression": "0.0.1",
             "define": "R2EK_ROR2_IMPORTED"
+        },
+        {
+            "name": "com.unity.addressables",
+            "expression": "0.0.1",
+            "define": "R2EK_ADDRESSABLES"
         }
     ],
     "noEngineReferences": false
