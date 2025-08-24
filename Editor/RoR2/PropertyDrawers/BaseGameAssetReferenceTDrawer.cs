@@ -8,9 +8,19 @@ using IOPath = System.IO.Path;
 
 namespace RoR2.Editor.PropertyDrawers
 {
+    /// <summary>
+    /// The <see cref="BaseGameAssetReferenceTDrawer"/> is a custom <see cref="PropertyDrawer"/> utilized to draw a dropdown picker for <see cref="AssetReference"/>.
+    /// <br></br>
+    /// This property drawer will draw a Dropdown picker to pick a base game asset via its address, this is only the case if the drawer is able to determine the type of the asset. In case the property drawer cannot find the type of the asset, the regular property field is drawn.
+    /// <br></br>
+    /// You can inherit from this class to create custom property drawers for AssetReferences.
+    /// <para></para>
+    /// This property drawer is disabled if the Addressables package is installed.
+    /// </summary>
     [CustomPropertyDrawer(typeof(AssetReference), true)]
     public class BaseGameAssetReferenceTDrawer : IMGUIPropertyDrawer<AssetReference>
     {
+        private static bool _useFullPathForItems;
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var pathDictionaryInstance = AddressablesPathDictionary.GetInstance();
@@ -31,7 +41,7 @@ namespace RoR2.Editor.PropertyDrawers
                 string dropdownButtonLabel = string.IsNullOrWhiteSpace(m_AssetGUIDProperty.stringValue) ? "None" : IOPath.GetFileName(pathDictionaryInstance.GetPathFromGUID(m_AssetGUIDProperty.stringValue));
                 if (EditorGUI.DropdownButton(rectForDropdown, new GUIContent(dropdownButtonLabel), FocusType.Passive))
                 {
-                    AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), false, typeofAsset);
+                    AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), _useFullPathForItems, typeofAsset);
                     dropdown.onItemSelected += (item) =>
                     {
                         if(!string.IsNullOrWhiteSpace(item.assetPath))
@@ -69,7 +79,11 @@ namespace RoR2.Editor.PropertyDrawers
             return propHeight;
         }
 
-        Type GetAssetType()
+        /// <summary>
+        /// Override this method to specify a custom asset type.
+        /// </summary>
+        /// <returns>The type of asset this asset reference requires.</returns>
+        protected virtual Type GetAssetType()
         {
             Type type = propertyDrawerData.GetType();
 
@@ -104,6 +118,11 @@ namespace RoR2.Editor.PropertyDrawers
                 toCheck = toCheck.BaseType;
             }
             return false;
+        }
+
+        public BaseGameAssetReferenceTDrawer()
+        {
+            _useFullPathForItems = propertyDrawerPreferenceSettings.GetOrCreateSetting("useFullNameForItems", false);
         }
     }
 }

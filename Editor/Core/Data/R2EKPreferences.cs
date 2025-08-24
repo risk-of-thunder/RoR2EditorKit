@@ -13,6 +13,11 @@ using IOPath = System.IO.Path;
 
 namespace RoR2.Editor
 {
+    /// <summary>
+    /// The <see cref="R2EKPreferences"/> is a <see cref="ScriptableSingleton{T}"/> and PreferenceSetting that contains information and configuration of RoR2EK for this machine across all of it's projects.
+    /// <para></para>
+    /// These settings should only be modified using the PreferenceSettings window.
+    /// </summary>
     [FilePath("RoR2EditorKit/R2EKPreferences.asset", FilePathAttribute.Location.PreferencesFolder)]
     public sealed class R2EKPreferences : ScriptableSingleton<R2EKPreferences>
     {
@@ -20,6 +25,10 @@ namespace RoR2.Editor
         const string STEAM_REGISTRY_PATH = @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Valve\Steam";
         const uint ROR2_APP_ID = 632360U;
 
+        /// <summary>
+        /// Retrieves the path to the Risk of Rain 2 Executable.
+        /// </summary>
+        /// <returns>The executable's path, otherwise an empty string.</returns>
         public string GetGameExecutablePath()
         {
             if(string.IsNullOrWhiteSpace(_gameExecPath))
@@ -52,6 +61,10 @@ namespace RoR2.Editor
 
         [SerializeField, FilePickerPath(FilePickerPath.PickerType.OpenFile, defaultName = "Risk of Rain 2", extension = "exe", title = "Select the Risk of Rain 2 Executable.")] 
         private string _gameExecPath;
+
+        /// <summary>
+        /// Saves any modifications to the disk
+        /// </summary>
         public void SaveSettings()
         {
             Save(true);
@@ -67,6 +80,9 @@ namespace RoR2.Editor
             Save(true);
         }
 
+        /// <summary>
+        /// Opens the PreferenceSettings window and selects these settings
+        /// </summary>
         [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Settings/Preferences/Main Settings")]
         public static void OpenSettings() => SettingsService.OpenUserPreferences("Preferences/RoR2EditorKit/Main Settings");
 

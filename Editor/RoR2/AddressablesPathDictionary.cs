@@ -12,7 +12,9 @@ using IOPath = System.IO.Path;
 
 namespace RoR2.Editor
 {
-    [Serializable]
+    /// <summary>
+    /// The AddressablesPathDictionary is a struct that contains the metadata stored within the game's "lrapi_returns.json", which is a Dictionary of Addressable Path to GUID.
+    /// </summary>
     public struct AddressablesPathDictionary
     {
         private const string FILE_NAME = "lrapi_returns.json";
@@ -27,6 +29,10 @@ namespace RoR2.Editor
             return filePath;
         }
 
+        /// <summary>
+        /// Returns the instance currently stored.
+        /// </summary>
+        /// <returns>The instance of AddressablesPathDictionary</returns>
         public static AddressablesPathDictionary GetInstance()
         {
             if (!_instance.IsEmpty())
@@ -71,6 +77,10 @@ namespace RoR2.Editor
         private string[] paths;
         private string[] guids;
 
+        /// <summary>
+        /// Returns true if the AddressablesPathDictionary holds no data whatsoever.
+        /// </summary>
+        /// <returns></returns>
         public bool IsEmpty()
         {
             return (pathToGUIDDictionary == null || pathToGUIDDictionary.Count == 0) || 
@@ -79,15 +89,24 @@ namespace RoR2.Editor
                 (guids == null || guids.Length == 0);
         }
 
-        public ReadOnlyArray<string> GetAllKeys()
+        /// <summary>
+        /// Returns an array of all the Addressables Paths stored in the dictionary.
+        /// </summary>
+        public ReadOnlyArray<string> GetAllPaths()
         {
             return new ReadOnlyArray<string>(paths);
         }
 
-        public ReadOnlyArray<string> GetAllKeysOfType(Type t)
+        /// <summary>
+        /// Returns an array of all the Addressables Paths stored in the dictionary, from which their assets inherit from <paramref name="t"/>
+        /// <br></br>
+        /// For example, GetAllPathsOfType(typeof(ItemDef)) will return all paths that represent ItemDefs.
+        /// </summary>
+        /// <param name="t">The type of asset</param>
+        public ReadOnlyArray<string> GetAllPathsOfType(Type t)
         {
             if (t == null)
-                return GetAllKeys();
+                return GetAllPaths();
 
             List<string> entries = new();
             foreach(var key in paths)
@@ -103,11 +122,20 @@ namespace RoR2.Editor
             return new ReadOnlyArray<string>(entries.ToArray());
         }
 
+        /// <summary>
+        /// Returns an array of all the Addressables GUIDS stored in the dictionary.
+        /// </summary>
         public ReadOnlyArray<string> GetAllGUIDS()
         {
             return new ReadOnlyArray<string>(guids);
         }
 
+        /// <summary>
+        /// Returns an array of all the Addressables GUIDS stored in the dictionary, from which their assets inherit from <paramref name="t"/>
+        /// <br></br>
+        /// For example, GetAllGUIDSOfType(typeof(ItemDef)) will return all GUIDS that represent ItemDefs.
+        /// </summary>
+        /// <param name="t">The type of asset</param>
         public ReadOnlyArray<string> GetAllGUIDSOfType(Type t)
         {
             if (t == null)
@@ -127,21 +155,43 @@ namespace RoR2.Editor
             return new ReadOnlyArray<string>(entries.ToArray());
         }
 
+        /// <summary>
+        /// Tries to obtain a guid from it's addressable path.
+        /// </summary>
+        /// <param name="path">The addressable path, from which we want it's guid</param>
+        /// <param name="guid">The resulting guid</param>
+        /// <returns>True if the value was succesfuly obtained, otherwise false.</returns>
         public bool TryGetGUIDFromPath(string path, out string? guid)
         {
             return pathToGUIDDictionary.TryGetValue(path, out guid);
         }
 
+        /// <summary>
+        /// Obtains a guid from <paramref name="path"/> directly with no safety.
+        /// </summary>
+        /// <param name="path">The addressable path from which we want it's guid</param>
+        /// <returns>The guid itself.</returns>
         public string GetGUIDFromPath(string path)
         {
             return pathToGUIDDictionary[path];
         }
 
+        /// <summary>
+        /// Tries to obtain a path from it's addressable guid.
+        /// </summary>
+        /// <param name="path">The resulting path</param>
+        /// <param name="guid">The addressable guid, from which we want it's path</param>
+        /// <returns>True if the value was succesfuly obtained, otherwise false.</returns>
         public bool TryGetPathFromGUID(string guid, out string? path)
         {
             return guidToPathDictionary.TryGetValue(guid, out path);
         }
 
+        /// <summary>
+        /// Obtains a path from <paramref name="guid"/> directly with no safety.
+        /// </summary>
+        /// <param name="guid">The addressable guid from which we want it's path</param>
+        /// <returns>The path itself.</returns>
         public string GetPathFromGUID(string guid)
         {
             return guidToPathDictionary[guid];

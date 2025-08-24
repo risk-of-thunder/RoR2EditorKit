@@ -8,17 +8,27 @@ using UnityEngine.ResourceManagement.ResourceLocations;
 
 namespace RoR2.Editor
 {
+    /// <summary>
+    /// Represents a Dropdown that can be used to obtain an Addressable GUID from the base game, displaying them as Addressable Paths for ease of use.
+    /// </summary>
     public class AddressablesPathDropdown : AdvancedDropdown
     {
         private string rootItemKey;
         private Type requiredType;
+
+        /// <summary>
+        /// This event is fired when an Item is selected.
+        /// </summary>
         public event Action<Item> onItemSelected;
 
+        /// <summary>
+        /// If true, the full path will be used as an individual item's name.
+        /// </summary>
         public bool useFullPathAsItemName { get; }
 
         protected override AdvancedDropdownItem BuildRoot()
         {
-            ReadOnlyArray<string> keys = AddressablesPathDictionary.GetInstance().GetAllKeysOfType(requiredType);
+            ReadOnlyArray<string> keys = AddressablesPathDictionary.GetInstance().GetAllPathsOfType(requiredType);
 
             var items = new Dictionary<string, Item>();
             var rootItem = new Item(rootItemKey, rootItemKey);
@@ -70,15 +80,21 @@ namespace RoR2.Editor
         }
 
         /// <summary>
-        /// Constructor with no type checking.
+        /// Constructor with no type checking. You're strongly encouraged to use <see cref="AddressablesPathDropdown.AddressablesPathDropdown(AdvancedDropdownState, bool, Type)"/> instead.
         /// </summary>
-        /// <param name="state"></param>
-        /// <param name="useFullPathAsItemName"></param>
+        /// <param name="state">The state of the dropdown, can pass an empty state.</param>
+        /// <param name="useFullPathAsItemName">If true, the full path will be used as an individual item's name.</param>
         public AddressablesPathDropdown(AdvancedDropdownState state, bool useFullPathAsItemName) : this(state, useFullPathAsItemName, null)
         {
 
         }
 
+        /// <summary>
+        /// Constructor with Type checking, this is the recommended constructor..
+        /// </summary>
+        /// <param name="state">The state of the dropdown, can pass an empty state.</param>
+        /// <param name="useFullPathAsItemName">If true, the full path will be used as an individual item's name.</param>
+        /// <param name="requiredType">The required type of the asset, this will filter the dropdown to only include assets of this type.</param>
         public AddressablesPathDropdown(AdvancedDropdownState state, bool useFullPathAsItemName, Type requiredType) : base(state)
         {
             rootItemKey = "Select Asset";
@@ -89,8 +105,14 @@ namespace RoR2.Editor
             this.useFullPathAsItemName = useFullPathAsItemName;
         }
 
+        /// <summary>
+        /// Represents an item within the dropdown.
+        /// </summary>
         public class Item : AdvancedDropdownItem
         {
+            /// <summary>
+            /// The Addressable Path to the asset, you can use <see cref="AddressablesPathDictionary"/>'s GetGUIDFromPath to obtain the actual guid of the asset.
+            /// </summary>
             public string assetPath { get; }
 
             internal Item(string displayName, string assetPath) : base(displayName)

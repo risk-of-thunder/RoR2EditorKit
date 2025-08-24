@@ -1,6 +1,45 @@
+# '5.5.0'
+
+### Core Changes:
+
+* All the setting providers have been consolidated into their respective setting classes, removing some files as a result.
+* The ExtendedPropertyDrawer and IMGUIPropertyDrawer now set the serializedProperty when ``GetPropertyHeight()`` is called 
+* Added the R2EKPreferences preference setting.
+  * Used to store the game's executable path, this lays the foundation for more features in the future.
+
+### RoR2Scripts Changes
+
+* Added the AddressablesPathDictionary, which is a struct that contains the deserialized data of the game's "lrapi_returns.json" file.
+* Added a the dropdown, the ``AddressablesPathDropdown``, used to obtain a base game's guid via an address path.
+* Added a default drawer for ``AssetReferenceT``, which uses the ``AddressablesPathDropdown``
+  * this drawer is disabled if the Addressables Package is installed.
+
+### R2APIScripts Changes
+
+* The AddressReferencedAssetDrawer has been revamped to include new functionality.
+  * Added the ability to pick an asset's guid address via a dropdown. which is filtered to accept only valid assets.
+  * You can now specify wether an asset can be loaded from the catalog or not via the context menu.
+
+# '5.4.1'
+
+### Core Changes:
+
+* FilePickerPath drawer's extension property now properly accounts wether the attribute included the extension dot or not.
+
+### RoR2Scripts changes:
+
+* Fixed the Hitbox Gizmo not using Lossy Scale
+* The assembly now enables as long as any version of RoR2 is installed.
+
+### R2APIScripts Changes
+
+* Fixed the StageSerde drawer not having the necesary precompile directive clauses
+* Fixed the AddressableFamilyDirectorCardCategorySelection drawer not working.
+
 # '5.4.0'
 
 ### General:
+
 * Reformatted the changelog so it has less indentation
 
 ### Core Changes:

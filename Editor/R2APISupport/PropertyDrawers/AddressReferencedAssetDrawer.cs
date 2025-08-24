@@ -10,10 +10,35 @@ using UnityEngine.AddressableAssets;
 
 namespace RoR2.Editor.PropertyDrawers
 {
+    /// <summary>
+    /// A Base class that's used to draw R2API's unique <see cref="AddressReferencedAsset"/>s.
+    /// <para></para>
+    /// The Drawer has 3 distinct modes of operation.
+    /// <list type="number">
+    /// <item>You can reference an asset directly, via one of your project's assets.</item>
+    /// <item>You can reference an asset via it's ingame address.</item>
+    /// <item>You can reference an asset via it's ingame catalog name, this is only available for certain versions of <see cref="AddressReferencedAsset"/></item>
+    /// </list>
+    /// You can inherit from this class to implement your own drawer for a custom <see cref="AddressReferencedAsset"/>
+    /// </summary>
+    /// <typeparam name="T">The type of <see cref="AddressReferencedAsset"/> that's being drawn.</typeparam>
     public abstract class AddressReferencedAssetDrawer<T> : IMGUIPropertyDrawer<T> where T : AddressReferencedAsset
     {
+        private static bool _useFullPathForItems;
+
+        /// <summary>
+        /// Override this string to display a custom tooltip for this AddressReferencedAsset
+        /// </summary>
         protected virtual string AddressTooltip { get; } = "The Address to the Asset";
+
+        /// <summary>
+        /// Wether the asset is currently using a direct reference.
+        /// </summary>
         protected bool usingDirectReference;
+
+        /// <summary>
+        /// Wether the asset can be loaded from a catalog.
+        /// </summary>
         protected bool canLoadFromCatalog;
 
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -95,12 +120,16 @@ namespace RoR2.Editor.PropertyDrawers
             serializedObject.ApplyModifiedProperties();
             EditorGUI.EndProperty();
         }
+
+        /// <summary>
+        /// You can modify the context menu that appears when you click the r2ek icon here.
+        /// </summary>
+        /// <param name="menu">The menu that's being modified.</param>
         protected virtual void ModifyContextMenu(GenericMenu menu) { }
 
         private void OpenAddressablesDropdown(Rect rectForDropdown, SerializedProperty addressProperty)
         {
-
-            AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), false, GetRequiredAssetType());
+            AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), _useFullPathForItems, GetRequiredAssetType());
             dropdown.onItemSelected += (item) =>
             {
                 ValidateAssetAndAssign(item, addressProperty);
@@ -108,6 +137,10 @@ namespace RoR2.Editor.PropertyDrawers
             dropdown.Show(rectForDropdown);
         }
 
+        /// <summary>
+        /// Override this method to make the <see cref="AddressablesPathDropdown"/> have a type restriction.
+        /// </summary>
+        /// <returns>The type of asset</returns>
         protected virtual Type GetRequiredAssetType()
         {
             return null;
@@ -127,8 +160,19 @@ namespace RoR2.Editor.PropertyDrawers
                 addressProperty.serializedObject.ApplyModifiedProperties();
             }
         }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public AddressReferencedAssetDrawer()
+        {
+            _useFullPathForItems = propertyDrawerPreferenceSettings.GetOrCreateSetting("useFullNameForItems", false);
+        }
     }
     //-----
+    /// <summary>
+    /// Custom Property Drawer for <see cref="AddressReferencedBuffDef"/>
+    /// </summary>
     [CustomPropertyDrawer(typeof(AddressReferencedBuffDef))]
     public sealed class AddressReferencedBuffDefDrawer : AddressReferencedAssetDrawer<AddressReferencedBuffDef>
     {
@@ -140,6 +184,9 @@ namespace RoR2.Editor.PropertyDrawers
         }
     }
     //-----
+    /// <summary>
+    /// Custom Property Drawer for <see cref="AddressReferencedEliteDef"/>
+    /// </summary>
     [CustomPropertyDrawer(typeof(AddressReferencedEliteDef))]
     public sealed class AddressReferencedEliteDefDrawer : AddressReferencedAssetDrawer<AddressReferencedEliteDef>
     {
@@ -151,6 +198,9 @@ namespace RoR2.Editor.PropertyDrawers
         }
     }
     //-----
+    /// <summary>
+    /// Custom Property Drawer for <see cref="AddressReferencedEquipmentDef"/>
+    /// </summary>
     [CustomPropertyDrawer(typeof(AddressReferencedEquipmentDef))]
     public sealed class AddressReferencedEquipmentDefDrawer : AddressReferencedAssetDrawer<AddressReferencedEquipmentDef>
     {
@@ -162,6 +212,9 @@ namespace RoR2.Editor.PropertyDrawers
         }
     }
     //-----
+    /// <summary>
+    /// Custom Property Drawer for <see cref="AddressReferencedExpansionDef"/>
+    /// </summary>
     [CustomPropertyDrawer(typeof(AddressReferencedExpansionDef))]
     public sealed class AddressReferencedExpansionDefDrawer : AddressReferencedAssetDrawer<AddressReferencedExpansionDef>
     {
@@ -173,6 +226,9 @@ namespace RoR2.Editor.PropertyDrawers
         }
     }
     //-----
+    /// <summary>
+    /// Custom Property Drawer for <see cref="AddressReferencedItemDef"/>
+    /// </summary>
     [CustomPropertyDrawer(typeof(AddressReferencedItemDef))]
     public sealed class AddressReferencedItemDefDrawer : AddressReferencedAssetDrawer<AddressReferencedItemDef>
     {
@@ -184,6 +240,9 @@ namespace RoR2.Editor.PropertyDrawers
         }
     }
     //-----
+    /// <summary>
+    /// Custom Property Drawer for <see cref="AddressReferencedPrefab"/>
+    /// </summary>
     [CustomPropertyDrawer(typeof(AddressReferencedPrefab))]
     public sealed class AddressReferencedPrefabDrawer : AddressReferencedAssetDrawer<AddressReferencedPrefab>
     {
@@ -193,6 +252,9 @@ namespace RoR2.Editor.PropertyDrawers
         }
     }
     //-----
+    /// <summary>
+    /// Custom Property Drawer for <see cref="AddressReferencedSpawnCard"/>
+    /// </summary>
     [CustomPropertyDrawer(typeof(AddressReferencedSpawnCard))]
     public sealed class AddressReferencedSpawnCardDrawer : AddressReferencedAssetDrawer<AddressReferencedSpawnCard>
     {
@@ -202,6 +264,9 @@ namespace RoR2.Editor.PropertyDrawers
         }
     }
     //-----
+    /// <summary>
+    /// Custom Property Drawer for <see cref="AddressReferencedUnlockableDef"/>
+    /// </summary>
     [CustomPropertyDrawer(typeof(AddressReferencedUnlockableDef))]
     public sealed class AddressReferencedUnlockableDefDrawer : AddressReferencedAssetDrawer<AddressReferencedUnlockableDef>
     {
@@ -213,6 +278,9 @@ namespace RoR2.Editor.PropertyDrawers
     }
 #if R2EK_R2API_DIRECTOR
     //-----
+    /// <summary>
+    /// Custom Property Drawer for <see cref="AddressReferencedFamilyDirectorCardCategorySelection"/>
+    /// </summary>
     [CustomPropertyDrawer(typeof(AddressReferencedFamilyDirectorCardCategorySelection))]
     public sealed class AddressReferencedFamilyDirectorCardCategorySelectionDrawer : AddressReferencedAssetDrawer<AddressReferencedFamilyDirectorCardCategorySelection>
     {
