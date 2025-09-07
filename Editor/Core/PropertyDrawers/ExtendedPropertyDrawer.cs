@@ -61,7 +61,7 @@ namespace RoR2.Editor
                 {
                     return (T)(object)attribute;
                 }
-                return (T)fieldInfo.GetValue(targetUnityObject);
+                return serializedProperty.GetValue<T>();
             }
             set
             {
@@ -69,7 +69,7 @@ namespace RoR2.Editor
                 {
                     throw new NotSupportedException("Cannot modify attribute values.");
                 }
-                fieldInfo.SetValue(targetUnityObject, value);
+                serializedProperty.SetValue<T>(value);
             }
         }
 
