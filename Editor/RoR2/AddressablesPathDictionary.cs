@@ -1,13 +1,17 @@
-using System;
-using System.Collections.Generic;
-using UnityEditor;
-using System.Linq;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
-using UnityEngine.AddressableAssets;
-using System.IO;
 using HG;
 using SimpleJSON;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.ResourceManagement.ResourceLocations;
 using IOPath = System.IO.Path;
 
 namespace RoR2.Editor
@@ -105,16 +109,28 @@ namespace RoR2.Editor
         /// <param name="t">The type of asset</param>
         public ReadOnlyArray<string> GetAllPathsOfType(Type t)
         {
-            if (t == null)
+            return GetAllPathsOfTypes(new Type[] { t });
+        }
+
+        /// <summary>
+        /// Returns an array of all the Addressables Paths stored in the dictionary, from which their assets inherit from any of the types specified in <paramref name="types"/>
+        /// </summary>
+        /// <br></br>
+        /// For example, GetAllGUIDSOfType(new Type[] { typeof(ItemDef), typeof(EquipmentDef) }) will return all paths that represent either ItemDefs OR EquipmentDefs.
+        /// <param name="types">The types of assets.</param>
+        public ReadOnlyArray<string> GetAllPathsOfTypes(Type[] types)
+        {
+            if (types == null || types.Length == 0)
                 return GetAllPaths();
 
             List<string> entries = new();
-            foreach(var key in paths)
+            foreach (var key in paths)
             {
-                var resourceLocation = Addressables.LoadResourceLocationsAsync(key).WaitForCompletion().FirstOrDefault();
+                var resourceLocations = Addressables.LoadResourceLocationsAsync(key).WaitForCompletion();
+                var resourceLocation = resourceLocations.FirstOrDefault();
                 var resourceType = resourceLocation?.ResourceType;
 
-                if(resourceType != null && (resourceType == t || resourceType.IsSubclassOf(t)))
+                if (resourceType != null && (types.Contains(resourceType) || types.Any(t => resourceType.IsSubclassOf(t))))
                 {
                     entries.Add(key);
                 }
@@ -148,6 +164,31 @@ namespace RoR2.Editor
                 var resourceType = resourceLocation?.ResourceType;
 
                 if (resourceType != null && (resourceType == t || resourceType.IsSubclassOf(t)))
+                {
+                    entries.Add(key);
+                }
+            }
+            return new ReadOnlyArray<string>(entries.ToArray());
+        }
+
+        /// <summary>
+        /// Returns an array of all the Addressables GUIDS stored in the dictionary, from which their assets inherit from any of the types specified in <paramref name="types"/>
+        /// </summary>
+        /// <br></br>
+        /// For example, GetAllGUIDSOfType(new Type[] { typeof(ItemDef), typeof(EquipmentDef) }) will return all GUIDS that represent either ItemDefs OR EquipmentDefs.
+        /// <param name="types">The types of assets.</param>
+        public ReadOnlyArray<string> GetAllGUIDSOfTypes(Type[] types)
+        {
+            if (types == null || types.Length == 0)
+                return GetAllGUIDS();
+
+            List<string> entries = new();
+            foreach (var key in guids)
+            {
+                var resourceLocation = Addressables.LoadResourceLocationsAsync(key).WaitForCompletion().FirstOrDefault();
+                var resourceType = resourceLocation?.ResourceType;
+
+                if (resourceType != null && (types.Contains(resourceType) || types.Any(t => resourceType.IsSubclassOf(t))))
                 {
                     entries.Add(key);
                 }
