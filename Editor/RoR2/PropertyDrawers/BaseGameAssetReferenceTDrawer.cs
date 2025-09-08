@@ -1,5 +1,6 @@
 //If the project is using addressables we dont want to override that package's property drawer.
 #if !R2EK_ADDRESSABLES
+using RoR2.AddressableAssets;
 using System;
 using UnityEditor;
 using UnityEngine;
@@ -24,10 +25,10 @@ namespace RoR2.Editor.PropertyDrawers
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var pathDictionaryInstance = AddressablesPathDictionary.GetInstance();
-            Type typeofAsset = GetAssetType();
+            Type[] typesOfAsset = GetAssetTypes();
             using (new EditorGUI.PropertyScope(position, label, property))
             {
-                if (typeofAsset == null)
+                if (typesOfAsset == null)
                 {
                     EditorGUI.PropertyField(position, property, label, true);
                     return;
@@ -41,7 +42,7 @@ namespace RoR2.Editor.PropertyDrawers
                 string dropdownButtonLabel = string.IsNullOrWhiteSpace(m_AssetGUIDProperty.stringValue) ? "None" : IOPath.GetFileName(pathDictionaryInstance.GetPathFromGUID(m_AssetGUIDProperty.stringValue));
                 if (EditorGUI.DropdownButton(rectForDropdown, new GUIContent(dropdownButtonLabel), FocusType.Passive))
                 {
-                    AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), _useFullPathForItems, typeofAsset);
+                    AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), _useFullPathForItems, typesOfAsset);
                     dropdown.onItemSelected += (item) =>
                     {
                         if(!string.IsNullOrWhiteSpace(item.assetPath))
@@ -64,9 +65,9 @@ namespace RoR2.Editor.PropertyDrawers
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             base.GetPropertyHeight(property, label);
-            Type type = GetAssetType();
+            Type[] type = GetAssetTypes();
 
-            if(type != null)
+            if(type != null || type.Length == 0)
             {
                 return standardPropertyHeight;
             }
@@ -79,30 +80,54 @@ namespace RoR2.Editor.PropertyDrawers
             return propHeight;
         }
 
-        /// <summary>
-        /// Override this method to specify a custom asset type.
-        /// </summary>
-        /// <returns>The type of asset this asset reference requires.</returns>
+        [Obsolete("Use GetAssetTypes instead.")]
         protected virtual Type GetAssetType()
         {
-            Type type = propertyDrawerData.GetType();
+            var result = GetAssetTypes();
+            return HG.ArrayUtils.GetSafe(result, 0);
+        }
+
+        /// <summary>
+        /// Override this method to specify custom asset types.
+        /// <br></br>
+        /// Usually just a single Type is necesary to be returned, but multiple types can be specified, this is used mainly for supporting the game's <see cref="IDRSKeyAssetReference"/>.
+        /// </summary>
+        /// <returns>The types of asset this asset reference requires.</returns>
+        protected virtual Type[] GetAssetTypes()
+        {
+            if (TryGetAssetTypeFromPopertyDrawerData(out Type type))
+            {
+                return new Type[] { type };
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Tries to get the AssetType directly from the AssetReferenceT we're currently drawing.
+        /// </summary>
+        /// <returns>True if the type was succesfully retrieved, otherwise false.</returns>
+        protected bool TryGetAssetTypeFromPopertyDrawerData(out Type type)
+        {
+            type = null;
+            Type assetReferenceTType = propertyDrawerData.GetType();
 
             //If the type has no generic arguments, but it inherits from AssetReferenceT, we need to get the base type and obtain the arguments. This is the case for something like AssetReferenceTexture, which inherits from AssetReferenceT<Texture>
-            var genericTypes = type.GetGenericArguments();
-            if (genericTypes.Length == 0 && IsSubclassOfRawGeneric(typeof(AssetReferenceT<>), type))
+            var genericTypes = assetReferenceTType.GetGenericArguments();
+            if (genericTypes.Length == 0 && IsSubclassOfRawGeneric(typeof(AssetReferenceT<>), assetReferenceTType))
             {
-                var baseType = type.BaseType;
+                var baseType = assetReferenceTType.BaseType;
                 genericTypes = baseType.GetGenericArguments();
-                return genericTypes[0];
+                type = genericTypes[0];
+                return true;
             }
-            else if(genericTypes.Length != 0) //Otherwise, if the genericTypes is not 0, then we can get the type immediatly, this is the case for a field of type AssetReferenceT<Material>
+            else if (genericTypes.Length != 0) //Otherwise, if the genericTypes is not 0, then we can get the type immediatly, this is the case for a field of type AssetReferenceT<Material>
             {
-                var typeOfAsset = genericTypes[0];
-                return typeOfAsset;
+                type = genericTypes[0];
+                return true;
             }
             else //Otherwise return null and draw the raw property.
             {
-                return null;
+                return false;
             }
         }
 
@@ -125,5 +150,20 @@ namespace RoR2.Editor.PropertyDrawers
             _useFullPathForItems = propertyDrawerPreferenceSettings.GetOrCreateSetting("useFullNameForItems", false);
         }
     }
+
+    #region built-in subtypes
+    [CustomPropertyDrawer(typeof(IDRSKeyAssetReference))]
+    public class IDRSKeyAssetReferenceDrawer : BaseGameAssetReferenceTDrawer
+    {
+        protected override Type[] GetAssetTypes()
+        {
+            return new Type[]
+            {
+                typeof(ItemDef),
+                typeof(EquipmentDef)
+            };
+        }
+    }
+    #endregion
 }
 #endif

@@ -1,3 +1,16 @@
+# '5.5.1'
+
+## Core Changes:
+
+* Added back the old ``GetValue`` and ``SetValue`` ``SerializedProperty`` extensions.
+	* This retroactively fixes [#23](https://github.com/risk-of-thunder/RoR2EditorKit/issues/23).
+
+### RoR2SCriptsChanges
+
+* The AddressablesPathDictionary can now return all GUIDS/Paths that conform to multiple types.
+* Added a PropertyDrawer for ItemDisplayRules, reducing information shown when applicable and adding a button for pasting the values taken from the ItemDisplayPlacementHelper. (Fixes [#24](https://github.com/risk-of-thunder/RoR2EditorKit/issues/24))
+* Added a PropertyDrawer for IDRSKeyAssetReference, allowing you to easily select an IDRS Key Asset address. 
+
 # '5.5.0'
 
 ### Core Changes:

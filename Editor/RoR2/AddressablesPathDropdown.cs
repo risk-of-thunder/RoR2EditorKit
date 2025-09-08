@@ -14,7 +14,7 @@ namespace RoR2.Editor
     public class AddressablesPathDropdown : AdvancedDropdown
     {
         private string rootItemKey;
-        private Type requiredType;
+        private Type[] requiredTypes;
 
         /// <summary>
         /// This event is fired when an Item is selected.
@@ -28,7 +28,7 @@ namespace RoR2.Editor
 
         protected override AdvancedDropdownItem BuildRoot()
         {
-            ReadOnlyArray<string> keys = AddressablesPathDictionary.GetInstance().GetAllPathsOfType(requiredType);
+            ReadOnlyArray<string> keys = AddressablesPathDictionary.GetInstance().GetAllPathsOfTypes(requiredTypes);
 
             var items = new Dictionary<string, Item>();
             var rootItem = new Item(rootItemKey, rootItemKey);
@@ -84,24 +84,35 @@ namespace RoR2.Editor
         /// </summary>
         /// <param name="state">The state of the dropdown, can pass an empty state.</param>
         /// <param name="useFullPathAsItemName">If true, the full path will be used as an individual item's name.</param>
-        public AddressablesPathDropdown(AdvancedDropdownState state, bool useFullPathAsItemName) : this(state, useFullPathAsItemName, null)
+        public AddressablesPathDropdown(AdvancedDropdownState state, bool useFullPathAsItemName) : this(state, useFullPathAsItemName, requiredType: null)
         {
 
         }
 
         /// <summary>
-        /// Constructor with Type checking, this is the recommended constructor..
+        /// Constructor with Type checking, this is the recommended constructor.
         /// </summary>
         /// <param name="state">The state of the dropdown, can pass an empty state.</param>
         /// <param name="useFullPathAsItemName">If true, the full path will be used as an individual item's name.</param>
         /// <param name="requiredType">The required type of the asset, this will filter the dropdown to only include assets of this type.</param>
-        public AddressablesPathDropdown(AdvancedDropdownState state, bool useFullPathAsItemName, Type requiredType) : base(state)
+        public AddressablesPathDropdown(AdvancedDropdownState state, bool useFullPathAsItemName, Type requiredType) : this(state, useFullPathAsItemName, new Type[] {requiredType})
+        {
+
+        }
+
+        /// <summary>
+        /// Constructor with multiple Type checking.
+        /// </summary>
+        /// <param name="state">The state of the dropdown, can pass an empty state.</param>
+        /// <param name="useFullPathAsItemName">If true, the full path will be used as an individual item's name.</param>
+        /// <param name="requiredType">The required types of the asset, this will filter the dropdown to only include assets of these types.</param>
+        public AddressablesPathDropdown(AdvancedDropdownState state, bool useFullPathAsItemName, Type[] requiredTypes) : base(state)
         {
             rootItemKey = "Select Asset";
             var minSize = minimumSize;
             minSize.y = 200;
             minimumSize = minSize;
-            this.requiredType = requiredType;
+            this.requiredTypes = requiredTypes;
             this.useFullPathAsItemName = useFullPathAsItemName;
         }
 
