@@ -67,17 +67,19 @@ namespace RoR2.Editor.PropertyDrawers
             base.GetPropertyHeight(property, label);
             Type[] type = GetAssetTypes();
 
-            if(type != null || type.Length == 0)
+            //If the type it returns is null or has no length, we should instead display the default drawer instead, so take into account that.
+            if(type == null || type.Length == 0)
             {
-                return standardPropertyHeight;
+                var propHeight = standardPropertyHeight;
+                if (property.isExpanded)
+                {
+                    propHeight += standardPropertyHeight * 3;
+                }
+                return propHeight;
             }
 
-            var propHeight = standardPropertyHeight;
-            if(property.isExpanded)
-            {
-                propHeight += standardPropertyHeight * 3;
-            }
-            return propHeight;
+            //Otherwise, use the new property drawer.
+            return standardPropertyHeight;
         }
 
         [Obsolete("Use GetAssetTypes instead.")]
