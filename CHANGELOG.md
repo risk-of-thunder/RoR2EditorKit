@@ -1,3 +1,9 @@
+# '5.5.2'
+
+### RoR2ScriptsChanges
+
+* Fixed an issue where the AssetReferenceT drawer would throw an exception when no asset types are returned.
+
 # '5.5.1'
 
 ## Core Changes:
@@ -5,7 +11,7 @@
 * Added back the old ``GetValue`` and ``SetValue`` ``SerializedProperty`` extensions.
 	* This retroactively fixes [#23](https://github.com/risk-of-thunder/RoR2EditorKit/issues/23).
 
-### RoR2SCriptsChanges
+### RoR2ScriptsChanges
 
 * The AddressablesPathDictionary can now return all GUIDS/Paths that conform to multiple types.
 * Added a PropertyDrawer for ItemDisplayRules, reducing information shown when applicable and adding a button for pasting the values taken from the ItemDisplayPlacementHelper. (Fixes [#24](https://github.com/risk-of-thunder/RoR2EditorKit/issues/24))
