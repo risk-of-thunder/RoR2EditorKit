@@ -7,11 +7,11 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.ResourceLocations;
 using IOPath = System.IO.Path;
 
 namespace RoR2.Editor
@@ -317,8 +317,42 @@ namespace RoR2.Editor
             foreach(var guid in guids)
             {
                 var resourceLocations = Addressables.LoadResourceLocationsAsync(guid).WaitForCompletion();
-                var resourceLocation = resourceLocations.FirstOrDefault();
-                var resourceType = resourceLocation?.ResourceType;
+
+                //There's a chance that there's no resources at this guid... idk???
+                if (resourceLocations.Count == 0)
+                {
+                    UnityEngine.Debug.Log($"No resources located at {GetPathFromGUID(guid)}");
+                    continue;
+                }
+
+                /* This is a bit fucky, but basically there's an issue where all sub-asset guids (the ones that have [] at the end) always has a pointer
+                *  back to its main asset, it's odd because even the non [] ones have it as well... specifically for sprites?
+                *  Anyways i need to figure some shit out
+                */
+
+                //If it contains the [, then stritctly match a sub-asset (at the very least the 2nd location).
+                bool strictSubAssetMatch = guid.Contains("[");
+                int resourceLocationIndex = -1;
+                if(strictSubAssetMatch && resourceLocations.Count > 1)
+                {
+                    resourceLocationIndex = 1;
+                }
+                else
+                {
+                    resourceLocationIndex = 0;
+                }
+
+                IResourceLocation resourceLocation = null;
+                try
+                {
+                    resourceLocation = resourceLocations[resourceLocationIndex];
+                }
+                catch(Exception e)
+                {
+                    UnityEngine.Debug.LogException(e);
+                    throw;
+                }
+                var resourceType = resourceLocation.ResourceType;
 
                 //If we obtained the resource type, and the resource type is same or subclass of type, add it to the result
                 if (resourceType != null && (resourceType == type || resourceType.IsSubclassOf(type)))

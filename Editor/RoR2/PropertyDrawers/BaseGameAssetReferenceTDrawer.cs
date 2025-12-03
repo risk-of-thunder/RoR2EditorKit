@@ -2,6 +2,7 @@
 #if !R2EK_ADDRESSABLES
 using RoR2.AddressableAssets;
 using System;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -23,6 +24,7 @@ namespace RoR2.Editor.PropertyDrawers
     {
         private static bool _useFullPathForItems;
         private string filter;
+        private static Regex subObjectNameExtractor = new Regex(@"(?<=\[).*?(?=\])");
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var pathDictionaryInstance = AddressablesPathDictionary.GetInstance();
@@ -50,19 +52,37 @@ namespace RoR2.Editor.PropertyDrawers
                 
                 //finally, draw the main control
                 SerializedProperty m_AssetGUIDProperty = property.FindPropertyRelative("m_AssetGUID");
-                string dropdownButtonLabel = string.IsNullOrWhiteSpace(m_AssetGUIDProperty.stringValue) ? "None" : IOPath.GetFileName(pathDictionaryInstance.GetPathFromGUID(m_AssetGUIDProperty.stringValue));
-                if (EditorGUI.DropdownButton(rectForDropdownControl, new GUIContent(dropdownButtonLabel), FocusType.Passive))
+                SerializedProperty m_SubObjectNameProperty = property.FindPropertyRelative("m_SubObjectName");
+
+                GUIContent dropdownButtonLabel = GetDropdownButtonLabel(pathDictionaryInstance, m_AssetGUIDProperty.stringValue, m_SubObjectNameProperty.stringValue);
+                if (EditorGUI.DropdownButton(rectForDropdownControl, dropdownButtonLabel, FocusType.Passive))
                 {
                     AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), _useFullPathForItems, filter, typesOfAsset);
                     dropdown.onItemSelected += (item) =>
                     {
                         if(!string.IsNullOrWhiteSpace(item.assetPath))
                         {
-                            m_AssetGUIDProperty.stringValue = pathDictionaryInstance.GetGUIDFromPath(item.assetPath);
+                            string guid = pathDictionaryInstance.GetGUIDFromPath(item.assetPath);
+                            
+                            //We'll match using regex to get the subObjectName
+                            Match match = subObjectNameExtractor.Match(guid);
+                            if(match == Match.Empty)
+                            {
+                                m_AssetGUIDProperty.stringValue = pathDictionaryInstance.GetGUIDFromPath(item.assetPath);
+                            }
+                            else //We've found the subobjectname, we need to store it within its correct property.
+                            {
+                                string subObjectName = match.Value;
+                                string mainAssetGUID = guid.Substring(0, guid.IndexOf('['));
+
+                                m_AssetGUIDProperty.stringValue = mainAssetGUID;
+                                m_SubObjectNameProperty.stringValue = subObjectName;
+                            }
                         }
                         else
                         {
                             m_AssetGUIDProperty.stringValue = "";
+                            m_SubObjectNameProperty.stringValue = "";
                         }
                         serializedObject.ApplyModifiedProperties();
                     };
@@ -71,6 +91,37 @@ namespace RoR2.Editor.PropertyDrawers
                     dropdown.Show(rectForDropdownControl);
                 }
             }
+        }
+
+        private GUIContent GetDropdownButtonLabel(AddressablesPathDictionary addressablesDictionary, string assetGUID, string subObjectName)
+        {
+            string label = "";
+            string tooltip = "";
+
+            if (string.IsNullOrEmpty(assetGUID))
+            {
+                label = "None";
+                tooltip = "";
+                return new GUIContent(label, tooltip);
+            }
+
+            string fullAssetPath = "";
+            if(!string.IsNullOrWhiteSpace(subObjectName))
+            {
+                string compoundedGuid = string.Format("{0}[{1}]", assetGUID, subObjectName);
+                fullAssetPath = addressablesDictionary.GetPathFromGUID(compoundedGuid);
+            }
+            else
+            {
+                fullAssetPath = addressablesDictionary.GetPathFromGUID(assetGUID);
+            }
+
+            string onlyAssetName = fullAssetPath.Substring(fullAssetPath.LastIndexOf('/') + 1);
+
+            label = onlyAssetName;
+            tooltip = fullAssetPath;
+
+            return new GUIContent(label, tooltip);
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
