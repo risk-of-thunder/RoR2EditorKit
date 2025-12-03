@@ -237,7 +237,7 @@ namespace RoR2.Editor
         /// <param name="property">The SerializedProperty to get it's FieldInfo</param>
         /// <param name="fieldInfo">The obtained FieldInfo</param>
         /// <returns>True if the FieldInfo is obtained succesfully, otherwise false</returns>
-        public static bool GetFieldInfoFromProperty(SerializedProperty property, out FieldInfo fieldInfo)
+        public static bool GetFieldInfoFromProperty(this SerializedProperty property, out FieldInfo fieldInfo)
         {
             if (getFieldInfoFromProperty == null)
             {
