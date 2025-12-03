@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace RoR2.Editor.PropertyDrawers
 {
@@ -14,17 +16,47 @@ namespace RoR2.Editor.PropertyDrawers
                 throw new System.NotSupportedException("TypeRestrictedReferenceAttribute should only be used on fields which type is or inherits from UnityEngine.Object");
             }
 
-            EditorGUI.BeginProperty(position, label, property);
-            Object obj = EditorGUI.ObjectField(position, property.objectReferenceValue, typeof(Object), true);
-            if (((TypeRestrictedReferenceAttribute)attribute).allowedTypes.Contains(obj.GetType()))
+            using(new EditorGUI.PropertyScope(position, label, property))
             {
-                property.objectReferenceValue = obj;
+                Object obj = EditorGUI.ObjectField(position, property.displayName, property.objectReferenceValue, typeof(Object), true);
+
+                //If we dont have an object, assign objectreferenceValue and continue, as we're setting it to null
+                if(!obj)
+                {
+                    property.objectReferenceValue = obj;
+                    return;
+                }
+
+                Type objectType = obj.GetType();
+                if(IsTypeAllowed(objectType))
+                {
+                    property.objectReferenceValue = obj;
+                }
+                else
+                {
+                    EditorUtility.DisplayDialog("Invalid Object Chosen", $"The field {property.displayName} can only be assigned the following objects:\n{string.Join("\n", propertyDrawerData.allowedTypes.Select(x => x.Name))}", "Ok");
+                }
             }
-            else
+        }
+
+        private bool IsTypeAllowed(Type type)
+        {
+            Type[] allowedTypes = propertyDrawerData.allowedTypes;
+
+            if (allowedTypes == null ||
+                allowedTypes.Length == 0)
+                return true;
+
+            for(int i = 0; i < allowedTypes.Length; i++)
             {
-                EditorUtility.DisplayDialog("Invalid Object Chosen", $"The field {property.displayName} can only be assigned the following objects:\n{string.Join("\n", ((TypeRestrictedReferenceAttribute)attribute).allowedTypes.Select(x => x.Name))}", "Ok");
+                Type allowedType = allowedTypes[i];
+                if (type.IsSubclassOf(allowedType) || type == allowedType)
+                {
+                    return true;
+                }
             }
-            EditorGUI.EndProperty();
+
+            return false;
         }
     }
 }

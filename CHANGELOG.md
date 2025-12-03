@@ -1,3 +1,44 @@
+# '5.6.0'
+
+* Updated to Alloyed Collective
+
+### Core Changes
+
+* Marked ``R2EKExtensions.IsNullOrEmptyOrWhiteSpace(this string)`` as obsolete, as ``string.IsNullOrWhiteSpace()`` does it better and cleaner
+* Added an overload for the ``GetValue`` and ``SetValue`` SerializedProperty extensions that are not generic
+	* This should allow getting a value and then unboxing it instead of being forced to know the type
+* Added a ``TryGetParentProperty`` extension method to ``SerializedProperty``, used to get the Parent Property.
+* Added a ``GetFieldInfoFromProperty`` extension method to ``SerializedProperty``, it's used to get the FieldInfo that the SerializedProperty represents.
+
+### RoR2ScriptsChanges
+
+* The Assembly should now work with either Compiled or AssemblyDef versions of Addressables and UnityMultiplayerHLAPI
+* Changed the ``AddressablesPathDictionary`` from a ``struct`` to a ``sealed class``
+* Querying SubAssets utilizing the ``AddressablesPathDictionary`` is now possible
+* The ``AddressablesPathDictionary`` now _caches_ results from lookups
+	* Initial cache creation might be longer than it was before the cache was implemented, but further queries should be considerably faster
+	* Cache gets flushed on domain reload
+* Added an ``EntryLookup`` utility class to the ``AddressableSPathDictionary``
+	* Create a new instance to lookup entries within the dictionary
+	* Allows you to lookup via GUID, or Path
+	* Allows you to specify Type Restrictions, where as long as the resource inherits or is the same as any of the types, it's included
+	* Allows you to pre-filter based on a string, reducing further the outputs of the lookup
+* Marked the following methods as ``Obsolete`` due to the existence of ``EntryLookup``
+	* ``ReadOnlyArray<string> GetAllPathsOfType(Type)``
+	* ``ReadOnlyArray<string> GetAllPathsOfTypes(Type[])``
+	* ``ReadOnlyArray<string> GetAllGUIDSOfType(Type)``
+	* ``ReadOnlyArray<string> GetAllGUIDSOfTypes(Type[])``
+* The PropertyDrawer for ``AssetReference`` now supports the following:
+	* Filtering support, reducing the amount of entries within the dropdown (speeding it up)
+	* SubAsset support, the subObjectName gets saved properly to the Assetrefernce properties
+* Fixed an issue where TypeRestrictedReferenceAttribute would cause issues in the inspector if no value exists within the field
+
+### R2APIScripts changes
+
+* The Assembly should now work with either Compiled or AssemblyDef versions of Addressables and UnityMultiplayerHLAPI
+* Added a Filter option to the ``AddressReferencedAssetDrawer``, reducing the amount of entries within the dropdown
+* Fixed the ``AddressReferencedFamilyDirectorCardCategorySelectionDrawer`` not utilizing the correct type for queries
+
 # '5.5.2'
 
 ### RoR2ScriptsChanges
@@ -6,7 +47,7 @@
 
 # '5.5.1'
 
-## Core Changes:
+### Core Changes:
 
 * Added back the old ``GetValue`` and ``SetValue`` ``SerializedProperty`` extensions.
 	* This retroactively fixes [#23](https://github.com/risk-of-thunder/RoR2EditorKit/issues/23).
