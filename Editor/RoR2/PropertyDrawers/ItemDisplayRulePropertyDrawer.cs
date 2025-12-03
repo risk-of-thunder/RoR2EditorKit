@@ -37,7 +37,7 @@ namespace RoR2.Editor.PropertyDrawers
                 EditorGUI.PropertyField(rectForProperty, followerPrefabAddress);
 
                 var childName = property.FindPropertyRelative(nameof(ItemDisplayRule.childName));
-                rectForProperty.y += standardPropertyHeight;
+                rectForProperty.y += standardPropertyHeight * 2;
                 EditorGUI.PropertyField(rectForProperty, childName);
 
                 var localPos = property.FindPropertyRelative(nameof(ItemDisplayRule.localPos));
@@ -109,7 +109,7 @@ namespace RoR2.Editor.PropertyDrawers
                 return total;
             }
 
-            total += standardPropertyHeight * 6; //followerPrefab, followerPrefabAddress, childName, localPos, localAngles, localScale.
+            total += standardPropertyHeight * 7; //followerPrefab, followerPrefabAddress (w filter), childName, localPos, localAngles, localScale.
             total += standardPropertyHeight; //Paste button
             return total;
         }

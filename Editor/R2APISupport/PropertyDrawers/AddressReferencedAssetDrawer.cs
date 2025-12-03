@@ -41,6 +41,8 @@ namespace RoR2.Editor.PropertyDrawers
         /// </summary>
         protected bool canLoadFromCatalog;
 
+        private string _filter;
+
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
 
@@ -53,7 +55,11 @@ namespace RoR2.Editor.PropertyDrawers
             canLoadFromCatalog = _canLoadFromCatalogProperty?.boolValue ?? false;
 
             EditorGUI.BeginProperty(position, label, property);
-            var fieldRect = new Rect(position.x, position.y, position.width - 16, position.height);
+            var fieldRect = new Rect(position.x, position.y, position.width - 16, standardPropertyHeight);
+            var width = GetWidthForSnugLabel(property.GetGUIContent());
+
+            var rectForFilterProperty = new Rect(fieldRect.x + width, fieldRect.y + standardPropertyHeight, fieldRect.width - width, standardPropertyHeight);
+
 
             string assetName = null;
             if(AddressablesPathDictionary.GetInstance().TryGetPathFromGUID(_addressProperty.stringValue, out var path))
@@ -67,6 +73,7 @@ namespace RoR2.Editor.PropertyDrawers
             }
             else
             {
+                _filter = EditorGUI.TextField(rectForFilterProperty, "Filter:", _filter);
                 if(canLoadFromCatalog) //If the asset can load from catalog, display a regular text field in case the user wants to load the asset via name.
                 {
                     string fieldDisplayName = property.displayName;
@@ -84,7 +91,7 @@ namespace RoR2.Editor.PropertyDrawers
                 }
             }
 
-            var contextRect = new Rect(fieldRect.xMax, position.y, 16, position.height);
+            var contextRect = new Rect(fieldRect.xMax, position.y, 16, standardPropertyHeight);
             EditorGUI.DrawTextureTransparent(contextRect, R2EKConstants.AssetGUIDs.r2ekIcon, ScaleMode.ScaleToFit);
             if (Event.current.type == EventType.ContextClick)
             {
@@ -118,7 +125,19 @@ namespace RoR2.Editor.PropertyDrawers
                 }
             }
             serializedObject.ApplyModifiedProperties();
+            serializedObject.Update();
             EditorGUI.EndProperty();
+        }
+
+        public override bool CanCacheInspectorGUI(SerializedProperty property)
+        {
+            return false;
+        }
+
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            base.GetPropertyHeight(property, label);
+            return standardPropertyHeight * 2;
         }
 
         /// <summary>
@@ -129,7 +148,7 @@ namespace RoR2.Editor.PropertyDrawers
 
         private void OpenAddressablesDropdown(Rect rectForDropdown, SerializedProperty addressProperty)
         {
-            AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), _useFullPathForItems, GetRequiredAssetType());
+            AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), _useFullPathForItems, _filter, GetRequiredAssetType());
             dropdown.onItemSelected += (item) =>
             {
                 ValidateAssetAndAssign(item, addressProperty);
@@ -286,7 +305,7 @@ namespace RoR2.Editor.PropertyDrawers
     {
         protected override Type GetRequiredAssetType()
         {
-            return typeof(DirectorCardCategorySelection);
+            return typeof(FamilyDirectorCardCategorySelection);
         }
     }
 #endif

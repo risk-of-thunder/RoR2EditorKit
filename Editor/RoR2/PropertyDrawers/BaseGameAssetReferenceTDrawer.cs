@@ -22,6 +22,7 @@ namespace RoR2.Editor.PropertyDrawers
     public class BaseGameAssetReferenceTDrawer : IMGUIPropertyDrawer<AssetReference>
     {
         private static bool _useFullPathForItems;
+        private string filter;
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var pathDictionaryInstance = AddressablesPathDictionary.GetInstance();
@@ -34,15 +35,25 @@ namespace RoR2.Editor.PropertyDrawers
                     return;
                 }
 
-                var widthForLabel = GetWidthForSnugLabel(property.GetGUIContent());
-                EditorGUI.PrefixLabel(new Rect(position.x, position.y, widthForLabel, position.height), property.GetGUIContent());
-                var rectForDropdown = new Rect(position.x + widthForLabel, position.y, position.width - widthForLabel, position.height);
+                //Draw the label for the main control
+                var guiContent = property.GetGUIContent();
+                var width = GetWidthForSnugLabel(guiContent);
 
+                var rectForDropdownButtonLabel = new Rect(position.x, position.y, width, standardPropertyHeight);
+                EditorGUI.PrefixLabel(rectForDropdownButtonLabel, guiContent);
+                var rectForDropdownControl = new Rect(position.x + width, position.y, position.width - width, standardPropertyHeight);
+
+                //Compute the rect for the filter itself, then draw it
+                var rectForFilterProperty = new Rect(rectForDropdownControl.x, rectForDropdownControl.y + standardPropertyHeight, rectForDropdownControl.width, standardPropertyHeight);
+                filter = EditorGUI.TextField(rectForFilterProperty, "Filter:", filter);
+
+                
+                //finally, draw the main control
                 SerializedProperty m_AssetGUIDProperty = property.FindPropertyRelative("m_AssetGUID");
                 string dropdownButtonLabel = string.IsNullOrWhiteSpace(m_AssetGUIDProperty.stringValue) ? "None" : IOPath.GetFileName(pathDictionaryInstance.GetPathFromGUID(m_AssetGUIDProperty.stringValue));
-                if (EditorGUI.DropdownButton(rectForDropdown, new GUIContent(dropdownButtonLabel), FocusType.Passive))
+                if (EditorGUI.DropdownButton(rectForDropdownControl, new GUIContent(dropdownButtonLabel), FocusType.Passive))
                 {
-                    AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), _useFullPathForItems, typesOfAsset);
+                    AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), _useFullPathForItems, filter, typesOfAsset);
                     dropdown.onItemSelected += (item) =>
                     {
                         if(!string.IsNullOrWhiteSpace(item.assetPath))
@@ -57,7 +68,7 @@ namespace RoR2.Editor.PropertyDrawers
                     };
 
                     var mousePoint = Event.current.mousePosition;
-                    dropdown.Show(rectForDropdown);
+                    dropdown.Show(rectForDropdownControl);
                 }
             }
         }
@@ -79,7 +90,7 @@ namespace RoR2.Editor.PropertyDrawers
             }
 
             //Otherwise, use the new property drawer.
-            return standardPropertyHeight;
+            return standardPropertyHeight * 2;
         }
 
         [Obsolete("Use GetAssetTypes instead.")]
