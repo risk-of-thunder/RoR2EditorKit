@@ -4,8 +4,9 @@
     "references": [
         "GUID:60983344ee8157d4ab97c25513f789c4",
         "GUID:a44f47cf3ada4435dbc516bad0bc86fe",
-        "GUID:1c73e6e1e2b784953a9212924dc002d1",
-        "GUID:478a2357cc57436488a56e564b08d223"
+        "GUID:478a2357cc57436488a56e564b08d223",
+        "GUID:9e24947de15b9834991c9d8411ea37cf",
+        "GUID:84651a3751eca9349aac36a66bba901b"
     ],
     "includePlatforms": [
         "Editor"
@@ -23,7 +24,8 @@
         "LegacyResourcesAPI.dll",
         "SimpleJSON.dll",
         "Unity.Addressables.dll",
-        "Unity.ResourceManager.dll"
+        "Unity.ResourceManager.dll",
+        "com.unity.multiplayer-hlapi.Runtime.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [
