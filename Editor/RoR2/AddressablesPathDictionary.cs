@@ -1,18 +1,16 @@
-using HG;
-using SimpleJSON;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using HG;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.AddressableAssets.ResourceLocators;
 using UnityEngine.ResourceManagement.ResourceLocations;
-using IOPath = System.IO.Path;
 
 namespace RoR2.Editor
 {
@@ -172,18 +170,6 @@ namespace RoR2.Editor
             }
         }
 
-        private const string FILE_NAME = "lrapi_returns.json";
-
-        private static string GetLrapiReturnsPath()
-        {
-            var gameExePath = R2EKPreferences.instance.GetGameExecutablePath();
-            var directory = Directory.GetParent(gameExePath).FullName;
-            var dataFolder = IOPath.Combine(directory, "Risk of Rain 2_Data");
-            var streamingAssetsFolder = IOPath.Combine(dataFolder, "StreamingAssets");
-            var filePath = IOPath.Combine(streamingAssetsFolder, FILE_NAME);
-            return filePath;
-        }
-
         /// <summary>
         /// Returns the instance currently stored.
         /// </summary>
@@ -195,29 +181,41 @@ namespace RoR2.Editor
                 return _instance;
             }
 
-            string lrapiReturnsPath = GetLrapiReturnsPath();
-            if(!File.Exists(lrapiReturnsPath))
+            var stopwatch = Stopwatch.StartNew();
+
+            var locator = Addressables.ResourceLocators.FirstOrDefault(l => l.LocatorId == "AddressablesMainContentCatalog") as ResourceLocationMap;
+            if (locator == null)
             {
-                if(EditorUtility.DisplayDialog("LRAPI_RETURNS NOT FOUND", "The json file lrapi_returns was not found, This version of RoR2EditorKit requires the game to be at the very least post memory management update. The editor will now close.", "Ok"))
+                if (EditorUtility.DisplayDialog("RoR2EditorKit Addressables", 
+                    "Couldn't find game addressable main content catalog resource location map. " +
+                    "This version of RoR2EditorKit requires the game to be at least the version that introduced addressable usage. " +
+                    "The editor will now close.", 
+                    "Ok"))
                 {
                     EditorApplication.Exit(0);
                     return _instance;
                 }
             }
 
-            var stopwatch = Stopwatch.StartNew();
-            var jsonFile = System.IO.File.ReadAllText(lrapiReturnsPath);
+            var guidRegex = new Regex("^[0-9a-f]{32}$", RegexOptions.Compiled);
 
-            var JSONNode = JSON.Parse(jsonFile);
+            Dictionary<string, string> pathToGUID = new Dictionary<string, string>();
+            Dictionary<string, string> guidToPath = new Dictionary<string, string>();
 
-            var regex = new Regex("Wwise");
+            foreach (var (key, locations) in locator.Locations)
+            {
+                //There are at least 3 different key formats in the locator, filtering for guids
+                if (key is not string guid || guid.Length != 32 || !guidRegex.IsMatch(guid))
+                {
+                    continue;
+                }
 
-            var pathToGUID = new Dictionary<string, string>(
-                from key1 in JSONNode.Keys
-                where !regex.Match(key1).Success
-                select new KeyValuePair<string, string>(key1, JSONNode[key1].Value));
-
-            var guidToPath = pathToGUID.ToDictionary(k => k.Value, k => k.Key);
+                foreach (var location in locations)
+                {
+                    pathToGUID[location.PrimaryKey] = guid;
+                    guidToPath[guid] = location.PrimaryKey;
+                }
+            }
 
             _instance = new AddressablesPathDictionary(pathToGUID, guidToPath);
             stopwatch.Stop();
@@ -241,49 +239,6 @@ namespace RoR2.Editor
 
         private Dictionary<Type, CacheHit> _typeResultCache;
 
-        private string[] RequestEntries(Type[] types, EntryType entryType)
-        {
-            using var _0 = ListPool<string>.RentCollection(out var __result);
-            IEnumerable<string> result = __result;
-            using var _1 = ListPool<Type>.RentCollection(out var typesToProcess);
-
-            //First, we check for cached results
-            foreach(var type in types)
-            {
-                if(_typeResultCache.TryGetValue(type, out CacheHit cacheHit))
-                {
-                    switch(entryType)
-                    {
-                        case EntryType.Path: result.Union(cacheHit.pathCache); break;
-                        case EntryType.Guid: result.Union(cacheHit.guidsCache); break;
-                    }
-                    continue;
-                }
-                else
-                {
-                    //We've missed the cache for this type, so add it to the list of shit to check
-                    typesToProcess.Add(type);
-                }
-            }
-
-            //No types to process? return.
-            if(typesToProcess.Count == 0)
-            {
-                return result.ToArray();
-            }
-
-            foreach(var type in typesToProcess)
-            {
-                CacheHit cacheHit = BuildCacheForType(type);
-                switch(entryType)
-                {
-                    case EntryType.Path: result.Union(cacheHit.pathCache); break;
-                    case EntryType.Guid: result.Union(cacheHit.guidsCache); break;
-                }
-            }
-
-            return result.ToArray();
-        }
         private string[] RequestEntries(Type type, EntryType entryType)
         {
             //First, we check if we have the cache
