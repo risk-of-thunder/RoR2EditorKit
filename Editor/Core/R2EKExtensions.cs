@@ -14,11 +14,7 @@ namespace RoR2.Editor
     /// </summary>
     public static class R2EKExtensions
     {
-        /// <summary>
-        /// Calls <see cref="string.IsNullOrEmpty(string)"/> and <see cref="string.IsNullOrWhiteSpace(string)"/> on the given string and computes the logical OR value
-        /// </summary>
-        /// <param name="value">The string to check</param>
-        /// <returns>True if the string is null, empty or whitespace, otherwise false</returns>
+        [Obsolete("Utilize \"string.IsNullOrWhiteSpace\" instead")]
         public static bool IsNullOrEmptyOrWhiteSpace(this string value)
         {
             return string.IsNullOrWhiteSpace(value) || string.IsNullOrEmpty(value);
