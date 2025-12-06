@@ -10,6 +10,7 @@
         <uie:ObjectField label="Parent Game Object" name="ParentGameObject" type="UnityEngine.GameObject, UnityEngine.CoreModule" />
         <ui:Toggle label="Round to Nearest Grid" name="RoundPointToGrid" />
         <ui:Toggle label="Draw All Nodes" name="DrawAllNodes" />
+        <uie:FloatField label="Draw Node Distance" value="22500" name="DrawNodeDistance" tooltip="Sqrt magnitude between current camera position and node at which node cylinder will stop rendering." />
         <ui:TextField picking-mode="Ignore" label="Gate Name" name="GateName" />
         <ui:VisualElement name="FlagContainer" />
         <ui:Toggle label="Use Painter" name="UsePainter" />
@@ -30,6 +31,10 @@
             <ui:VisualElement style="flex-direction: row;">
                 <ui:Button text="Make Air Nodes" display-tooltip-when-elided="true" name="MakeAirNodes" style="white-space: normal; flex-grow: 0; flex-direction: column; flex-wrap: nowrap; width: 48%;" />
                 <ui:Button text="Make Ground Nodes" display-tooltip-when-elided="true" name="MakeGroundNodes" style="flex-grow: 0; width: 48%;" />
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-direction: row;">
+                <ui:Button text="Disable Node Icons" display-tooltip-when-elided="true" name="DisableNodeIcons" style="white-space: normal; width: 48%;" />
+                <ui:Button text="Enable Node Icons" display-tooltip-when-elided="true" name="EnableNodeIcons" style="white-space: normal; width: 48%;" />
             </ui:VisualElement>
             <ui:VisualElement style="flex-direction: row;">
                 <ui:Button text="Clear Nodes" display-tooltip-when-elided="true" name="ClearNodes" style="flex-grow: 0; width: 31.5%; color: rgb(255, 0, 0);" />
