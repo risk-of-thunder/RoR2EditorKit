@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace RoR2.Editor
@@ -77,6 +78,9 @@ namespace RoR2.Editor
             /// Reference to the GUID of the ".unityPackage" that contains the RoR2ScriptableGizmos
             /// </summary>
             public static readonly string ror2IconsForScriptsGUID = "87985f697aee81b48922b790035e73e1";
+
+            [Obsolete("This exists exclusively for the reason that lrapi_returns was not shipped on 1.4.1, it WILL get removed once LRAPI returns returns!!!")]
+            public static readonly AssetGUID<TextAsset> lrapiReturnsFor1dot4dot1 = "341770677f5726b40848d3457353eef1";
         }
 
         /// <summary>

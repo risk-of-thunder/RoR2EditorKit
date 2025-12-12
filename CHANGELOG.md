@@ -1,3 +1,11 @@
+# '5.6.1'
+
+* Added manually the LRAPI_Returns file for 1.4.1
+	* This file WILL BE DELETED for the next release that has the LRAPI_Returns json file.
+* The AddressablePicker now properly shows a bunch of assets that couldnt display before, such as assets with same paths, and others.
+
+* (lack of details due to watching game awards, lmao)
+
 # '5.6.0'
 
 * Updated to Alloyed Collective

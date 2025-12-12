@@ -13,6 +13,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.ResourceLocations;
 using IOPath = System.IO.Path;
+using Debug = UnityEngine.Debug;
 
 namespace RoR2.Editor
 {
@@ -172,17 +173,14 @@ namespace RoR2.Editor
             }
         }
 
-        private const string FILE_NAME = "lrapi_returns.json";
-
-        private static string GetLrapiReturnsPath()
+        private class Entry
         {
-            var gameExePath = R2EKPreferences.instance.GetGameExecutablePath();
-            var directory = Directory.GetParent(gameExePath).FullName;
-            var dataFolder = IOPath.Combine(directory, "Risk of Rain 2_Data");
-            var streamingAssetsFolder = IOPath.Combine(dataFolder, "StreamingAssets");
-            var filePath = IOPath.Combine(streamingAssetsFolder, FILE_NAME);
-            return filePath;
+            public string path;
+            public string guid;
+            public string assemblyQualifiedTypeName;
         }
+
+        private const string FILE_NAME = "lrapi_returns.json";
 
         /// <summary>
         /// Returns the instance currently stored.
@@ -195,40 +193,111 @@ namespace RoR2.Editor
                 return _instance;
             }
 
-            string lrapiReturnsPath = GetLrapiReturnsPath();
-            if(!File.Exists(lrapiReturnsPath))
-            {
-                if(EditorUtility.DisplayDialog("LRAPI_RETURNS NOT FOUND", "The json file lrapi_returns was not found, This version of RoR2EditorKit requires the game to be at the very least post memory management update. The editor will now close.", "Ok"))
-                {
-                    EditorApplication.Exit(0);
-                    return _instance;
-                }
-            }
-
             var stopwatch = Stopwatch.StartNew();
-            var jsonFile = System.IO.File.ReadAllText(lrapiReturnsPath);
+            string jsonData = GetLRAPIReturnsJsonData(GetLRAPIReturnsPath());
 
-            var JSONNode = JSON.Parse(jsonFile);
+            var rootJSONNode = JSON.Parse(jsonData);
 
             var regex = new Regex("Wwise");
 
-            var pathToGUID = new Dictionary<string, string>(
-                from key1 in JSONNode.Keys
-                where !regex.Match(key1).Success
-                select new KeyValuePair<string, string>(key1, JSONNode[key1].Value));
+            Dictionary<string, Entry> guidToEntries = new();
+            Dictionary<string, Entry> pathToEntries = new();
+            List<Entry> entries = new();
 
-            var guidToPath = pathToGUID.ToDictionary(k => k.Value, k => k.Key);
+            int randomAssNumber = 0;
+            foreach(var keyGUID in rootJSONNode.Keys)
+            {
+                if(regex.Match(keyGUID).Success)
+                {
+                    continue;
+                }
 
-            _instance = new AddressablesPathDictionary(pathToGUID, guidToPath);
+                JSONNode entryNode = rootJSONNode[keyGUID];
+
+                JSONNode pathNode = entryNode["path"];
+                JSONNode assemblyQualifiedTypeNameNode = entryNode["assemblyQualifiedTypeName"];
+
+                Entry entry = new Entry
+                {
+                    path = pathNode.Value,
+                    guid = keyGUID,
+                    assemblyQualifiedTypeName = assemblyQualifiedTypeNameNode.Value
+                };
+
+                if(!guidToEntries.TryAdd(entry.guid, entry))
+                {
+                    Debug.LogError($"A GUID to Entry was attempted to be added, but the key is already in the dictionary! (key={entry.guid},path={entry.path})");
+                }
+                if(!pathToEntries.TryAdd(entry.path, entry))
+                {
+                    //Path conflict resolution part 1, include typeName
+                    Type assetType = Type.GetType(entry.assemblyQualifiedTypeName);
+                    entry.path = string.Format("{0}:{1}", entry.path, assetType.Name);
+                    if(!pathToEntries.TryAdd(entry.path, entry))
+                    {
+                        //Path conflict resolution part 2, just put a number.
+                        entry.path = string.Format("{0}*{1}", entry.path, randomAssNumber);
+                        randomAssNumber++;
+                        if(!pathToEntries.TryAdd(entry.path, entry))
+                        {
+                            Debug.LogError($"A Path to Entry was attempted to be added, but the key is already in the dictionary! (key={entry.path},guid={entry.guid})");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"Path to Entry was added after including Type name and Number, (key={entry.path}, guid={entry.guid}");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Path to Entry was added after including Type name, (key={entry.path}, guid={entry.guid}");
+                    }
+                        
+                }
+                entries.Add(entry);
+            }
+
+            _instance = new AddressablesPathDictionary(pathToEntries, guidToEntries, entries.ToArray());
             stopwatch.Stop();
             UnityEngine.Debug.Log($"AddressablesPathDictionary took " + stopwatch.ElapsedMilliseconds + "ms");
             return _instance;
         }
 
+        private static string GetLRAPIReturnsPath()
+        {
+            var gameExePath = R2EKPreferences.instance.GetGameExecutablePath();
+            var directory = Directory.GetParent(gameExePath).FullName;
+            var dataFolder = IOPath.Combine(directory, "Risk of Rain 2_Data");
+            var streamingAssetsFolder = IOPath.Combine(dataFolder, "StreamingAssets");
+            var filePath = IOPath.Combine(streamingAssetsFolder, FILE_NAME);
+            return filePath;
+        }
+
+        private static string GetLRAPIReturnsJsonData(string jsonFilePath)
+        {
+            if (File.Exists(jsonFilePath))
+            {
+                return System.IO.File.ReadAllText(jsonFilePath);
+            }
+            else
+            {
+                TextAsset lrapiReturns1dot4dot1TextAsset = R2EKConstants.AssetGUIDs.lrapiReturnsFor1dot4dot1;
+                if(lrapiReturns1dot4dot1TextAsset)
+                {
+                    return lrapiReturns1dot4dot1TextAsset.text;
+                }
+            }
+
+            EditorUtility.DisplayDialog("LRAPI_RETURNS NOT FOUND", "The json file lrapi_returns was not found, This version of RoR2EditorKit requires the game to be at the very least post memory management update. The editor will now close.", "Ok");
+
+            EditorApplication.Exit(0);
+            return "";
+        }
+
         private static AddressablesPathDictionary _instance;
 
-        private Dictionary<string, string> pathToGUIDDictionary;
-        private Dictionary<string, string> guidToPathDictionary;
+        private Dictionary<string, Entry> pathToEntryDictionary;
+        private Dictionary<string, Entry> guidToEntryDictionary;
+        private Entry[] allEntries;
         private string[] paths;
         private string[] guids;
 
@@ -316,46 +385,10 @@ namespace RoR2.Editor
             //Work off GUIDS, like god intended
             foreach(var guid in guids)
             {
-                var resourceLocations = Addressables.LoadResourceLocationsAsync(guid).WaitForCompletion();
-
-                //There's a chance that there's no resources at this guid... idk???
-                if (resourceLocations.Count == 0)
-                {
-                    UnityEngine.Debug.Log($"No resources located at {GetPathFromGUID(guid)}");
-                    continue;
-                }
-
-                /* This is a bit fucky, but basically there's an issue where all sub-asset guids (the ones that have [] at the end) always has a pointer
-                *  back to its main asset, it's odd because even the non [] ones have it as well... specifically for sprites?
-                *  Anyways i need to figure some shit out
-                */
-
-                //If it contains the [, then stritctly match a sub-asset (at the very least the 2nd location).
-                bool strictSubAssetMatch = guid.Contains("[");
-                int resourceLocationIndex = -1;
-                if(strictSubAssetMatch && resourceLocations.Count > 1)
-                {
-                    resourceLocationIndex = 1;
-                }
-                else
-                {
-                    resourceLocationIndex = 0;
-                }
-
-                IResourceLocation resourceLocation = null;
-                try
-                {
-                    resourceLocation = resourceLocations[resourceLocationIndex];
-                }
-                catch(Exception e)
-                {
-                    UnityEngine.Debug.LogException(e);
-                    throw;
-                }
-                var resourceType = resourceLocation.ResourceType;
+                Type assetType = GetAssetType(guid);
 
                 //If we obtained the resource type, and the resource type is same or subclass of type, add it to the result
-                if (resourceType != null && (resourceType == type || resourceType.IsSubclassOf(type)))
+                if (assetType != null && (assetType == type || assetType.IsSubclassOf(type)))
                 {
                     resultGuids.Add(guid);
                     resultPaths.Add(GetPathFromGUID(guid));
@@ -371,6 +404,49 @@ namespace RoR2.Editor
 
             return cacheHit;
         }
+
+        private Type GetAssetType(string guid)
+        {
+            var resourceLocations = Addressables.LoadResourceLocationsAsync(guid).WaitForCompletion();
+
+            //There's a chance that there's no resources at this guid... idk???
+            if (resourceLocations.Count == 0)
+            {
+                //If this happens, return the type stored on the dictionary
+
+                Entry entry = guidToEntryDictionary[guid];
+                return Type.GetType(entry.assemblyQualifiedTypeName);
+            }
+
+            /* This is a bit fucky, but basically there's an issue where all sub-asset guids (the ones that have [] at the end) always has a pointer
+            *  back to its main asset, it's odd because even the non [] ones have it as well... specifically for sprites?
+            *  Anyways i need to figure some shit out
+            */
+
+            //If it contains the [, then stritctly match a sub-asset (at the very least the 2nd location).
+            bool strictSubAssetMatch = guid.Contains("[");
+            int resourceLocationIndex = -1;
+            if (strictSubAssetMatch && resourceLocations.Count > 1)
+            {
+                resourceLocationIndex = 1;
+            }
+            else
+            {
+                resourceLocationIndex = 0;
+            }
+
+            IResourceLocation resourceLocation = null;
+            try
+            {
+                resourceLocation = resourceLocations[resourceLocationIndex];
+            }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.LogException(e);
+                throw;
+            }
+            return resourceLocation.ResourceType;
+        }
         #endregion
 
         /// <summary>
@@ -379,10 +455,9 @@ namespace RoR2.Editor
         /// <returns></returns>
         public bool IsEmpty()
         {
-            return (pathToGUIDDictionary == null || pathToGUIDDictionary.Count == 0) || 
-                (guidToPathDictionary == null || guidToPathDictionary.Count == 0) || 
-                (paths == null || paths.Length == 0) ||
-                (guids == null || guids.Length == 0);
+            return (pathToEntryDictionary == null || pathToEntryDictionary.Count == 0) ||
+                (guidToEntryDictionary == null || guidToEntryDictionary.Count == 0) ||
+                (allEntries == null || allEntries.Length == 0);
         }
 
         /// <summary>
@@ -390,6 +465,7 @@ namespace RoR2.Editor
         /// </summary>
         public ReadOnlyCollection<string> GetAllPaths()
         {
+
             return new ReadOnlyCollection<string>(paths);
         }
 
@@ -410,7 +486,13 @@ namespace RoR2.Editor
         /// <returns>True if the value was succesfuly obtained, otherwise false.</returns>
         public bool TryGetGUIDFromPath(string path, out string? guid)
         {
-            return pathToGUIDDictionary.TryGetValue(path, out guid);
+            guid = null;
+            if (pathToEntryDictionary.TryGetValue(path, out Entry value))
+            {
+                guid = value.guid;
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -420,7 +502,7 @@ namespace RoR2.Editor
         /// <returns>The guid itself.</returns>
         public string GetGUIDFromPath(string path)
         {
-            return pathToGUIDDictionary[path];
+            return pathToEntryDictionary[path].guid;
         }
 
         /// <summary>
@@ -431,7 +513,13 @@ namespace RoR2.Editor
         /// <returns>True if the value was succesfuly obtained, otherwise false.</returns>
         public bool TryGetPathFromGUID(string guid, out string? path)
         {
-            return guidToPathDictionary.TryGetValue(guid, out path);
+            path = null;
+            if(guidToEntryDictionary.TryGetValue(guid, out Entry value))
+            {
+                path = value.path;
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -441,7 +529,7 @@ namespace RoR2.Editor
         /// <returns>The path itself.</returns>
         public string GetPathFromGUID(string guid)
         {
-            return guidToPathDictionary[guid];
+            return guidToEntryDictionary[guid].path;
         }
         #region Obsolete
         [Obsolete("Create a new instance of \"EntryLookup\" and call \"PerformLookup\" instead")]
@@ -479,13 +567,14 @@ namespace RoR2.Editor
         #endregion
 
         private AddressablesPathDictionary() { }
-        private AddressablesPathDictionary(Dictionary<string, string> pathToGUID, Dictionary<string, string> guidToPath)
+        private AddressablesPathDictionary(Dictionary<string, Entry> pathToEntries, Dictionary<string, Entry> guidtoEntry, Entry[] allEntries)
         {
-            pathToGUIDDictionary = pathToGUID;
-            paths = pathToGUID.Keys.ToArray();
+            pathToEntryDictionary = pathToEntries;
+            guidToEntryDictionary = guidtoEntry;
+            this.allEntries = allEntries;
 
-            guidToPathDictionary = guidToPath;
-            guids = guidToPath.Keys.ToArray();
+            paths = allEntries.Select(entry => entry.path).ToArray();
+            guids = allEntries.Select(entry => entry.guid).ToArray();
 
             _typeResultCache = new Dictionary<Type, CacheHit>();
         }
