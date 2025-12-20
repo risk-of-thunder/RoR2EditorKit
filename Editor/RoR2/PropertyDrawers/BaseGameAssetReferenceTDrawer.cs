@@ -2,6 +2,7 @@
 #if !R2EK_ADDRESSABLES
 using RoR2.AddressableAssets;
 using System;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
@@ -27,6 +28,7 @@ namespace RoR2.Editor.PropertyDrawers
         private static Regex subObjectNameExtractor = new Regex(@"(?<=\[).*?(?=\])");
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            AddressableComponentRequirement componentRequirement = fieldInfo.GetCustomAttribute<AddressableComponentRequirement>(true);
             var pathDictionaryInstance = AddressablesPathDictionary.GetInstance();
             Type[] typesOfAsset = GetAssetTypes();
             using (new EditorGUI.PropertyScope(position, label, property))
@@ -57,7 +59,16 @@ namespace RoR2.Editor.PropertyDrawers
                 GUIContent dropdownButtonLabel = GetDropdownButtonLabel(pathDictionaryInstance, m_AssetGUIDProperty.stringValue, m_SubObjectNameProperty.stringValue);
                 if (EditorGUI.DropdownButton(rectForDropdownControl, dropdownButtonLabel, FocusType.Passive))
                 {
-                    AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(), _useFullPathForItems, filter, typesOfAsset);
+                    Type requiredComponentType = componentRequirement?.requiredComponentType;
+                    bool searchInChildren = componentRequirement?.searchInChildren ?? false;
+
+                    AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(),
+                        _useFullPathForItems,
+                        filter,
+                        requiredComponentType,
+                        searchInChildren,
+                        typesOfAsset);
+
                     dropdown.onItemSelected += (item) =>
                     {
                         if(!string.IsNullOrWhiteSpace(item.assetPath))

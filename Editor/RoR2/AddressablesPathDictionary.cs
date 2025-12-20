@@ -22,6 +22,20 @@ namespace RoR2.Editor
     /// </summary>
     public sealed class AddressablesPathDictionary
     {
+        [MenuItem("Epic/Test")]
+        private static void Test()
+        {
+            ReadOnlyCollection<string> results = new EntryLookup()
+                .WithComponentRequirement(typeof(CharacterBody), false)
+                .WithLookupType(EntryType.Path)
+                .WithTypeRestriction(typeof(GameObject))
+                .PerformLookup();
+
+            foreach(var entry in results)
+            {
+                Debug.Log(entry);
+            }
+        }
         /// <summary>
         /// Represents an entry type within the dictionary
         /// </summary>
@@ -56,6 +70,16 @@ namespace RoR2.Editor
             public Type[] typeRestriction = Array.Empty<Type>();
 
             /// <summary>
+            /// If the <see cref="typeRestriction"/> is of type <see cref="GameObject"/>, you can utilize this field to specify a component that the game object is required to have
+            /// </summary>
+            public Type componentRequirement = null;
+
+            /// <summary>
+            /// If true, the component search of <see cref="componentRequirement"/> will use <see cref="GameObject.GetComponentInChildren(Type)"/> instead of <see cref="GameObject.TryGetComponent(Type, out Component)"/>.
+            /// </summary>
+            public bool searchComponentInChildren = false;
+
+            /// <summary>
             /// An optional filter, only entires that contain this string are returned
             /// </summary>
             public string filter;
@@ -73,7 +97,7 @@ namespace RoR2.Editor
             public ReadOnlyCollection<string> PerformLookup()
             {
                 IEnumerator sync = PerformLookupAsync();
-                while(sync.MoveNext())
+                while (sync.MoveNext())
                 {
                 }
                 return results;
@@ -87,11 +111,16 @@ namespace RoR2.Editor
             {
                 _results = ListPool<string>.RentCollection();
 
+                if(typeRestriction.Length == 0 && (componentRequirement != null && componentRequirement.IsSubclassOf(typeof(Component))))
+                {
+                    HG.ArrayUtils.ArrayAppend(ref typeRestriction, typeof(GameObject));
+                }
+
                 //Get each result for each type, request entries returns the cache if it exists, and if not, it builds it
-                foreach(Type type in typeRestriction)
+                foreach (Type type in typeRestriction)
                 {
                     yield return null;
-                    string[] cache = AddressablesPathDictionary.GetInstance().RequestEntries(type, entryLookupType);
+                    string[] cache = AddressablesPathDictionary.GetInstance().RequestEntries(type, componentRequirement, searchComponentInChildren, entryLookupType);
 
 
                     var modulo = Mathf.Floor((Mathf.Log10(cache.Length) + 1) * 2);
@@ -99,7 +128,7 @@ namespace RoR2.Editor
                     {
                         string cacheEntry = cache[i];
 
-                        if(i % modulo == 0)
+                        if (i % modulo == 0)
                         {
                             yield return null;
                         }
@@ -107,14 +136,14 @@ namespace RoR2.Editor
                         //If we have a filter, filter the results
                         if (!filter.IsNullOrEmptyOrWhiteSpace())
                         {
-                            if(cacheEntry.Contains(filter) && !_results.Contains(cacheEntry))
+                            if (cacheEntry.Contains(filter) && !_results.Contains(cacheEntry))
                             {
                                 _results.Add(cacheEntry);
                             }
                         }
                         else
                         {
-                            if(!_results.Contains(cacheEntry))
+                            if (!_results.Contains(cacheEntry))
                             {
                                 _results.Add(cacheEntry);
                             }
@@ -146,6 +175,13 @@ namespace RoR2.Editor
             public EntryLookup WithTypeRestriction(params Type[] types)
             {
                 typeRestriction = types;
+                return this;
+            }
+
+            public EntryLookup WithComponentRequirement(Type componentRequirement, bool searchComponentInChildren)
+            {
+                this.componentRequirement = componentRequirement;
+                this.searchComponentInChildren = searchComponentInChildren;
                 return this;
             }
 
@@ -308,55 +344,51 @@ namespace RoR2.Editor
             public string[] guidsCache;
         }
 
-        private Dictionary<Type, CacheHit> _typeResultCache;
-
-        private string[] RequestEntries(Type[] types, EntryType entryType)
+        private struct CacheKey : IEquatable<CacheKey>
         {
-            using var _0 = ListPool<string>.RentCollection(out var __result);
-            IEnumerable<string> result = __result;
-            using var _1 = ListPool<Type>.RentCollection(out var typesToProcess);
+            public Type requiredType;
+            public bool entriesIncludeComponentFoundInChildren;
 
-            //First, we check for cached results
-            foreach(var type in types)
+            public bool Equals(CacheKey other)
             {
-                if(_typeResultCache.TryGetValue(type, out CacheHit cacheHit))
-                {
-                    switch(entryType)
-                    {
-                        case EntryType.Path: result.Union(cacheHit.pathCache); break;
-                        case EntryType.Guid: result.Union(cacheHit.guidsCache); break;
-                    }
-                    continue;
-                }
-                else
-                {
-                    //We've missed the cache for this type, so add it to the list of shit to check
-                    typesToProcess.Add(type);
-                }
+                return (requiredType == other.requiredType) &&
+                    (entriesIncludeComponentFoundInChildren == other.entriesIncludeComponentFoundInChildren);
             }
 
-            //No types to process? return.
-            if(typesToProcess.Count == 0)
-            {
-                return result.ToArray();
-            }
-
-            foreach(var type in typesToProcess)
-            {
-                CacheHit cacheHit = BuildCacheForType(type);
-                switch(entryType)
+            public override bool Equals(object obj)
+            { 
+                if(obj is CacheKey cacheKey)
                 {
-                    case EntryType.Path: result.Union(cacheHit.pathCache); break;
-                    case EntryType.Guid: result.Union(cacheHit.guidsCache); break;
+                    return this.Equals(cacheKey);
                 }
+                return false;
             }
 
-            return result.ToArray();
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(requiredType.GetHashCode(), entriesIncludeComponentFoundInChildren.GetHashCode());
+            }
+
+            public static bool operator ==(CacheKey lhs, CacheKey rhs)
+            {
+                return lhs.Equals(rhs);
+            }
+
+            public static bool operator !=(CacheKey lhs, CacheKey rhs)
+            {
+                return !(lhs == rhs);
+            }
         }
-        private string[] RequestEntries(Type type, EntryType entryType)
+
+        private Dictionary<CacheKey, CacheHit> _typeResultCache;
+
+        private string[] RequestEntries(Type type, Type componentRequirement, bool searchInChildren, EntryType entryType)
         {
             //First, we check if we have the cache
-            if(_typeResultCache.TryGetValue(type, out CacheHit cacheHit))
+            Type typeForCacheKey = componentRequirement ?? type;
+            CacheKey cacheKey = new CacheKey { requiredType = typeForCacheKey, entriesIncludeComponentFoundInChildren = searchInChildren };
+
+            if(_typeResultCache.TryGetValue(cacheKey, out CacheHit cacheHit))
             {
                 //We've hit the cache, return results
                 return entryType switch
@@ -368,7 +400,7 @@ namespace RoR2.Editor
             }
 
             //We missed the cache, so time to build it for this type and return as needed
-            cacheHit = BuildCacheForType(type);
+            cacheHit = BuildCacheForType(typeForCacheKey, searchInChildren);
             return entryType switch
             {
                 EntryType.Path => cacheHit.pathCache,
@@ -377,30 +409,50 @@ namespace RoR2.Editor
             };
         }
 
-        private CacheHit BuildCacheForType(Type type)
+        private CacheHit BuildCacheForType(Type type, bool searchInChildren)
         {
             using var _0 = ListPool<string>.RentCollection(out var resultPaths);
             using var _1 = ListPool<string>.RentCollection(out var resultGuids);
 
+            Type typeToCompareAssetTypeAgainst = type;
+            if(typeToCompareAssetTypeAgainst.IsSubclassOf(typeof(Component)))
+            {
+                typeToCompareAssetTypeAgainst = typeof(GameObject);
+            }
             //Work off GUIDS, like god intended
             foreach(var guid in guids)
             {
                 Type assetType = GetAssetType(guid);
-
                 //If we obtained the resource type, and the resource type is same or subclass of type, add it to the result
-                if (assetType != null && (assetType == type || assetType.IsSubclassOf(type)))
+                if (assetType != null && (assetType == typeToCompareAssetTypeAgainst || assetType.IsSubclassOf(typeToCompareAssetTypeAgainst)))
                 {
+                    //We need to do an extra check if the type to compare against is GameObject, and the actual type we want is a component.
+                    if(typeToCompareAssetTypeAgainst == typeof(GameObject) && type.IsSubclassOf(typeof(Component)))
+                    {
+                        GameObject gameObject = Addressables.LoadAssetAsync<GameObject>(guid).WaitForCompletion();
+                        if(!gameObject)
+                        {
+                            continue;
+                        }
+
+                        //If it doesnt have the component we want, skip it.
+                        bool hasComponent = searchInChildren ? gameObject.GetComponentInChildren(type) : gameObject.TryGetComponent(type, out _);
+                        if (!hasComponent)
+                            continue;
+                    }
+
                     resultGuids.Add(guid);
                     resultPaths.Add(GetPathFromGUID(guid));
                 }
             }
 
+            CacheKey cacheKey = new CacheKey() { requiredType = type, entriesIncludeComponentFoundInChildren = searchInChildren };
             CacheHit cacheHit = new CacheHit();
             cacheHit.pathCache = resultPaths.ToArray();
             cacheHit.guidsCache = resultGuids.ToArray();
 
             //Save in the cache
-            _typeResultCache.Add(type, cacheHit);
+            _typeResultCache.Add(cacheKey, cacheHit);
 
             return cacheHit;
         }
@@ -576,7 +628,7 @@ namespace RoR2.Editor
             paths = allEntries.Select(entry => entry.path).ToArray();
             guids = allEntries.Select(entry => entry.guid).ToArray();
 
-            _typeResultCache = new Dictionary<Type, CacheHit>();
+            _typeResultCache = new Dictionary<CacheKey, CacheHit>();
         }
     }
 }

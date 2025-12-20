@@ -62,6 +62,14 @@ namespace RoR2.Editor
         [SerializeField, FilePickerPath(FilePickerPath.PickerType.OpenFile, defaultName = "Risk of Rain 2", extension = "exe", title = "Select the Risk of Rain 2 Executable.")] 
         private string _gameExecPath;
 
+        public string gameDirectoryPath => Path.GetDirectoryName(GetGameExecutablePath());
+        public string gameDataPath => Path.Combine(gameDirectoryPath, $"{Path.GetFileNameWithoutExtension(GetGameExecutablePath())}_Data");
+        public string managedAssembliesPath => Path.Combine(gameDataPath, $"Managed");
+        public string streamingAssetsPath => Path.Combine(gameDataPath, "StreamingAssets");
+        public string addressableAssetsPath => Path.Combine(streamingAssetsPath, "aa");
+        public string addressableAssetsCatalog => Path.Combine(addressableAssetsPath, "catalog.json");
+        public string addressableAssetsSettings => Path.Combine(addressableAssetsPath, "settings.json");
+
         /// <summary>
         /// Saves any modifications to the disk
         /// </summary>
