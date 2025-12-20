@@ -49,7 +49,7 @@ namespace RoR2.Editor.PropertyDrawers
         {
             bool hasNoCatalogLoad = fieldInfo.GetCustomAttribute<NoCatalogLoadAttribute>(true) != null;
 
-            AddressableComponentRequirement componentRequirement = fieldInfo.GetCustomAttribute<AddressableComponentRequirement>(true);
+            AddressableComponentRequirementAttribute componentRequirement = fieldInfo.GetCustomAttribute<AddressableComponentRequirementAttribute>(true);
 
             var _assetProperty = property.FindPropertyRelative("_asset");
             var _addressProperty = property.FindPropertyRelative("_address");
@@ -156,7 +156,7 @@ namespace RoR2.Editor.PropertyDrawers
         /// <param name="menu">The menu that's being modified.</param>
         protected virtual void ModifyContextMenu(GenericMenu menu) { }
 
-        private void OpenAddressablesDropdown(Rect rectForDropdown, SerializedProperty addressProperty, AddressableComponentRequirement componentRequirement)
+        private void OpenAddressablesDropdown(Rect rectForDropdown, SerializedProperty addressProperty, AddressableComponentRequirementAttribute componentRequirement)
         {
             Type requiredComponentType = componentRequirement?.requiredComponentType;
             bool searchInChildren = componentRequirement?.searchInChildren ?? false;

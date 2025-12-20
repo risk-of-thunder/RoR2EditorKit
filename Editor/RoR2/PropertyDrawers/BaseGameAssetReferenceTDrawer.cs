@@ -8,6 +8,10 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using IOPath = System.IO.Path;
+#if R2EK_R2API_ADDRESSABLES
+using R2API.AddressReferencedAssets;
+#endif
+
 
 namespace RoR2.Editor.PropertyDrawers
 {
@@ -28,7 +32,9 @@ namespace RoR2.Editor.PropertyDrawers
         private static Regex subObjectNameExtractor = new Regex(@"(?<=\[).*?(?=\])");
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            AddressableComponentRequirement componentRequirement = fieldInfo.GetCustomAttribute<AddressableComponentRequirement>(true);
+#if R2EK_R2API_ADDRESSABLES
+            AddressableComponentRequirementAttribute componentRequirement = fieldInfo.GetCustomAttribute<AddressableComponentRequirementAttribute>(true);
+#endif
             var pathDictionaryInstance = AddressablesPathDictionary.GetInstance();
             Type[] typesOfAsset = GetAssetTypes();
             using (new EditorGUI.PropertyScope(position, label, property))
@@ -59,8 +65,21 @@ namespace RoR2.Editor.PropertyDrawers
                 GUIContent dropdownButtonLabel = GetDropdownButtonLabel(pathDictionaryInstance, m_AssetGUIDProperty.stringValue, m_SubObjectNameProperty.stringValue);
                 if (EditorGUI.DropdownButton(rectForDropdownControl, dropdownButtonLabel, FocusType.Passive))
                 {
-                    Type requiredComponentType = componentRequirement?.requiredComponentType;
-                    bool searchInChildren = componentRequirement?.searchInChildren ?? false;
+                    Type requiredComponentType =
+#if R2EK_R2API_ADDRESSABLES
+                        componentRequirement?.requiredComponentType
+#else
+                        null
+#endif
+                        ;
+
+                    bool searchInChildren =
+#if R2EK_R2API_ADDRESSABLES
+                        componentRequirement?.searchInChildren ?? false
+#else
+                        false
+#endif
+                        ;
 
                     AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(),
                         _useFullPathForItems,
