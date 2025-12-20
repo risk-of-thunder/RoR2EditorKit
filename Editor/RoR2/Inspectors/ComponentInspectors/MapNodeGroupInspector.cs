@@ -38,6 +38,7 @@ namespace RoR2.Editor.Inspectors
         private Color _bakedNodeColor;
         private Color _invalidPlacedNodeColor;
         private Color _bakedLinkColor;
+        private float _drawNodeDistance;
 
         private Vector3 _currentHitInfo = default;
         private List<MapNode> _cachedMapNodeList = new List<MapNode>();
@@ -93,6 +94,11 @@ namespace RoR2.Editor.Inspectors
             drawAllNodes.ConnectWithSetting(inspectorPreferenceSettings, nameof(drawAllNodes), false);
             _drawallNodes = inspectorPreferenceSettings.GetOrCreateSetting<bool>(nameof(drawAllNodes));
 
+            var drawNodeDistance = templateInstanceRoot.Q<FloatField>("DrawNodeDistance");
+            drawNodeDistance.RegisterValueChangedCallback(evt => _drawNodeDistance = evt.newValue);
+            drawNodeDistance.ConnectWithSetting(inspectorPreferenceSettings, nameof(drawNodeDistance), 22500f);
+            _drawNodeDistance = inspectorPreferenceSettings.GetOrCreateSetting<float>(nameof(drawNodeDistance));
+
             var usePainter = templateInstanceRoot.Q<Toggle>("UsePainter");
             usePainter.RegisterValueChangedCallback(OnUsePainterSet);
             usePainter.ConnectWithSetting(inspectorPreferenceSettings, nameof(usePainter), false);
@@ -128,6 +134,9 @@ namespace RoR2.Editor.Inspectors
             templateInstanceRoot.Q<Button>("ClearNodes").clicked += ClearNodes;
             templateInstanceRoot.Q<Button>("BakeNodeGraph").clicked += BakeNodeGraph;
             templateInstanceRoot.Q<Button>("BakeGraphAsync").clicked += BakeGraphAsync;
+            templateInstanceRoot.Q<Button>("DisableNodeIcons").clicked += DisableNodeIcons;
+            templateInstanceRoot.Q<Button>("EnableNodeIcons").clicked += EnableNodeIcons;
+            
             _buttonsContainer = templateInstanceRoot.Q<VisualElement>("ButtonContainer");
         }
 
@@ -447,7 +456,7 @@ namespace RoR2.Editor.Inspectors
             for (int i = 0; i < length; i++)
             {
                 var mapNode = currentNodeList[i];
-                if (!mapNode || (!_drawallNodes && (mapNode.transform.position - ray.origin).sqrMagnitude > 22500))
+                if (!mapNode || (!_drawallNodes && (mapNode.transform.position - ray.origin).sqrMagnitude > _drawNodeDistance))
                 {
                     continue;
                 }
@@ -690,6 +699,35 @@ namespace RoR2.Editor.Inspectors
                     break;
             }
             EditorGUIUtility.SetIconForObject(node, icon);
+        }
+
+        private void EnableNodeIcons()
+        {
+            foreach (MapNode node in _cachedMapNodeList)
+            {
+                Texture2D icon = null;
+                switch (targetType.graphType)
+                {
+                    case MapNodeGroup.GraphType.Air:
+                        icon = (Texture2D)EditorGUIUtility.IconContent("sv_icon_dot10_pix16_gizmo").image;
+                        break;
+                    case MapNodeGroup.GraphType.Ground:
+                        icon = (Texture2D)EditorGUIUtility.IconContent("sv_icon_dot11_pix16_gizmo").image;
+                        break;
+                    case MapNodeGroup.GraphType.Rail:
+                        icon = (Texture2D)EditorGUIUtility.IconContent("sv_icon_dot15_pix16_gizmo").image;
+                        break;
+                }
+                EditorGUIUtility.SetIconForObject(node.gameObject, icon);
+            }
+        }
+
+        private void DisableNodeIcons()
+        {
+            foreach (MapNode node in _cachedMapNodeList)
+            {
+                EditorGUIUtility.SetIconForObject(node.gameObject, null);
+            }
         }
     }
 }
