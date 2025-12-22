@@ -15,9 +15,12 @@ namespace RoR2.Editor
     /// </summary>
     public class AddressablesPathDropdown : AdvancedDropdown
     {
-        private string rootItemKey;
-        private Type[] requiredTypes;
-        private string filter;
+        private string _rootItemKey;
+        private Type[] _requiredTypes;
+        private string _filter;
+
+        private Type _componentRequirement;
+        private bool _searchComponentInChildren;
 
         /// <summary>
         /// This event is fired when an Item is selected.
@@ -27,21 +30,22 @@ namespace RoR2.Editor
         /// <summary>
         /// If true, the full path will be used as an individual item's name.
         /// </summary>
-        public bool useFullPathAsItemName { get; }
+        public bool _useFullPathAsItemName { get; }
 
         protected override AdvancedDropdownItem BuildRoot()
         {
             using var entryLookup = new AddressablesPathDictionary.EntryLookup();
 
             entryLookup.WithLookupType(AddressablesPathDictionary.EntryType.Path)
-                .WithTypeRestriction(requiredTypes)
-                .WithFilter(filter);
+                .WithTypeRestriction(_requiredTypes)
+                .WithFilter(_filter)
+                .WithComponentRequirement(_componentRequirement, _searchComponentInChildren);
 
             ReadOnlyCollection<string> keys = entryLookup.PerformLookup();
 
             var items = new Dictionary<string, Item>();
-            var rootItem = new Item(rootItemKey, rootItemKey);
-            items.Add(rootItemKey, rootItem);
+            var rootItem = new Item(_rootItemKey, _rootItemKey);
+            items.Add(_rootItemKey, rootItem);
 
             items.Add("None", new Item("None", string.Empty));
             foreach(var assetPath in keys)
@@ -53,7 +57,7 @@ namespace RoR2.Editor
                     if(!items.ContainsKey(fullPath))
                     {
                         var path = lastDashIndex == -1 ? fullPath : fullPath.Substring(lastDashIndex + 1);
-                        var item = new Item(useFullPathAsItemName ? fullPath : path, fullPath);
+                        var item = new Item(_useFullPathAsItemName ? fullPath : path, fullPath);
                         items.Add(fullPath, item);
                     }
 
@@ -66,7 +70,7 @@ namespace RoR2.Editor
 
             foreach(var item in items)
             {
-                if (item.Key == rootItemKey)
+                if (item.Key == _rootItemKey)
                     continue;
 
                 var fullName = item.Key;
@@ -118,15 +122,21 @@ namespace RoR2.Editor
         /// <param name="useFullPathAsItemName">If true, the full path will be used as an individual item's name.</param>
         /// <param name="requiredTypes">The required types of the asset, this will filter the dropdown to only include assets of these types.</param>
         /// <param name="filter">Only assets which path contains this filter will be displayed</param>
-        public AddressablesPathDropdown(AdvancedDropdownState state, bool useFullPathAsItemName, string filter, params Type[] requiredTypes) : base(state)
+        public AddressablesPathDropdown(AdvancedDropdownState state, bool useFullPathAsItemName, string filter, params Type[] requiredTypes) : this(state, useFullPathAsItemName, filter, null, false, requiredTypes)
         {
-            rootItemKey = "Select Asset";
+        }
+
+        public AddressablesPathDropdown(AdvancedDropdownState state, bool useFullPathAsItemName, string filter, Type componentRequirement = null, bool searchComponentInChildren = false, params Type[] requiredTypes) : base(state)
+        {
+            _rootItemKey = "Select Asset";
             var minSize = minimumSize;
             minSize.y = 200;
             minimumSize = minSize;
-            this.requiredTypes = requiredTypes;
-            this.useFullPathAsItemName = useFullPathAsItemName;
-            this.filter = filter;
+            _requiredTypes = requiredTypes;
+            _useFullPathAsItemName = useFullPathAsItemName;
+            _filter = filter;
+            _componentRequirement = componentRequirement;
+            _searchComponentInChildren = searchComponentInChildren;
         }
 
         /// <summary>

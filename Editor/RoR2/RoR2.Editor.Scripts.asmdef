@@ -25,7 +25,8 @@
         "SimpleJSON.dll",
         "Unity.Addressables.dll",
         "Unity.ResourceManager.dll",
-        "com.unity.multiplayer-hlapi.Runtime.dll"
+        "com.unity.multiplayer-hlapi.Runtime.dll",
+        "R2API.Addressables.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [
@@ -41,6 +42,11 @@
             "name": "com.unity.addressables",
             "expression": "0.0.1",
             "define": "R2EK_ADDRESSABLES"
+        },
+        {
+            "name": "riskofthunder-r2api_addressables",
+            "expression": "0.0.1",
+            "define": "R2EK_R2API_ADDRESSABLES"
         }
     ],
     "noEngineReferences": false
