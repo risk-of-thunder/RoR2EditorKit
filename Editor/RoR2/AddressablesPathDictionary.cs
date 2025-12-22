@@ -22,20 +22,6 @@ namespace RoR2.Editor
     /// </summary>
     public sealed class AddressablesPathDictionary
     {
-        [MenuItem("Epic/Test")]
-        private static void Test()
-        {
-            ReadOnlyCollection<string> results = new EntryLookup()
-                .WithComponentRequirement(typeof(CharacterBody), false)
-                .WithLookupType(EntryType.Path)
-                .WithTypeRestriction(typeof(GameObject))
-                .PerformLookup();
-
-            foreach(var entry in results)
-            {
-                Debug.Log(entry);
-            }
-        }
         /// <summary>
         /// Represents an entry type within the dictionary
         /// </summary>
