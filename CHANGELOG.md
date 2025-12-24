@@ -1,3 +1,23 @@
+# 5.6.4
+
+* Replaced all ``UnityEngine.Debug`` calls from the package to use ``RoR2EKLog`` class. (see below for more info)
+
+### Core Changes
+
+* Added the ``RoR2EKLog`` class
+	* Custom logging class with special formatting and utility for usage with the package.
+
+### RoR2ScriptsChanges
+
+* The ``AddressablesPathDictionary`` class now inherits from ``ScriptableSingleton<T>``
+* Revamped how the ``AddressablesPathDictionary`` Cache system works.
+	* Cache hits are now stored in a per-project basis, as a Project Setting
+	* This means that the Cache now survives across Domain Reloads and across project sessions
+	* The Cache becomes invalidated under the following scenarios:
+		* The LRAPI_Returns json file that's being read is newer than the one serialized by the cache
+		* The end user utilizes the ``Tools/RoR2EditorKit/Invalidate AddressablesPathDictionary Cache`` menu item
+* As a result of this change, the AddressablePathDictionary no longer suffers from slowdowns after the cache is built.
+
 # '5.6.3'
 
 ### R2APIScripts Changes

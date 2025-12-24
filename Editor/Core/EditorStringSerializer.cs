@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace RoR2.Editor
 {
@@ -56,7 +55,7 @@ namespace RoR2.Editor
         {
             if (_typeToSerializationHandlers.ContainsKey(typeof(T)))
             {
-                Debug.LogError($"Cannot add serialization delegate for type {typeof(T).FullName} as a Serializer already exists.");
+                RoR2EKLog.Error($"Cannot add serialization delegate for type {typeof(T).FullName} as a Serializer already exists.");
                 return;
             }
 
@@ -68,7 +67,7 @@ namespace RoR2.Editor
             output = input.Split(',');
             if (output.Length < minComponentCount)
             {
-                Debug.LogWarning($"Too few elements ({output.Length}/{minComponentCount}) for {typeof(T).FullName}");
+                RoR2EKLog.Warning($"Too few elements ({output.Length}/{minComponentCount}) for {typeof(T).FullName}");
                 output = Array.Empty<string>();
                 return false;
             }

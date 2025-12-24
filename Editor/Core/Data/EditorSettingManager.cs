@@ -185,7 +185,7 @@ namespace RoR2.Editor
 
                 if (setting.ownerType == null)
                 {
-                    Debug.Log($"Removing settings for type {setting._typeName} as these settings are orphaned.");
+                    RoR2EKLog.Debug($"Removing settings for type {setting._typeName} as these settings are orphaned.");
                     settings.RemoveAt(i);
                 }
             }

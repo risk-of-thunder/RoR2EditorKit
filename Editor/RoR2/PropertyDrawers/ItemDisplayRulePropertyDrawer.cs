@@ -78,7 +78,7 @@ namespace RoR2.Editor.PropertyDrawers
             }
             catch(Exception e)
             {
-                Debug.LogError($"Failed to paste from ItemDisplayPlacementHelper, was the output copied with the format \"forParsing\"?\n{e}");
+                RoR2EKLog.Error($"Failed to paste from ItemDisplayPlacementHelper, was the output copied with the format \"forParsing\"?\n{e}");
                 return;
             }
 

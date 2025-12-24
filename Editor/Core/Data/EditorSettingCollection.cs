@@ -142,7 +142,7 @@ namespace RoR2.Editor
                 return;
             }
 
-            Debug.Log($"No EditorSetting of name {settingName} could be found, Create the setting first using \"GetOrCreateSetting<T>(string, T)\"");
+            RoR2EKLog.Debug($"No EditorSetting of name {settingName} could be found, Create the setting first using \"GetOrCreateSetting<T>(string, T)\"");
         }
 
         private object CreateSetting(object defaultValueForSetting, string settingName)

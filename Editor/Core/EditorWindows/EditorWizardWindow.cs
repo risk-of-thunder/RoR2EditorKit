@@ -106,7 +106,7 @@ namespace RoR2.Editor
         {
             if (_coroutine == null)
             {
-                Debug.Log($"Cannot update progress when wizard is not running.");
+                RoR2EKLog.Debug($"Cannot update progress when wizard is not running.");
                 return;
             }
 
@@ -176,7 +176,7 @@ namespace RoR2.Editor
 
             AssetDatabase.Refresh();
 
-            Debug.Log("Starting " + GetType().Name);
+            RoR2EKLog.Debug("Starting " + GetType().Name);
             _runButton.SetEnabled(false);
             _closeButton.SetEnabled(false);
             _progressBar.SetDisplay(true);
@@ -197,7 +197,7 @@ namespace RoR2.Editor
             }
             finally
             {
-                Debug.Log(GetType().Name + " Completed, cleaning up...");
+                RoR2EKLog.Debug(GetType().Name + " Completed, cleaning up...");
                 CleanupInternal();
             }
             yield break;

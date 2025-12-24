@@ -210,7 +210,7 @@ namespace RoR2.Editor.Inspectors
                     }
                 }
             }
-            Debug.Log($"Removed {c} nodes that were not connected to anything.");
+            RoR2EKLog.Debug($"Removed {c} nodes that were not connected to anything.");
             AssetDatabase.SaveAssets();
         }
 

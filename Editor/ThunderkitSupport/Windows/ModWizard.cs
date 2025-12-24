@@ -140,25 +140,25 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
         {
             if (authorName.IsNullOrEmptyOrWhiteSpace())
             {
-                Debug.LogError($"Cannot run wizard, authorName is not valid.");
+                RoR2EKLog.Error($"Cannot run wizard, authorName is not valid.");
                 return false;
             }
 
             if (modName.IsNullOrEmptyOrWhiteSpace())
             {
-                Debug.LogError($"Cannot run wizard, modName is not valid");
+                RoR2EKLog.Error($"Cannot run wizard, modName is not valid");
                 return false;
             }
 
             if (humanReadableModName.IsNullOrEmptyOrWhiteSpace())
             {
-                Debug.LogError($"Cannot run wizard, humanReadableModName is not valid");
+                RoR2EKLog.Error($"Cannot run wizard, humanReadableModName is not valid");
                 return false;
             }
 
             if (modDescription.IsNullOrEmptyOrWhiteSpace())
             {
-                Debug.LogError($"Cannot run wizard, modDescription is not valid");
+                RoR2EKLog.Error($"Cannot run wizard, modDescription is not valid");
                 return false;
             }
 

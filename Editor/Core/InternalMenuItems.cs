@@ -47,7 +47,7 @@ namespace RoR2.Editor
             }
             catch (Exception e)
             {
-                Debug.LogError(e);
+                RoR2EKLog.Error(e);
             }
         }
     }

@@ -35,7 +35,7 @@ namespace RoR2.Editor.PropertyDrawers
 #if R2EK_R2API_ADDRESSABLES
             AddressableComponentRequirementAttribute componentRequirement = fieldInfo.GetCustomAttribute<AddressableComponentRequirementAttribute>(true);
 #endif
-            var pathDictionaryInstance = AddressablesPathDictionary.GetInstance();
+            var pathDictionaryInstance = AddressablesPathDictionary.instance;
             Type[] typesOfAsset = GetAssetTypes();
             using (new EditorGUI.PropertyScope(position, label, property))
             {

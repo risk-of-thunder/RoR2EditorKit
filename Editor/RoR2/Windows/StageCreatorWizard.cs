@@ -69,12 +69,12 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
         {
             if (stageName.IsNullOrEmptyOrWhiteSpace())
             {
-                Debug.LogError($"Cannot run wizard because the Stage Name is null, empty or whitespace.");
+                RoR2EKLog.Error($"Cannot run wizard because the Stage Name is null, empty or whitespace.");
                 return false;
             }
             if (folderPath.IsNullOrEmptyOrWhiteSpace())
             {
-                Debug.LogError($"Cannot run wizard because the Folder Path is null, empty or whitespace.");
+                RoR2EKLog.Error($"Cannot run wizard because the Folder Path is null, empty or whitespace.");
                 return false;
             }
             return true;
@@ -125,7 +125,7 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
             for (int i = 0; i < mapNodeGroupObjects.Length; i++)
             {
                 var gameObject = mapNodeGroupObjects[i];
-                Debug.Log($"Creating Node Graph for {gameObject}");
+                RoR2EKLog.Debug($"Creating Node Graph for {gameObject}");
                 yield return R2EKMath.Remap(i, 0, mapNodeGroupObjects.Length - 1, 0, 1f);
                 var nodeGroup = gameObject.GetComponent<MapNodeGroup>();
                 var nodeGraph = CreateInstance<NodeGraph>();
@@ -152,7 +152,7 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
 
         private IEnumerator CreateDCCS()
         {
-            Debug.Log($"Creating interactable and monster DCCS");
+            RoR2EKLog.Debug($"Creating interactable and monster DCCS");
             _monsterDCCS = CreateInstance<DirectorCardCategorySelection>();
             var path = IOUtils.GenerateUniqueFileName(_folderOutput, $"dccs{stageName}Monsters", ".asset");
             AssetDatabase.CreateAsset(_monsterDCCS, path);
@@ -166,7 +166,7 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
 
         private IEnumerator CreateDCCSPool()
         {
-            Debug.Log($"Creating DCCSPools for Monsters and Interactables");
+            RoR2EKLog.Debug($"Creating DCCSPools for Monsters and Interactables");
 
             ClassicStageInfo stageInfo = _sceneInfoGO.GetComponent<ClassicStageInfo>();
             var stageInfoSerializedObject = new SerializedObject(stageInfo);
@@ -211,7 +211,7 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
 
         private IEnumerator SaveScene()
         {
-            Debug.Log("Saving Scene Changes");
+            RoR2EKLog.Debug("Saving Scene Changes");
             yield return null;
             EditorSceneManager.SaveScene(_scene);
             yield break;
@@ -219,7 +219,7 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
 
         private IEnumerator CreateSceneDef()
         {
-            Debug.Log("Creating Scene Def");
+            RoR2EKLog.Debug("Creating Scene Def");
 
             var sceneDef = CreateInstance<SceneDef>();
 

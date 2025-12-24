@@ -22,7 +22,7 @@ namespace RoR2.Editor
         {
             if (!EditorStringSerializer.CanSerializeType<T>())
             {
-                Debug.LogError($"Cannot connect element {notifyValueChanged} to editor settings, requested type {typeof(T).Name} is not supported.");
+                RoR2EKLog.Error($"Cannot connect element {notifyValueChanged} to editor settings, requested type {typeof(T).Name} is not supported.");
                 return;
             }
 

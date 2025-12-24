@@ -41,7 +41,7 @@ namespace RoR2.Editor
 
             if (packageTemplate == null)
             {
-                Debug.LogError($"Could not find Template {templateName}");
+                RoR2EKLog.Error($"Could not find Template {templateName}");
                 Label errorLabel = new Label($"Could not find Template {templateName}");
 
                 if (target != null)
@@ -120,7 +120,7 @@ namespace RoR2.Editor
                 VisualTreeAsset asset = AssetDatabaseUtil.LoadAssetFromGUID<VisualTreeAsset>(template.v_guid);
                 if (!asset)
                 {
-                    Debug.LogError("Cannot find VisualTreeAsset for template " + template.k_templateName);
+                    RoR2EKLog.Error("Cannot find VisualTreeAsset for template " + template.k_templateName);
                     _serializedDictionary.RemoveAt(i);
                     hasChanges = true;
                     continue;
@@ -128,7 +128,7 @@ namespace RoR2.Editor
 
                 if (_templateTreeDictionary.ContainsKey(template.k_templateName))
                 {
-                    Debug.LogWarning("Template for " + template.k_templateName + " is already in the dictionary, is this a duplicate entry?");
+                    RoR2EKLog.Warning("Template for " + template.k_templateName + " is already in the dictionary, is this a duplicate entry?");
                     _serializedDictionary.RemoveAt(i);
                     hasChanges = true;
                     continue;
@@ -166,7 +166,7 @@ namespace RoR2.Editor
                 if (_didDomainReload)
                 {
                     _didDomainReload = false;
-                    Debug.Log("Reloading Visual Element Template Finder.");
+                    RoR2EKLog.Debug("Reloading Visual Element Template Finder.");
                     instance.ReloadDictionary();
                 }
             }

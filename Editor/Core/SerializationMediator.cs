@@ -89,7 +89,7 @@ namespace RoR2.Editor
                 return;
             }
 
-            Debug.Log($"Could not serialize field, Unrecognized Type \"{fInfo.FieldType.FullName}\"");
+            RoR2EKLog.Debug($"Could not serialize field, Unrecognized Type \"{fInfo.FieldType.FullName}\"");
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace RoR2.Editor
             {
                 return SerializeInternal(type, value);
             }
-            Debug.Log($"Could not serialize value, Unrecognized Type \"{type.FullName}\"");
+            RoR2EKLog.Debug($"Could not serialize value, Unrecognized Type \"{type.FullName}\"");
             return "";
         }
 
@@ -146,7 +146,7 @@ namespace RoR2.Editor
             {
                 return DeserializeInternal(type, input);
             }
-            Debug.Log($"Could not Deserialize string input, Unrecognized Type \"{type.FullName}\"");
+            RoR2EKLog.Debug($"Could not Deserialize string input, Unrecognized Type \"{type.FullName}\"");
             return null;
         }
 

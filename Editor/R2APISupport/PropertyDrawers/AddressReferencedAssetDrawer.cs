@@ -72,7 +72,7 @@ namespace RoR2.Editor.PropertyDrawers
 
 
             string assetName = null;
-            if (AddressablesPathDictionary.GetInstance().TryGetPathFromGUID(_addressProperty.stringValue, out var path))
+            if (AddressablesPathDictionary.instance.TryGetPathFromGUID(_addressProperty.stringValue, out var path))
             {
                 assetName = System.IO.Path.GetFileNameWithoutExtension(path);
             }
@@ -207,7 +207,7 @@ namespace RoR2.Editor.PropertyDrawers
             Type[] genericArguments = fieldInfoType.GetGenericArguments();
             if (genericArguments.Length <= 0)
             {
-                Debug.LogWarning($"Could not automatically obtain the asset type for AddressReferencedAsset<> in {fieldInfo.DeclaringType.FullName + "." + fieldInfo.Name}");
+                RoR2EKLog.Warning($"Could not automatically obtain the asset type for AddressReferencedAsset<> in {fieldInfo.DeclaringType.FullName + "." + fieldInfo.Name}");
             }
 
             return genericArguments;
@@ -221,7 +221,7 @@ namespace RoR2.Editor.PropertyDrawers
 
         private void ValidateAssetAndAssign(AddressablesPathDropdown.Item item, SerializedProperty addressProperty)
         {
-            if (AddressablesPathDictionary.GetInstance().TryGetGUIDFromPath(item.assetPath, out var guid))
+            if (AddressablesPathDictionary.instance.TryGetGUIDFromPath(item.assetPath, out var guid))
             {
                 addressProperty.stringValue = guid;
                 addressProperty.serializedObject.ApplyModifiedProperties();

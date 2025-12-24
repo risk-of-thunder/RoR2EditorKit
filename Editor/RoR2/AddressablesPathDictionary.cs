@@ -20,7 +20,8 @@ namespace RoR2.Editor
     /// <summary>
     /// The AddressablesPathDictionary is a struct that contains the metadata stored within the game's "lrapi_returns.json", which is a Dictionary of Addressable Path to GUID.
     /// </summary>
-    public sealed class AddressablesPathDictionary
+    [FilePath("ProjectSettings/RoR2EditorKit/AddressablesPathDictionary.asset", FilePathAttribute.Location.ProjectFolder)]
+    public sealed class AddressablesPathDictionary : ScriptableSingleton<AddressablesPathDictionary>, ISerializationCallbackReceiver
     {
         /// <summary>
         /// Represents an entry type within the dictionary
@@ -106,7 +107,7 @@ namespace RoR2.Editor
                 foreach (Type type in typeRestriction)
                 {
                     yield return null;
-                    string[] cache = AddressablesPathDictionary.GetInstance().RequestEntries(type, componentRequirement, searchComponentInChildren, entryLookupType);
+                    string[] cache = AddressablesPathDictionary.instance.RequestEntries(type, componentRequirement, searchComponentInChildren, entryLookupType);
 
 
                     var modulo = Mathf.Floor((Mathf.Log10(cache.Length) + 1) * 2);
@@ -204,100 +205,149 @@ namespace RoR2.Editor
 
         private const string FILE_NAME = "lrapi_returns.json";
 
-        /// <summary>
-        /// Returns the instance currently stored.
-        /// </summary>
-        /// <returns>The instance of AddressablesPathDictionary</returns>
+        [Obsolete("utilize the \"instance\" property instead.")]
         public static AddressablesPathDictionary GetInstance()
         {
-            if (_instance != null && !_instance.IsEmpty())
-            {
-                return _instance;
-            }
+            return instance;
+        }
 
+        //This OnEnable will load all of the json data immediatly. This means that we can check the date-time of the file, and if its newer than the one we have serialized, we can flush out the cache.
+        private void OnEnable()
+        {
+            EditorApplication.quitting += EditorApplication_quitting;
+            LoadJSONFileData(out DateTime fileDateTime);
+
+            if (fileDateTime > GetSerializedDateTime())
+            {
+                SetSerializedDateTime(fileDateTime);
+                RoR2EKLog.Debug("DateTime of JSON file is greater than serialized one, flushing out cache.");
+                FlushOutCache();
+            }
+        }
+
+        private void OnDisable()
+        {
+            EditorApplication.quitting -= EditorApplication_quitting;
+        }
+
+        private void EditorApplication_quitting()
+        {
+            Save(true);
+        }
+
+        private void LoadJSONFileData(out DateTime fileDateTime)
+        {
             var stopwatch = Stopwatch.StartNew();
-            string jsonData = GetLRAPIReturnsJsonData(GetLRAPIReturnsPath());
+
+            string jsonData = GetLRAPIReturnsJsonData(GetLRAPIReturnsPath(), out fileDateTime);
 
             var rootJSONNode = JSON.Parse(jsonData);
-
-            var regex = new Regex("Wwise");
 
             Dictionary<string, Entry> guidToEntries = new();
             Dictionary<string, Entry> pathToEntries = new();
             List<Entry> entries = new();
 
             int randomAssNumber = 0;
-            foreach(var keyGUID in rootJSONNode.Keys)
+            bool checkedForProperVersionOfLRAPI = false;
+            foreach (var keyGUID in rootJSONNode.Keys)
             {
-                if(regex.Match(keyGUID).Success)
+                if (wwiseRegex.Match(keyGUID).Success)
                 {
                     continue;
                 }
 
-                JSONNode entryNode = rootJSONNode[keyGUID];
-
-                JSONNode pathNode = entryNode["path"];
-                JSONNode assemblyQualifiedTypeNameNode = entryNode["assemblyQualifiedTypeName"];
-
-                Entry entry = new Entry
+                Entry entry = null;
+                try
                 {
-                    path = pathNode.Value,
-                    guid = keyGUID,
-                    assemblyQualifiedTypeName = assemblyQualifiedTypeNameNode.Value
-                };
+                    JSONNode entryNode = rootJSONNode[keyGUID];
 
-                if(!guidToEntries.TryAdd(entry.guid, entry))
-                {
-                    Debug.LogError($"A GUID to Entry was attempted to be added, but the key is already in the dictionary! (key={entry.guid},path={entry.path})");
+                    JSONNode pathNode = entryNode["path"];
+                    JSONNode assemblyQualifiedTypeNameNode = entryNode["assemblyQualifiedTypeName"];
+
+                    entry = new Entry
+                    {
+                        path = pathNode.Value,
+                        guid = keyGUID,
+                        assemblyQualifiedTypeName = assemblyQualifiedTypeNameNode.Value
+                    };
                 }
-                if(!pathToEntries.TryAdd(entry.path, entry))
+                catch(Exception ex)
+                {
+                    string guidToAttemptToParse = keyGUID;
+                    if(subAssetExtractor.Match(keyGUID).Success)
+                    {
+                        guidToAttemptToParse = subAssetExtractor.Replace(keyGUID, "");
+                    }
+                    if(!GUID.TryParse(guidToAttemptToParse, out _))
+                    {
+                        EditorUtility.DisplayDialog($"Exception during LRAPI_Returns parsing.", "It appears that your LRAPI_Returns file located in your game's streaming assets is outdated, this is because the keys are asset paths instead of GUIDS.\n\nThis is because either you're using a version of the game older than 1.4.1, or because LRAPI_Returns for this version of the game is missing. You can download a newer version of LRAPI_Returns on the modding discord if necessary.", "Ok");
+                    }
+                    else
+                    {
+                        EditorUtility.DisplayDialog($"Unknown Exception during LRAPI_Returns parsing.", "An unknown exception happened while LRAPI_Returns was being parsed, please submit a bug report", "Ok");
+                    }
+                    RoR2EKLog.Error(ex);
+                    return;
+                }
+
+                if (!guidToEntries.TryAdd(entry.guid, entry))
+                {
+                    RoR2EKLog.Error($"A GUID to Entry was attempted to be added, but the key is already in the dictionary! (key={entry.guid},path={entry.path})");
+                }
+                if (!pathToEntries.TryAdd(entry.path, entry))
                 {
                     //Path conflict resolution part 1, include typeName
                     Type assetType = Type.GetType(entry.assemblyQualifiedTypeName);
                     entry.path = string.Format("{0}:{1}", entry.path, assetType.Name);
-                    if(!pathToEntries.TryAdd(entry.path, entry))
+                    if (!pathToEntries.TryAdd(entry.path, entry))
                     {
                         //Path conflict resolution part 2, just put a number.
                         entry.path = string.Format("{0}*{1}", entry.path, randomAssNumber);
                         randomAssNumber++;
-                        if(!pathToEntries.TryAdd(entry.path, entry))
+                        if (!pathToEntries.TryAdd(entry.path, entry))
                         {
-                            Debug.LogError($"A Path to Entry was attempted to be added, but the key is already in the dictionary! (key={entry.path},guid={entry.guid})");
+                            RoR2EKLog.Error($"A Path to Entry was attempted to be added, but the key is already in the dictionary! (key={entry.path},guid={entry.guid})");
                         }
                         else
                         {
-                            Debug.LogWarning($"Path to Entry was added after including Type name and Number, (key={entry.path}, guid={entry.guid}");
+                            RoR2EKLog.Warning($"Path to Entry was added after including Type name and Number, (key={entry.path}, guid={entry.guid}");
                         }
                     }
                     else
                     {
-                        Debug.LogWarning($"Path to Entry was added after including Type name, (key={entry.path}, guid={entry.guid}");
+                        RoR2EKLog.Warning($"Path to Entry was added after including Type name, (key={entry.path}, guid={entry.guid}");
                     }
-                        
+
                 }
                 entries.Add(entry);
             }
 
-            _instance = new AddressablesPathDictionary(pathToEntries, guidToEntries, entries.ToArray());
+            //Initialize the inner dictionaries with the new values.
+            pathToEntryDictionary = pathToEntries;
+            guidToEntryDictionary = guidToEntries;
+            allEntries = entries.ToArray();
+
+            paths = allEntries.Select(entry => entry.path).ToArray();
+            guids = allEntries.Select(entry => entry.guid).ToArray();
+
             stopwatch.Stop();
-            UnityEngine.Debug.Log($"AddressablesPathDictionary took " + stopwatch.ElapsedMilliseconds + "ms");
-            return _instance;
+            RoR2EKLog.Debug($"AddressablesPathDictionary took " + stopwatch.ElapsedMilliseconds + "ms");
         }
 
         private static string GetLRAPIReturnsPath()
         {
-            var gameExePath = R2EKPreferences.instance.GetGameExecutablePath();
-            var directory = Directory.GetParent(gameExePath).FullName;
-            var dataFolder = IOPath.Combine(directory, "Risk of Rain 2_Data");
-            var streamingAssetsFolder = IOPath.Combine(dataFolder, "StreamingAssets");
+            R2EKPreferences preferencesInstance = R2EKPreferences.instance;
+            var streamingAssetsFolder = preferencesInstance.streamingAssetsPath;
             var filePath = IOPath.Combine(streamingAssetsFolder, FILE_NAME);
             return filePath;
         }
 
-        private static string GetLRAPIReturnsJsonData(string jsonFilePath)
+        private static string GetLRAPIReturnsJsonData(string jsonFilePath, out DateTime fileDateTime)
         {
+            fileDateTime = default;
             if (File.Exists(jsonFilePath))
             {
+                fileDateTime = File.GetLastWriteTimeUtc(jsonFilePath);
                 return System.IO.File.ReadAllText(jsonFilePath);
             }
             else
@@ -305,34 +355,36 @@ namespace RoR2.Editor
                 TextAsset lrapiReturns1dot4dot1TextAsset = R2EKConstants.AssetGUIDs.lrapiReturnsFor1dot4dot1;
                 if(lrapiReturns1dot4dot1TextAsset)
                 {
+                    jsonFilePath = IOPath.GetFullPath(AssetDatabase.GetAssetPath(lrapiReturns1dot4dot1TextAsset));
+                    fileDateTime = File.GetLastWriteTimeUtc(jsonFilePath);
                     return lrapiReturns1dot4dot1TextAsset.text;
                 }
             }
 
-            EditorUtility.DisplayDialog("LRAPI_RETURNS NOT FOUND", "The json file lrapi_returns was not found, This version of RoR2EditorKit requires the game to be at the very least post memory management update. The editor will now close.", "Ok");
-
-            EditorApplication.Exit(0);
+            RoR2EKLog.Fatal("LRAPI_RETURNS NOT FOUND!\n The json file lrapi_returns was not found, This version of RoR2EditorKit requires the game to be at the very least post memory management update.");
             return "";
         }
 
-        private static AddressablesPathDictionary _instance;
+        private Dictionary<string, Entry> pathToEntryDictionary = new Dictionary<string, Entry>();
+        private Dictionary<string, Entry> guidToEntryDictionary = new Dictionary<string, Entry>();
+        private Entry[] allEntries = Array.Empty<Entry>();
+        private string[] paths = Array.Empty<string>();
+        private string[] guids = Array.Empty<string>();
 
-        private Dictionary<string, Entry> pathToEntryDictionary;
-        private Dictionary<string, Entry> guidToEntryDictionary;
-        private Entry[] allEntries;
-        private string[] paths;
-        private string[] guids;
+        private Regex wwiseRegex = new Regex("Wwise");
+        private Regex subAssetExtractor = new Regex(@"\[.*?\]");
 
+        //Handles caching of entries.
         #region Cache
-        private struct CacheHit
-        {
-            public string[] pathCache;
-            public string[] guidsCache;
-        }
-
+        /// <summary>
+        /// Represents a Key inside the Cache, the Key is represented by the required asset type, alongside wether the entries it represents include component found in children.
+        /// <br></br>
+        /// requiredType can either be a regular asset, or actually a component, where the component represents any GameObject that has said component.
+        /// </summary>
+        [Serializable]
         private struct CacheKey : IEquatable<CacheKey>
         {
-            public Type requiredType;
+            public SerializableSystemType requiredType;
             public bool entriesIncludeComponentFoundInChildren;
 
             public bool Equals(CacheKey other)
@@ -366,13 +418,35 @@ namespace RoR2.Editor
             }
         }
 
-        private Dictionary<CacheKey, CacheHit> _typeResultCache;
+        /// <summary>
+        /// Represents the CacheHit of the Cache, which is just the cache of Paths and their GUIDS.
+        /// </summary>
+        [Serializable]
+        private struct CacheHit
+        {
+            public string[] pathCache;
+            public string[] guidsCache;
+        }
+
+        /// <summary>
+        /// Serializable representation of the dictionary.
+        /// </summary>
+        [Serializable]
+        private struct SerializedTypeResultCache
+        {
+            public CacheKey cacheKey;
+            public CacheHit cacheHit;
+        }
+
+        [SerializeField] private long _fileDateTimeTicks = DateTime.MinValue.Ticks;
+        [SerializeField] private SerializedTypeResultCache[] _serializedTypeResultCache = Array.Empty<SerializedTypeResultCache>();
+        private Dictionary<CacheKey, CacheHit> _typeResultCache = new Dictionary<CacheKey, CacheHit>();
 
         private string[] RequestEntries(Type type, Type componentRequirement, bool searchInChildren, EntryType entryType)
         {
             //First, we check if we have the cache
             Type typeForCacheKey = componentRequirement ?? type;
-            CacheKey cacheKey = new CacheKey { requiredType = typeForCacheKey, entriesIncludeComponentFoundInChildren = searchInChildren };
+            CacheKey cacheKey = new CacheKey { requiredType = (SerializableSystemType)typeForCacheKey, entriesIncludeComponentFoundInChildren = searchInChildren };
 
             if(_typeResultCache.TryGetValue(cacheKey, out CacheHit cacheHit))
             {
@@ -432,7 +506,7 @@ namespace RoR2.Editor
                 }
             }
 
-            CacheKey cacheKey = new CacheKey() { requiredType = type, entriesIncludeComponentFoundInChildren = searchInChildren };
+            CacheKey cacheKey = new CacheKey() { requiredType = (SerializableSystemType)type, entriesIncludeComponentFoundInChildren = searchInChildren };
             CacheHit cacheHit = new CacheHit();
             cacheHit.pathCache = resultPaths.ToArray();
             cacheHit.guidsCache = resultGuids.ToArray();
@@ -484,6 +558,53 @@ namespace RoR2.Editor
                 throw;
             }
             return resourceLocation.ResourceType;
+        }
+
+
+        /// <summary>
+        /// This method should not be called manually.
+        /// </summary>
+        public void OnBeforeSerialize()
+        {
+            HG.ArrayUtils.EnsureCapacity(ref _serializedTypeResultCache, _typeResultCache.Count);
+
+            int entryIndex = 0;
+            foreach(var (cacheKey, cacheHit) in _typeResultCache)
+            {
+                _serializedTypeResultCache[entryIndex].cacheKey = cacheKey;
+                _serializedTypeResultCache[entryIndex].cacheHit = cacheHit;
+                entryIndex++;
+            }
+        }
+
+        /// <summary>
+        /// This method should not be called manually.
+        /// </summary>
+        public void OnAfterDeserialize()
+        {
+            _typeResultCache.Clear();
+            for(int i = 0; i < _serializedTypeResultCache.Length; i++)
+            {
+                _typeResultCache[_serializedTypeResultCache[i].cacheKey] = _serializedTypeResultCache[i].cacheHit;
+            }
+        }
+
+        private DateTime GetSerializedDateTime() => new DateTime(_fileDateTimeTicks);
+        private void SetSerializedDateTime(DateTime newDateTime) => _fileDateTimeTicks = newDateTime.Ticks;
+        
+        private void FlushOutCache()
+        {
+            _typeResultCache.Clear();
+            _serializedTypeResultCache = Array.Empty<SerializedTypeResultCache>();
+        }
+
+        [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Invalidate AddressablesPathDictionary Cache")]
+        private static void ReimportAddressableCatalog()
+        {
+            var instance = AddressablesPathDictionary.instance;
+            RoR2EKLog.Debug($"Flushing out {instance._serializedTypeResultCache.Length} entries from the Cache.");
+            instance.FlushOutCache();
+            instance.Save(true);
         }
         #endregion
 
@@ -605,16 +726,5 @@ namespace RoR2.Editor
         #endregion
 
         private AddressablesPathDictionary() { }
-        private AddressablesPathDictionary(Dictionary<string, Entry> pathToEntries, Dictionary<string, Entry> guidtoEntry, Entry[] allEntries)
-        {
-            pathToEntryDictionary = pathToEntries;
-            guidToEntryDictionary = guidtoEntry;
-            this.allEntries = allEntries;
-
-            paths = allEntries.Select(entry => entry.path).ToArray();
-            guids = allEntries.Select(entry => entry.guid).ToArray();
-
-            _typeResultCache = new Dictionary<CacheKey, CacheHit>();
-        }
     }
 }

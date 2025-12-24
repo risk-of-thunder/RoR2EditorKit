@@ -47,7 +47,7 @@ namespace RoR2.Editor.Inspectors
             Transform t = _targetElevationTransformProperty.objectReferenceValue as Transform;
             if (!t)
             {
-                Debug.LogError($"Cannot calculate jump velocity since there is no Transform assigned to Target Elevation Transform.");
+                RoR2EKLog.Error($"Cannot calculate jump velocity since there is no Transform assigned to Target Elevation Transform.");
                 return;
             }
             Transform myT = targetType.transform;

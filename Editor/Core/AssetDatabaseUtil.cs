@@ -20,7 +20,7 @@ namespace RoR2.Editor
         {
             if (!AssetDatabase.Contains(asset))
             {
-                Debug.LogWarning($"Object {asset} is not an Asset in the AssetDatabase");
+                RoR2EKLog.Warning($"Object {asset} is not an Asset in the AssetDatabase");
                 return string.Empty;
             }
             return AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(asset));
