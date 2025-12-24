@@ -94,7 +94,7 @@ namespace RoR2.Editor.PropertyDrawers
                 {
                     string dropdownDisplayName = assetName == null ? "None" : assetName;
                     var ctrlRect = EditorGUI.PrefixLabel(fieldRect, property.GetGUIContent());
-                    if (EditorGUI.DropdownButton(ctrlRect, new GUIContent(assetName), FocusType.Passive))
+                    if (EditorGUI.DropdownButton(ctrlRect, new GUIContent(dropdownDisplayName), FocusType.Passive))
                     {
                         OpenAddressablesDropdown(fieldRect, _addressProperty, componentRequirement);
                     }
@@ -187,7 +187,8 @@ namespace RoR2.Editor.PropertyDrawers
         protected virtual Type[] GetRequiredAssetTypes()
         {
             //Get the type of the field, and a reference to AddressReferencedAsset<>
-            Type fieldInfoType = fieldInfo.FieldType;
+            Type fieldInfoType = propertyDrawerData.GetType();
+
             Type addressReferencedAssetT = typeof(AddressReferencedAsset<>);
 
             Type genericTypeDefinition = fieldInfoType.IsGenericType ? fieldInfoType.GetGenericTypeDefinition() : null;

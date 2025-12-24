@@ -1,17 +1,29 @@
+# '5.6.3'
+
+### R2APIScripts Changes
+
+* Fixed an issue where the ``AddressReferencedAssetDrawer`` could not display properly if it was trying to draw a collection-type
+* Fixed an issue where the DropdownButton label of ``AddressReferencedAssetDrawer`` would not display the string "None" when no addressable asset was being stored in the structure.
+
 # '5.6.2'
 
+### Core Changes
 * Added various properties to the R2EKPreferences file for getting specific directories of Risk of Rain 2
 * Added ``Re-Import Addressable Catalog`` menu item, this does the same as the "Import Addressable Catalog" step of the ThunderKit importer, useful when your addressable catalog corrupts but you dont want to modify your project's Import Config.
+
+### RoR2ScriptsChanges
+* The AddressablePathDictionary can now Lookup GameObjects with specific component restrictions.
+* Added the ability to tweak the distance from which nodes in the MapNodeGroup are drawn.
+* Added two new buttons used to toggle node icons.
+	* Thanks Viliger for the two afformentioned bullet points <3
+
+### R2APIScripts Changes
 * Deprecated the ``AddressReferencedAssetDrawer<T>``, replacing it with a non-generic version (``AddressReferencedAssetDrawer``)
 	* This non-generic version works exactly the same and can be inherited from if necesary.
 	* It dynamically obtains the asset type using reflection, making the generic typing obsolete.
 * Added support for the following ``R2API.Addressables`` attributes.
 	* ``NoCatalogLoad``: Marks an ``AddressReferencedAsset`` that it should not load from the catalog, useful for using references under tight time constraints (ie: ensuring the end user can reference base-game skins without them accidentally trying to load skins via the catalog)
 	* ``AddressableComponentRequirement`` Marks either a ``AddressReferencedPrefab`` or an ``AssetReferenceGameObject`` that the underlying GameObject requires a component, said component can either be on the Root or a child, depending on the attribute's settings.
-* The AddressablePathDictionary can now Lookup GameObjects with specific component restrictions.
-* Added the ability to tweak the distance from which nodes in the MapNodeGroup are drawn.
-* Added two new buttons used to toggle node icons.
-	* Thanks Viliger for the two afformentioned bullet points <3
 
 # '5.6.1'
 
