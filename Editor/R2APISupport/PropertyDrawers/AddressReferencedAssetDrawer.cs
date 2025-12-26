@@ -56,6 +56,16 @@ namespace RoR2.Editor.PropertyDrawers
             var _useDirectReferenceProperty = property.FindPropertyRelative("_useDirectReference");
             var _canLoadFromCatalogProperty = property.FindPropertyRelative("_canLoadFromCatalog");
 
+            //Fuck this shi, but if its using direct reference, nullify the address, otherwise, nullify the asset.
+            if(_useDirectReferenceProperty.boolValue)
+            {
+                _addressProperty.stringValue = "";
+            }
+            else
+            {
+                _assetProperty.objectReferenceValue = null;
+            }
+
             //As soon as we get the attribute, and we have the can load from catalog property, set it to false.
             if (hasNoCatalogLoad && _canLoadFromCatalogProperty != null)
             {
