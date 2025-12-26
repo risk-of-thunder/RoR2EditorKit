@@ -1,3 +1,26 @@
+# 5.6.5
+
+### Core Changes
+
+* Added a ``DisposableProgressBar``, used to interface with ``EditorUtility.DisplayProgressBar()``.
+
+## RoR2ScriptsChanges
+
+* Added a new ``ItemDisplayRuleSet`` inspector
+	* The inspector only shows the KeyAssetRuleGroups array
+	* Contains a custom text field, utilized for filtering KeyAssets by KeyAsset name.
+	* When a filter is used, you're unable to modify the collection itself.
+* Added a context menu to ``ItemDisplayRuleSet`` called ``Add Vanilla Displays in Bulk``
+	* The context menu when clicked, opens a popup window asking you which kind of "bulk displays" you want. The options are:
+		* Survivor: Taking the displays from Commando's IDRS, useful for Survivors.
+		* Monster: Taking the displays from Lesser Wisps, contains only the Elite Crowns.
+		* Drone: Taking the displays from gunner drone, useful for Drone characters.
+	* The utility will only add displays that are not found on the IDRS itself, it will proceed to add the vanilla displays using the addressable system.
+
+## R2APIScripts Changes
+
+* The ``AddressReferencedAssetPropertyDrawer`` now nullifies the address or the asset, depending on the value of ``UseDirectReference``
+
 # 5.6.4
 
 * Replaced all ``UnityEngine.Debug`` calls from the package to use ``RoR2EKLog`` class. (see below for more info)
