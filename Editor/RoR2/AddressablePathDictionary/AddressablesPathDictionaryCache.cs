@@ -1,5 +1,6 @@
 using HG;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -9,13 +10,8 @@ using UnityEngine.ResourceManagement.ResourceLocations;
 namespace RoR2.Editor
 {
     [Serializable]
-    public class AddressablesPathDictionaryCache
+    internal sealed class AddressablesPathDictionaryCache
     {
-        /// <summary>
-        /// Represents a Key inside the Cache, the Key is represented by the required asset type, alongside wether the entries it represents include component found in children.
-        /// <br></br>
-        /// requiredType can either be a regular asset, or actually a component, where the component represents any GameObject that has said component.
-        /// </summary>
         [Serializable]
         private struct CacheKey : IEquatable<CacheKey>
         {
@@ -63,9 +59,6 @@ namespace RoR2.Editor
             }
         }
 
-        /// <summary>
-        /// Represents the CacheHit of the Cache, which is just the cache of Paths and their GUIDS.
-        /// </summary>
         [Serializable]
         private struct CacheHit
         {
@@ -85,9 +78,6 @@ namespace RoR2.Editor
             }
         }
 
-        /// <summary>
-        /// Serializable representation of the dictionary.
-        /// </summary>
         [Serializable]
         private struct SerializedTypeResultCache
         {
@@ -101,11 +91,15 @@ namespace RoR2.Editor
             }
         }
 
+        /// <summary>
+        /// The Serialized Cache as an IList, this is exposed exclusively for VisualElement purposes and should not be touched directly.
+        /// </summary>
+        public IList serializedCacheList => _serializedTypeResultCache;
         [SerializeField] private long _cacheDateTimeTicks = DateTime.MinValue.Ticks;
         [SerializeField] private List<SerializedTypeResultCache> _serializedTypeResultCache = new List<SerializedTypeResultCache>();
         private Dictionary<CacheKey, CacheHit> _typeResultCache = new Dictionary<CacheKey, CacheHit>();
 
-        public string[] RequestEntries(Type type, Type componentRequirement, bool searchInChildren, AddressablesPathDictionary.EntryType entryType)
+        internal string[] RequestEntries(Type type, Type componentRequirement, bool searchInChildren, AddressablesPathDictionary.EntryType entryType)
         {
             //First, we check if we have the cache
             Type typeForCacheKey = componentRequirement ?? type;
@@ -147,10 +141,10 @@ namespace RoR2.Editor
             };
         }
 
-        public DateTime GetCacheCreationDateTime() => new DateTime(_cacheDateTimeTicks);
-        public void SetCacheDateTime(DateTime newDateTime) => _cacheDateTimeTicks = newDateTime.Ticks;
+        internal DateTime GetCacheCreationDateTime() => new DateTime(_cacheDateTimeTicks);
+        internal void SetCacheDateTime(DateTime newDateTime) => _cacheDateTimeTicks = newDateTime.Ticks;
 
-        public void FlushOutCache()
+        internal void FlushOutCache()
         {
             for(int i = _serializedTypeResultCache.Count - 1; i >= 0; i--)
             {
@@ -158,7 +152,7 @@ namespace RoR2.Editor
             }
         }
 
-        public void RemoveCache(Type type, bool searchInChildren)
+        internal void RemoveCache(Type type, bool searchInChildren)
         {
             CacheKey cacheKey = new CacheKey() { requiredType = (SerializableSystemType)type, entriesIncludeComponentFoundInChildren = searchInChildren };
             for(int i = 0; i < _serializedTypeResultCache.Count; i++)
@@ -171,7 +165,7 @@ namespace RoR2.Editor
             }
         }
 
-        public int GetCacheCount() => _serializedTypeResultCache.Count;
+        internal int GetCacheCount() => _serializedTypeResultCache.Count;
 
         private void RemoveCache(int serializedCacheIndex)
         {

@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement style="height: 44px; max-height: 44px; min-height: 44px; flex-direction: row; opacity: 1;">
+        <ui:VisualElement style="flex-grow: 1; min-width: 198px;">
+            <ui:Label text="TypeName:" display-tooltip-when-elided="true" style="flex-direction: row; margin-top: 1px; margin-right: 3px; margin-bottom: 3px; margin-left: 3px;">
+                <ui:Label text="RoR2.ItemDef" display-tooltip-when-elided="true" name="TypeNameValue" style="padding-left: 2px; margin-left: 68px; background-color: rgb(47, 47, 47); border-left-color: rgba(34, 34, 34, 255); border-right-color: rgba(34, 34, 34, 255); border-top-color: rgba(34, 34, 34, 255); border-bottom-color: rgba(34, 34, 34, 255); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; white-space: nowrap; flex-grow: 1;" />
+            </ui:Label>
+            <ui:Toggle label="Queries for Child Components" name="ComponentInChildren" style="flex-grow: 0; flex-direction: row;" />
+        </ui:VisualElement>
+        <ui:Label text="Hit Count: 111" display-tooltip-when-elided="true" name="HitCount" style="flex-grow: 0; -unity-text-align: middle-center;" />
+        <ui:Button text="Delete" display-tooltip-when-elided="true" name="DeleteCache" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -21,6 +21,72 @@ namespace RoR2.Editor
     [FilePath("RoR2EditorKit/R2EKPreferences.asset", FilePathAttribute.Location.PreferencesFolder)]
     public sealed class R2EKPreferences : ScriptableSingleton<R2EKPreferences>
     {
+        internal sealed class R2EKPreferencesProvider : SettingsProvider
+        {
+            private R2EKPreferences _settings;
+            private SerializedObject _serializedObject;
+
+            [SettingsProvider]
+            public static SettingsProvider CreateProvider()
+            {
+                var keywords = new[] { "RoR2EditorKit", "Preferences" };
+                VisualElementTemplateDictionary.instance.DoSave();
+                var settings = instance;
+                settings.hideFlags = HideFlags.DontSave | HideFlags.HideInHierarchy;
+                settings.SaveSettings();
+                return new R2EKPreferencesProvider("Preferences/RoR2EditorKit/Main Settings", SettingsScope.User, keywords)
+                {
+                    _settings = settings,
+                    _serializedObject = new SerializedObject(settings)
+                };
+            }
+
+            public override void OnActivate(string searchContext, VisualElement rootElement)
+            {
+                base.OnActivate(searchContext, rootElement);
+                VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(R2EKPreferences), rootElement);
+
+                var execPath = rootElement.Q<PropertyField>("GameExecutablePath");
+                execPath.RegisterValueChangeCallback(OnGameExecPathSet);
+                rootElement.Bind(_serializedObject);
+            }
+
+            private void OnGameExecPathSet(SerializedPropertyChangeEvent evt)
+            {
+                var changedProperty = evt.changedProperty;
+                var path = changedProperty.stringValue;
+
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    return;
+                }
+
+                var fileNameWithExtension = IOPath.GetFileName(path);
+                if (fileNameWithExtension != EXECUTABLE_NAME)
+                {
+                    EditorUtility.DisplayDialog("Invalid Executable", "The executable you've selected is not Risk of Rain 2, please select the game's executable.", "Ok");
+                    changedProperty.stringValue = "";
+                    changedProperty.serializedObject.ApplyModifiedProperties();
+                }
+            }
+
+            public override void OnDeactivate()
+            {
+                base.OnDeactivate();
+                Save();
+            }
+
+            private void Save()
+            {
+                _serializedObject.ApplyModifiedProperties();
+                if (_settings)
+                    _settings.SaveSettings();
+            }
+
+            public R2EKPreferencesProvider(string path, SettingsScope scopes, IEnumerable<string> keywords = null) : base(path, scopes, keywords)
+            {
+            }
+        }
         private const string EXECUTABLE_NAME = "Risk of Rain 2.exe";
         const string STEAM_REGISTRY_PATH = @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Valve\Steam";
         const uint ROR2_APP_ID = 632360U;
@@ -166,73 +232,6 @@ namespace RoR2.Editor
             string installDir = installDirMatch.Groups[1].Value;
             appInstallDirectory = Path.Combine(appSteamDirectory, "steamapps", "common", installDir);
             return true;
-        }
-
-        internal sealed class R2EKPreferencesProvider : SettingsProvider
-        {
-            private R2EKPreferences _settings;
-            private SerializedObject _serializedObject;
-
-            [SettingsProvider]
-            public static SettingsProvider CreateProvider()
-            {
-                var keywords = new[] { "RoR2EditorKit", "Preferences" };
-                VisualElementTemplateDictionary.instance.DoSave();
-                var settings = instance;
-                settings.hideFlags = HideFlags.DontSave | HideFlags.HideInHierarchy;
-                settings.SaveSettings();
-                return new R2EKPreferencesProvider("Preferences/RoR2EditorKit/Main Settings", SettingsScope.User, keywords)
-                {
-                    _settings = settings,
-                    _serializedObject = new SerializedObject(settings)
-                };
-            }
-
-            public override void OnActivate(string searchContext, VisualElement rootElement)
-            {
-                base.OnActivate(searchContext, rootElement);
-                VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(R2EKPreferences), rootElement);
-
-                var execPath = rootElement.Q<PropertyField>("GameExecutablePath");
-                execPath.RegisterValueChangeCallback(OnGameExecPathSet);
-                rootElement.Bind(_serializedObject);
-            }
-
-            private void OnGameExecPathSet(SerializedPropertyChangeEvent evt)
-            {
-                var changedProperty = evt.changedProperty;
-                var path = changedProperty.stringValue;
-
-                if(string.IsNullOrWhiteSpace(path))
-                {
-                    return;
-                }
-
-                var fileNameWithExtension = IOPath.GetFileName(path);
-                if(fileNameWithExtension != EXECUTABLE_NAME)
-                {
-                    EditorUtility.DisplayDialog("Invalid Executable", "The executable you've selected is not Risk of Rain 2, please select the game's executable.", "Ok");
-                    changedProperty.stringValue = "";
-                    changedProperty.serializedObject.ApplyModifiedProperties();
-                }
-            }
-
-            public override void OnDeactivate()
-            {
-                base.OnDeactivate();
-                Save();
-            }
-
-            private void Save()
-            {
-                _serializedObject.ApplyModifiedProperties();
-                if (_settings)
-                    _settings.SaveSettings();
-            }
-
-            public R2EKPreferencesProvider(string path, SettingsScope scopes, IEnumerable<string> keywords = null) : base(path, scopes, keywords)
-            {
-            }
         }
     }
 }

@@ -226,6 +226,7 @@ namespace RoR2.Editor
                 dictionaryCache.FlushOutCache();
             }
 
+            //Delete the old one from the old path if it exists
             string oldPath = IOPath.Combine(R2EKConstants.FolderPaths.r2EKProjectSettingsPath, ADDRESSABLES_PATH_DICTIONARY_FILE_NAME);
             if(File.Exists(oldPath))
             {
@@ -240,8 +241,10 @@ namespace RoR2.Editor
 
         private void EditorApplication_quitting()
         {
-            Save(true);
+            SaveDictionary();
         }
+
+        public void SaveDictionary() => Save(true);
 
         private void LoadJSONFileData(out DateTime fileDateTime)
         {
@@ -354,6 +357,7 @@ namespace RoR2.Editor
         {
             fileDateTime = default;
 
+            //Make it just use the R2EK one, revert to the original one later.
             TextAsset lrapiReturns1dot4dot1TextAsset = R2EKConstants.AssetGUIDs.lrapiReturnsFor1dot4dot1;
             if (lrapiReturns1dot4dot1TextAsset)
             {
@@ -394,7 +398,7 @@ namespace RoR2.Editor
         //Handles caching of entries.
         #region Cache
         [SerializeField]
-        private AddressablesPathDictionaryCache dictionaryCache = new AddressablesPathDictionaryCache();
+        internal AddressablesPathDictionaryCache dictionaryCache = new AddressablesPathDictionaryCache();
 
         /// <summary>
         /// This method should not be called manually.
@@ -413,18 +417,12 @@ namespace RoR2.Editor
         }
 
         [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Invalidate AddressablesPathDictionary Cache")]
-        private static void ReimportAddressableCatalog()
+        private static void InvalidateCache()
         {
             var instance = AddressablesPathDictionary.instance;
             RoR2EKLog.Debug($"Flushing out {instance.dictionaryCache.GetCacheCount()} entries from the Cache.");
             instance.dictionaryCache.FlushOutCache();
-            instance.Save(true);
-        }
-
-        [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Save AddressablesPathDictionary")]
-        private static void SaveTest()
-        {
-            instance.Save(true);
+            instance.SaveDictionary();
         }
         #endregion
 
@@ -539,6 +537,11 @@ namespace RoR2.Editor
         public Type GetTypeFromGUID(string guid)
         {
             return Type.GetType(guidToEntryDictionary[guid].assemblyQualifiedTypeName);
+        }
+
+        public IList GetSerializedCacheAsIList()
+        {
+            return dictionaryCache.serializedCacheList;
         }
         #region Obsolete
         [Obsolete("Create a new instance of \"EntryLookup\" and call \"PerformLookup\" instead")]

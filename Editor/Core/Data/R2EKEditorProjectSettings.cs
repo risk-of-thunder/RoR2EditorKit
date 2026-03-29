@@ -14,40 +14,6 @@ namespace RoR2.Editor
     [FilePath("ProjectSettings/RoR2EditorKit/R2EKEditorProjectSettings.asset", FilePathAttribute.Location.ProjectFolder)]
     public sealed class R2EKEditorProjectSettings : ScriptableSingleton<R2EKEditorProjectSettings>, EditorSettingManager.IEditorSettingProvider
     {
-        [SerializeField]
-        private List<EditorSettingCollection> _projectSettings = new List<EditorSettingCollection>();
-
-        List<EditorSettingCollection> EditorSettingManager.IEditorSettingProvider.editorSettings => _projectSettings;
-        string EditorSettingManager.IEditorSettingProvider.providerName => nameof(R2EKEditorProjectSettings);
-        public void SaveSettings() => Save(true);
-
-        private void Awake()
-        {
-            EditorApplication.quitting += EditorApplication_quitting;
-        }
-
-        private void EditorApplication_quitting()
-        {
-            Save(true);
-        }
-
-        private void OnDestroy()
-        {
-            EditorApplication.quitting -= EditorApplication_quitting;
-        }
-
-        [InitializeOnLoadMethod]
-        private static void Init()
-        {
-            EditorSettingManager.RegisterProvider(instance, () => instance);
-        }
-
-        /// <summary>
-        /// Opens the ProjectSettings window and selects these settings.
-        /// </summary>
-        [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Settings/Project/Editor Settings")]
-        public static void OpenSettings() => SettingsService.OpenProjectSettings("Project/RoR2EditorKit/Editor Settings");
-
         internal sealed class R2EKEditorProjectSettingsProvider : SettingsProvider
         {
             private R2EKEditorProjectSettings settings;
@@ -87,5 +53,38 @@ namespace RoR2.Editor
             {
             }
         }
+        [SerializeField]
+        private List<EditorSettingCollection> _projectSettings = new List<EditorSettingCollection>();
+
+        List<EditorSettingCollection> EditorSettingManager.IEditorSettingProvider.editorSettings => _projectSettings;
+        string EditorSettingManager.IEditorSettingProvider.providerName => nameof(R2EKEditorProjectSettings);
+        public void SaveSettings() => Save(true);
+
+        private void Awake()
+        {
+            EditorApplication.quitting += EditorApplication_quitting;
+        }
+
+        private void EditorApplication_quitting()
+        {
+            Save(true);
+        }
+
+        private void OnDestroy()
+        {
+            EditorApplication.quitting -= EditorApplication_quitting;
+        }
+
+        [InitializeOnLoadMethod]
+        private static void Init()
+        {
+            EditorSettingManager.RegisterProvider(instance, () => instance);
+        }
+
+        /// <summary>
+        /// Opens the ProjectSettings window and selects these settings.
+        /// </summary>
+        [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Settings/Project/Editor Settings")]
+        public static void OpenSettings() => SettingsService.OpenProjectSettings("Project/RoR2EditorKit/Editor Settings");
     }
 }
