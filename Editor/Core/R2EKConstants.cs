@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -108,10 +109,19 @@ namespace RoR2.Editor
             /// </summary>
             private const string SCRIPT_ASSEMBLIES = "ScriptAssemblies";
 
+            private const string PROJECT_SETTINGS = "ProjectSettings";
+
             public static readonly string[] findAllFolders = new[] { PACKAGES, ASSETS };
             public static readonly string[] findAssetsFolders = new[] { ASSETS };
             public static readonly string[] findPackagesFolders = new[] { PACKAGES };
 
+            public static string projectRoot
+            {
+                get
+                {
+                    return Path.GetDirectoryName(Application.dataPath);
+                }
+            }
             /// <summary>
             /// Returns the Library folder of the project
             /// </summary>
@@ -119,9 +129,7 @@ namespace RoR2.Editor
             {
                 get
                 {
-                    var assetsPath = Application.dataPath;
-                    var libFolder = assetsPath.Replace(ASSETS, LIB);
-                    return libFolder;
+                    return Path.Combine(projectRoot, LIB);
                 }
             }
 
@@ -132,7 +140,23 @@ namespace RoR2.Editor
             {
                 get
                 {
-                    return System.IO.Path.Combine(libraryFolder, SCRIPT_ASSEMBLIES);
+                    return Path.Combine(libraryFolder, SCRIPT_ASSEMBLIES);
+                }
+            }
+
+            public static string projectSettingsPath
+            {
+                get
+                {
+                    return Path.Combine(projectRoot, PROJECT_SETTINGS);
+                }
+            }
+
+            public static string r2EKProjectSettingsPath
+            {
+                get
+                {
+                    return Path.Combine(projectSettingsPath, ROR2_EDITOR_KIT);
                 }
             }
         }

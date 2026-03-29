@@ -14,13 +14,14 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.ResourceLocations;
 using IOPath = System.IO.Path;
 using Debug = UnityEngine.Debug;
+using System.Text;
 
 namespace RoR2.Editor
 {
     /// <summary>
     /// The AddressablesPathDictionary is a struct that contains the metadata stored within the game's "lrapi_returns.json", which is a Dictionary of Addressable Path to GUID.
     /// </summary>
-    [FilePath("ProjectSettings/RoR2EditorKit/AddressablesPathDictionary.asset", FilePathAttribute.Location.ProjectFolder)]
+    [FilePath("ProjectSettings/RoR2EditorKit/" + ADDRESSABLES_PATH_DICTIONARY_FILE_NAME, FilePathAttribute.Location.ProjectFolder)]
     public sealed class AddressablesPathDictionary : ScriptableSingleton<AddressablesPathDictionary>, ISerializationCallbackReceiver
     {
         /// <summary>
@@ -203,7 +204,8 @@ namespace RoR2.Editor
             public string assemblyQualifiedTypeName;
         }
 
-        private const string FILE_NAME = "lrapi_returns.json";
+        private const string ADDRESSABLES_PATH_DICTIONARY_FILE_NAME = "AddressablesPathDictionary.asset";
+        private const string LRAPI_RETURNS_FILE_NAME = "lrapi_returns.json";
 
         [Obsolete("utilize the \"instance\" property instead.")]
         public static AddressablesPathDictionary GetInstance()
@@ -223,6 +225,8 @@ namespace RoR2.Editor
                 RoR2EKLog.Debug("DateTime of JSON file is greater than serialized one, flushing out cache.");
                 FlushOutCache();
             }
+
+            EnsureGitIgnore();
         }
 
         private void OnDisable()
@@ -338,7 +342,7 @@ namespace RoR2.Editor
         {
             R2EKPreferences preferencesInstance = R2EKPreferences.instance;
             var streamingAssetsFolder = preferencesInstance.streamingAssetsPath;
-            var filePath = IOPath.Combine(streamingAssetsFolder, FILE_NAME);
+            var filePath = IOPath.Combine(streamingAssetsFolder, LRAPI_RETURNS_FILE_NAME);
             return filePath;
         }
 
@@ -363,6 +367,25 @@ namespace RoR2.Editor
 
             RoR2EKLog.Fatal("LRAPI_RETURNS NOT FOUND!\n The json file lrapi_returns was not found, This version of RoR2EditorKit requires the game to be at the very least post memory management update.");
             return "";
+        }
+
+        [MenuItem("AddressablesPathDict/EnsureGitIgnore")]
+        private static void EnsureGitIgnore()
+        {
+            var gitIgnorePath = IOPath.Combine(R2EKConstants.FolderPaths.r2EKProjectSettingsPath, ".gitignore");
+
+            if (File.Exists(gitIgnorePath))
+                return;
+
+            //Create the GitIgnore, it must ignore itself and the dictionary.
+            StringBuilder sb = HG.StringBuilderPool.RentStringBuilder();
+            sb.AppendLine(".gitignore");
+            sb.AppendLine(ADDRESSABLES_PATH_DICTIONARY_FILE_NAME);
+
+            using(var writer = File.CreateText(gitIgnorePath))
+            {
+                writer.Write(sb.ToString());
+            }
         }
 
         private Dictionary<string, Entry> pathToEntryDictionary = new Dictionary<string, Entry>();
