@@ -219,7 +219,7 @@ namespace RoR2.Editor
                     UDebug.LogWarning(formattedMessage, context);
                     break;
                 case LogLevel.Error:
-                    UDebug.Log(formattedMessage, context);
+                    UDebug.LogError(formattedMessage, context);
                     break;
                 case LogLevel.Fatal:
                     UDebug.LogError(formattedMessage, context);

@@ -111,6 +111,8 @@ namespace RoR2.Editor
 
             private const string PROJECT_SETTINGS = "ProjectSettings";
 
+            private const string PER_USER = "PerUser";
+
             public static readonly string[] findAllFolders = new[] { PACKAGES, ASSETS };
             public static readonly string[] findAssetsFolders = new[] { ASSETS };
             public static readonly string[] findPackagesFolders = new[] { PACKAGES };
@@ -157,6 +159,14 @@ namespace RoR2.Editor
                 get
                 {
                     return Path.Combine(projectSettingsPath, ROR2_EDITOR_KIT);
+                }
+            }
+
+            public static string r2EKPerUserProjectSettingsPath
+            {
+                get
+                {
+                    return Path.Combine(r2EKProjectSettingsPath, PER_USER);
                 }
             }
         }

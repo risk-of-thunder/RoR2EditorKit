@@ -21,7 +21,7 @@ namespace RoR2.Editor
     /// <summary>
     /// The AddressablesPathDictionary is a struct that contains the metadata stored within the game's "lrapi_returns.json", which is a Dictionary of Addressable Path to GUID.
     /// </summary>
-    [FilePath("ProjectSettings/RoR2EditorKit/" + ADDRESSABLES_PATH_DICTIONARY_FILE_NAME, FilePathAttribute.Location.ProjectFolder)]
+    [FilePath(PerUserProjectSettingHelper.ROOT_FILE_PATH + ADDRESSABLES_PATH_DICTIONARY_FILE_NAME, FilePathAttribute.Location.ProjectFolder)]
     public sealed class AddressablesPathDictionary : ScriptableSingleton<AddressablesPathDictionary>, ISerializationCallbackReceiver
     {
         /// <summary>
@@ -108,7 +108,7 @@ namespace RoR2.Editor
                 foreach (Type type in typeRestriction)
                 {
                     yield return null;
-                    string[] cache = AddressablesPathDictionary.instance.RequestEntries(type, componentRequirement, searchComponentInChildren, entryLookupType);
+                    string[] cache = instance.dictionaryCache.RequestEntries(type, componentRequirement, searchComponentInChildren, entryLookupType);
 
 
                     var modulo = Mathf.Floor((Mathf.Log10(cache.Length) + 1) * 2);
@@ -219,14 +219,18 @@ namespace RoR2.Editor
             EditorApplication.quitting += EditorApplication_quitting;
             LoadJSONFileData(out DateTime fileDateTime);
 
-            if (fileDateTime > GetSerializedDateTime())
+            if (fileDateTime > dictionaryCache.GetCacheCreationDateTime())
             {
-                SetSerializedDateTime(fileDateTime);
+                dictionaryCache.SetCacheDateTime(fileDateTime);
                 RoR2EKLog.Debug("DateTime of JSON file is greater than serialized one, flushing out cache.");
-                FlushOutCache();
+                dictionaryCache.FlushOutCache();
             }
 
-            EnsureGitIgnore();
+            string oldPath = IOPath.Combine(R2EKConstants.FolderPaths.r2EKProjectSettingsPath, ADDRESSABLES_PATH_DICTIONARY_FILE_NAME);
+            if(File.Exists(oldPath))
+            {
+                File.Delete(oldPath);
+            }
         }
 
         private void OnDisable()
@@ -349,7 +353,16 @@ namespace RoR2.Editor
         private static string GetLRAPIReturnsJsonData(string jsonFilePath, out DateTime fileDateTime)
         {
             fileDateTime = default;
-            if (File.Exists(jsonFilePath))
+
+            TextAsset lrapiReturns1dot4dot1TextAsset = R2EKConstants.AssetGUIDs.lrapiReturnsFor1dot4dot1;
+            if (lrapiReturns1dot4dot1TextAsset)
+            {
+                jsonFilePath = IOPath.GetFullPath(AssetDatabase.GetAssetPath(lrapiReturns1dot4dot1TextAsset));
+                fileDateTime = File.GetLastWriteTimeUtc(jsonFilePath);
+                return lrapiReturns1dot4dot1TextAsset.text;
+            }
+
+            /*if (File.Exists(jsonFilePath))
             {
                 fileDateTime = File.GetLastWriteTimeUtc(jsonFilePath);
                 return System.IO.File.ReadAllText(jsonFilePath);
@@ -363,29 +376,10 @@ namespace RoR2.Editor
                     fileDateTime = File.GetLastWriteTimeUtc(jsonFilePath);
                     return lrapiReturns1dot4dot1TextAsset.text;
                 }
-            }
+            }*/
 
             RoR2EKLog.Fatal("LRAPI_RETURNS NOT FOUND!\n The json file lrapi_returns was not found, This version of RoR2EditorKit requires the game to be at the very least post memory management update.");
             return "";
-        }
-
-        [MenuItem("AddressablesPathDict/EnsureGitIgnore")]
-        private static void EnsureGitIgnore()
-        {
-            var gitIgnorePath = IOPath.Combine(R2EKConstants.FolderPaths.r2EKProjectSettingsPath, ".gitignore");
-
-            if (File.Exists(gitIgnorePath))
-                return;
-
-            //Create the GitIgnore, it must ignore itself and the dictionary.
-            StringBuilder sb = HG.StringBuilderPool.RentStringBuilder();
-            sb.AppendLine(".gitignore");
-            sb.AppendLine(ADDRESSABLES_PATH_DICTIONARY_FILE_NAME);
-
-            using(var writer = File.CreateText(gitIgnorePath))
-            {
-                writer.Write(sb.ToString());
-            }
         }
 
         private Dictionary<string, Entry> pathToEntryDictionary = new Dictionary<string, Entry>();
@@ -399,250 +393,15 @@ namespace RoR2.Editor
 
         //Handles caching of entries.
         #region Cache
-        /// <summary>
-        /// Represents a Key inside the Cache, the Key is represented by the required asset type, alongside wether the entries it represents include component found in children.
-        /// <br></br>
-        /// requiredType can either be a regular asset, or actually a component, where the component represents any GameObject that has said component.
-        /// </summary>
-        [Serializable]
-        private struct CacheKey : IEquatable<CacheKey>
-        {
-            public SerializableSystemType requiredType;
-            public bool entriesIncludeComponentFoundInChildren;
-
-            public bool Equals(CacheKey other)
-            {
-                return (requiredType == other.requiredType) &&
-                    (entriesIncludeComponentFoundInChildren == other.entriesIncludeComponentFoundInChildren);
-            }
-
-            public override bool Equals(object obj)
-            { 
-                if(obj is CacheKey cacheKey)
-                {
-                    return this.Equals(cacheKey);
-                }
-                return false;
-            }
-
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(requiredType.GetHashCode(), entriesIncludeComponentFoundInChildren.GetHashCode());
-            }
-
-            public static bool operator ==(CacheKey lhs, CacheKey rhs)
-            {
-                return lhs.Equals(rhs);
-            }
-
-            public static bool operator !=(CacheKey lhs, CacheKey rhs)
-            {
-                return !(lhs == rhs);
-            }
-
-            public override string ToString()
-            {
-                StringBuilder sb = HG.StringBuilderPool.RentStringBuilder();
-                sb.Append($"RequieredType:{((Type)requiredType).AssemblyQualifiedName} ");
-                sb.Append($"Component is allowed to be in children?:{entriesIncludeComponentFoundInChildren}");
-                string result = sb.ToString();
-                HG.StringBuilderPool.ReturnStringBuilder(sb);
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// Represents the CacheHit of the Cache, which is just the cache of Paths and their GUIDS.
-        /// </summary>
-        [Serializable]
-        private struct CacheHit
-        {
-            public string[] pathCache;
-            public string[] guidsCache;
-
-            public bool isEmpty
-            {
-                get
-                {
-                    bool pathsEmpty = pathCache == null || pathCache.Length == 0;
-                    bool guidsEmpty = guidsCache == null || guidsCache.Length == 0;
-
-                    //Paths and Guids should be one to one, so an OR here makes sense.
-                    return pathsEmpty || guidsEmpty;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Serializable representation of the dictionary.
-        /// </summary>
-        [Serializable]
-        private struct SerializedTypeResultCache
-        {
-            public CacheKey cacheKey;
-            public CacheHit cacheHit;
-        }
-
-        [SerializeField] private long _fileDateTimeTicks = DateTime.MinValue.Ticks;
-        [SerializeField] private SerializedTypeResultCache[] _serializedTypeResultCache = Array.Empty<SerializedTypeResultCache>();
-        private Dictionary<CacheKey, CacheHit> _typeResultCache = new Dictionary<CacheKey, CacheHit>();
-
-        private string[] RequestEntries(Type type, Type componentRequirement, bool searchInChildren, EntryType entryType)
-        {
-            //First, we check if we have the cache
-            Type typeForCacheKey = componentRequirement ?? type;
-            CacheKey cacheKey = new CacheKey { requiredType = (SerializableSystemType)typeForCacheKey, entriesIncludeComponentFoundInChildren = searchInChildren };
-
-            if(_typeResultCache.TryGetValue(cacheKey, out CacheHit cacheHit))
-            {
-                //We've hit the cache
-                if(cacheHit.isEmpty)
-                {
-                    Debug.LogWarning($"Cache hit for key {cacheKey} is empty! rebuilding.");
-                    _typeResultCache.Remove(cacheKey);
-                    cacheHit = default;
-                }
-                else
-                {
-                    return entryType switch
-                    {
-                        EntryType.Path => cacheHit.pathCache,
-                        EntryType.Guid => cacheHit.guidsCache,
-                        _ => Array.Empty<string>()
-                    };
-                }
-            }
-
-            //We missed the cache, so time to build it for this type and return as needed
-            cacheHit = BuildCacheForType(typeForCacheKey, searchInChildren);
-            if(cacheHit.isEmpty)
-            {
-                Debug.LogError($"No addressables assets where found for cache key {cacheKey}");
-                return Array.Empty<string>();
-            }
-
-            return entryType switch
-            {
-                EntryType.Path => cacheHit.pathCache,
-                EntryType.Guid => cacheHit.guidsCache,
-                _ => Array.Empty<string>()
-            };
-        }
-
-
-        private CacheHit BuildCacheForType(Type type, bool searchInChildren)
-        {
-            using var _0 = ListPool<string>.RentCollection(out var resultPaths);
-            using var _1 = ListPool<string>.RentCollection(out var resultGuids);
-
-            Type typeToCompareAssetTypeAgainst = type;
-            if(typeToCompareAssetTypeAgainst.IsSubclassOf(typeof(Component)))
-            {
-                typeToCompareAssetTypeAgainst = typeof(GameObject);
-            }
-            //Work off GUIDS, like god intended
-            foreach(var guid in guids)
-            {
-                Type assetType = GetAssetType(guid);
-                //If we obtained the resource type, and the resource type is same or subclass of type, add it to the result
-                if (assetType != null && (assetType == typeToCompareAssetTypeAgainst || assetType.IsSubclassOf(typeToCompareAssetTypeAgainst)))
-                {
-                    //We need to do an extra check if the type to compare against is GameObject, and the actual type we want is a component.
-                    if(typeToCompareAssetTypeAgainst == typeof(GameObject) && type.IsSubclassOf(typeof(Component)))
-                    {
-                        GameObject gameObject = Addressables.LoadAssetAsync<GameObject>(guid).WaitForCompletion();
-                        if(!gameObject)
-                        {
-                            continue;
-                        }
-
-                        //If it doesnt have the component we want, skip it.
-                        bool hasComponent = searchInChildren ? gameObject.GetComponentInChildren(type) : gameObject.TryGetComponent(type, out _);
-                        if (!hasComponent)
-                            continue;
-                    }
-
-                    resultGuids.Add(guid);
-                    resultPaths.Add(GetPathFromGUID(guid));
-                }
-            }
-
-            CacheKey cacheKey = new CacheKey() { requiredType = (SerializableSystemType)type, entriesIncludeComponentFoundInChildren = searchInChildren };
-            CacheHit cacheHit = new CacheHit();
-            cacheHit.pathCache = resultPaths.ToArray();
-            cacheHit.guidsCache = resultGuids.ToArray();
-
-            //Save in the cache
-            if(!cacheHit.isEmpty)
-            {
-                _typeResultCache.Add(cacheKey, cacheHit);
-            }
-            else
-            {
-                Debug.LogWarning($"Could not build cache for key {cacheKey}! No addressable assets fulfill the required type.");
-            }
-
-            return cacheHit;
-        }
-
-        private Type GetAssetType(string guid)
-        {
-            var resourceLocations = Addressables.LoadResourceLocationsAsync(guid).WaitForCompletion();
-
-            //There's a chance that there's no resources at this guid... idk???
-            if (resourceLocations.Count == 0)
-            {
-                //If this happens, return the type stored on the dictionary
-
-                Entry entry = guidToEntryDictionary[guid];
-                return Type.GetType(entry.assemblyQualifiedTypeName);
-            }
-
-            /* This is a bit fucky, but basically there's an issue where all sub-asset guids (the ones that have [] at the end) always has a pointer
-            *  back to its main asset, it's odd because even the non [] ones have it as well... specifically for sprites?
-            *  Anyways i need to figure some shit out
-            */
-
-            //If it contains the [, then stritctly match a sub-asset (at the very least the 2nd location).
-            bool strictSubAssetMatch = guid.Contains("[");
-            int resourceLocationIndex = -1;
-            if (strictSubAssetMatch && resourceLocations.Count > 1)
-            {
-                resourceLocationIndex = 1;
-            }
-            else
-            {
-                resourceLocationIndex = 0;
-            }
-
-            IResourceLocation resourceLocation = null;
-            try
-            {
-                resourceLocation = resourceLocations[resourceLocationIndex];
-            }
-            catch (Exception e)
-            {
-                UnityEngine.Debug.LogException(e);
-                throw;
-            }
-            return resourceLocation.ResourceType;
-        }
-
+        [SerializeField]
+        private AddressablesPathDictionaryCache dictionaryCache = new AddressablesPathDictionaryCache();
 
         /// <summary>
         /// This method should not be called manually.
         /// </summary>
         public void OnBeforeSerialize()
         {
-            HG.ArrayUtils.EnsureCapacity(ref _serializedTypeResultCache, _typeResultCache.Count);
-
-            int entryIndex = 0;
-            foreach(var (cacheKey, cacheHit) in _typeResultCache)
-            {
-                _serializedTypeResultCache[entryIndex].cacheKey = cacheKey;
-                _serializedTypeResultCache[entryIndex].cacheHit = cacheHit;
-                entryIndex++;
-            }
+            dictionaryCache.OnBeforeSerialize();
         }
 
         /// <summary>
@@ -650,28 +409,21 @@ namespace RoR2.Editor
         /// </summary>
         public void OnAfterDeserialize()
         {
-            _typeResultCache.Clear();
-            for(int i = 0; i < _serializedTypeResultCache.Length; i++)
-            {
-                _typeResultCache[_serializedTypeResultCache[i].cacheKey] = _serializedTypeResultCache[i].cacheHit;
-            }
-        }
-
-        private DateTime GetSerializedDateTime() => new DateTime(_fileDateTimeTicks);
-        private void SetSerializedDateTime(DateTime newDateTime) => _fileDateTimeTicks = newDateTime.Ticks;
-        
-        private void FlushOutCache()
-        {
-            _typeResultCache.Clear();
-            _serializedTypeResultCache = Array.Empty<SerializedTypeResultCache>();
+            dictionaryCache.OnAfterSerialize();
         }
 
         [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Invalidate AddressablesPathDictionary Cache")]
         private static void ReimportAddressableCatalog()
         {
             var instance = AddressablesPathDictionary.instance;
-            RoR2EKLog.Debug($"Flushing out {instance._serializedTypeResultCache.Length} entries from the Cache.");
-            instance.FlushOutCache();
+            RoR2EKLog.Debug($"Flushing out {instance.dictionaryCache.GetCacheCount()} entries from the Cache.");
+            instance.dictionaryCache.FlushOutCache();
+            instance.Save(true);
+        }
+
+        [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Save AddressablesPathDictionary")]
+        private static void SaveTest()
+        {
             instance.Save(true);
         }
         #endregion
@@ -757,6 +509,36 @@ namespace RoR2.Editor
         public string GetPathFromGUID(string guid)
         {
             return guidToEntryDictionary[guid].path;
+        }
+
+        public bool TryGetTypeFromPath(string path, out Type type)
+        {
+            type = null;
+            if(pathToEntryDictionary.TryGetValue(path, out Entry value))
+            {
+                type = Type.GetType(value.assemblyQualifiedTypeName);
+            }
+            return type != null;
+        }
+
+        public Type GetTypeFromPath(string path)
+        {
+            return Type.GetType(pathToEntryDictionary[path].assemblyQualifiedTypeName);
+        }
+
+        public bool TryGetTypeFromGUID(string guid, out Type type)
+        {
+            type = null;
+            if (guidToEntryDictionary.TryGetValue(guid, out Entry value))
+            {
+                type = Type.GetType(value.assemblyQualifiedTypeName);
+            }
+            return type != null;
+        }
+
+        public Type GetTypeFromGUID(string guid)
+        {
+            return Type.GetType(guidToEntryDictionary[guid].assemblyQualifiedTypeName);
         }
         #region Obsolete
         [Obsolete("Create a new instance of \"EntryLookup\" and call \"PerformLookup\" instead")]
