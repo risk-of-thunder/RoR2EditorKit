@@ -46,6 +46,11 @@ namespace RoR2.Editor
         public PickerType pickerType { get; set; }
 
         /// <summary>
+        /// If true, the chosen path will be saved as project relative.
+        /// </summary>
+        public bool pathAsProjectRelative { get; set; }
+
+        /// <summary>
         /// Represents the different options EditorUtility has for displaying the window
         /// </summary>
         public enum PickerType
@@ -113,6 +118,10 @@ namespace RoR2.Editor
 
                     if (!string.IsNullOrEmpty(path))
                     {
+                        if(attribute.pathAsProjectRelative)
+                        {
+                            path = FileUtil.GetProjectRelativePath(path);
+                        }
                         property.stringValue = path;
                         property.serializedObject.ApplyModifiedProperties();
                     }
@@ -153,6 +162,10 @@ namespace RoR2.Editor
 
                     if (!string.IsNullOrEmpty(path))
                     {
+                        if (attribute.pathAsProjectRelative)
+                        {
+                            path = FileUtil.GetProjectRelativePath(path);
+                        }
                         property.stringValue = path;
                         property.serializedObject.ApplyModifiedProperties();
                     }

@@ -28,7 +28,7 @@ namespace RoR2.Editor.Windows
         private static readonly string[] _defaultPrecompiledAssemblies;
         private static string[] _r2apiPrecompiledAssemblies;
 
-        [FilePickerPath(FilePickerPath.PickerType.OpenFolder, title = "Folder for created mod")]
+        [FilePickerPath(FilePickerPath.PickerType.OpenFolder, title = "Folder for created mod", pathAsProjectRelative = true)]
         public string folderPath;
 
         public string authorName;

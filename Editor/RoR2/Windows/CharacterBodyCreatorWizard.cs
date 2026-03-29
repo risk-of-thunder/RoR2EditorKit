@@ -13,7 +13,7 @@ namespace RoR2.Editor.Windows
 {
     public class CharacterBodyWizard : EditorWizardWindow
     {
-        [FilePickerPath(FilePickerPath.PickerType.OpenFolder, title = "Folder for created Assets")]
+        [FilePickerPath(FilePickerPath.PickerType.SaveFolder, title = "Folder for created Assets", pathAsProjectRelative = true)]
         public string folderPath;
 
         [Tooltip("The Template to use for the creation of this body.\n\n1. Standing - A Character that can stand and move around normally, based off CommandoBody.\n2. Flying - A Character that's not affected by gravity and flies, based off WispBody.\n3. Stationary - A Character that does not move and stays in place, based off the MinorConstructBody.\n4. Boss - A Character that works as a Boss, based off the TitanBody")]

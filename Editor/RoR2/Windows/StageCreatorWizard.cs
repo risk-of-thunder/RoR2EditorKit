@@ -11,7 +11,7 @@ namespace RoR2.Editor.Windows
 {
     public class StageCreatorWizard : EditorWizardWindow
     {
-        [FilePickerPath(FilePickerPath.PickerType.OpenFolder, title = "Folder for created Assets")]
+        [FilePickerPath(FilePickerPath.PickerType.OpenFolder, title = "Folder for created Assets", pathAsProjectRelative = true)]
         public string folderPath;
 
         public string stageName;
