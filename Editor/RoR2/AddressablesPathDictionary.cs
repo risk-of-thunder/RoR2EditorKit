@@ -439,6 +439,16 @@ namespace RoR2.Editor
             {
                 return !(lhs == rhs);
             }
+
+            public override string ToString()
+            {
+                StringBuilder sb = HG.StringBuilderPool.RentStringBuilder();
+                sb.Append($"RequieredType:{((Type)requiredType).AssemblyQualifiedName} ");
+                sb.Append($"Component is allowed to be in children?:{entriesIncludeComponentFoundInChildren}");
+                string result = sb.ToString();
+                HG.StringBuilderPool.ReturnStringBuilder(sb);
+                return result;
+            }
         }
 
         /// <summary>
@@ -449,6 +459,18 @@ namespace RoR2.Editor
         {
             public string[] pathCache;
             public string[] guidsCache;
+
+            public bool isEmpty
+            {
+                get
+                {
+                    bool pathsEmpty = pathCache == null || pathCache.Length == 0;
+                    bool guidsEmpty = guidsCache == null || guidsCache.Length == 0;
+
+                    //Paths and Guids should be one to one, so an OR here makes sense.
+                    return pathsEmpty || guidsEmpty;
+                }
+            }
         }
 
         /// <summary>
@@ -473,17 +495,32 @@ namespace RoR2.Editor
 
             if(_typeResultCache.TryGetValue(cacheKey, out CacheHit cacheHit))
             {
-                //We've hit the cache, return results
-                return entryType switch
+                //We've hit the cache
+                if(cacheHit.isEmpty)
                 {
-                    EntryType.Path => cacheHit.pathCache,
-                    EntryType.Guid => cacheHit.guidsCache,
-                    _ => Array.Empty<string>()
-                };
+                    Debug.LogWarning($"Cache hit for key {cacheKey} is empty! rebuilding.");
+                    _typeResultCache.Remove(cacheKey);
+                    cacheHit = default;
+                }
+                else
+                {
+                    return entryType switch
+                    {
+                        EntryType.Path => cacheHit.pathCache,
+                        EntryType.Guid => cacheHit.guidsCache,
+                        _ => Array.Empty<string>()
+                    };
+                }
             }
 
             //We missed the cache, so time to build it for this type and return as needed
             cacheHit = BuildCacheForType(typeForCacheKey, searchInChildren);
+            if(cacheHit.isEmpty)
+            {
+                Debug.LogError($"No addressables assets where found for cache key {cacheKey}");
+                return Array.Empty<string>();
+            }
+
             return entryType switch
             {
                 EntryType.Path => cacheHit.pathCache,
@@ -491,6 +528,7 @@ namespace RoR2.Editor
                 _ => Array.Empty<string>()
             };
         }
+
 
         private CacheHit BuildCacheForType(Type type, bool searchInChildren)
         {
@@ -535,7 +573,14 @@ namespace RoR2.Editor
             cacheHit.guidsCache = resultGuids.ToArray();
 
             //Save in the cache
-            _typeResultCache.Add(cacheKey, cacheHit);
+            if(!cacheHit.isEmpty)
+            {
+                _typeResultCache.Add(cacheKey, cacheHit);
+            }
+            else
+            {
+                Debug.LogWarning($"Could not build cache for key {cacheKey}! No addressable assets fulfill the required type.");
+            }
 
             return cacheHit;
         }
