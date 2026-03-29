@@ -509,6 +509,12 @@ namespace RoR2.Editor
             return guidToEntryDictionary[guid].path;
         }
 
+        /// <summary>
+        /// Attempts to get the Type of asset that <paramref name="path"/> points to
+        /// </summary>
+        /// <param name="path">The Path of the asset</param>
+        /// <param name="type">The Type of the Asset which <paramref name="guid"/> represents</param>
+        /// <returns>True if a Type was found, otherwise false.</returns>
         public bool TryGetTypeFromPath(string path, out Type type)
         {
             type = null;
@@ -519,11 +525,22 @@ namespace RoR2.Editor
             return type != null;
         }
 
+        /// <summary>
+        /// Returns the Type of asset that <paramref name="path"/> points to without any safety
+        /// </summary>
+        /// <param name="path">The path of the asset to get it's type</param>
+        /// <returns>The Type of the Path</returns>
         public Type GetTypeFromPath(string path)
         {
             return Type.GetType(pathToEntryDictionary[path].assemblyQualifiedTypeName);
         }
 
+        /// <summary>
+        /// Attempts to get the Type of asset that <paramref name="guid"/> points to
+        /// </summary>
+        /// <param name="guid">The GUID of the asset</param>
+        /// <param name="type">The Type of the Asset which <paramref name="guid"/> represents</param>
+        /// <returns>True if a Type was found, otherwise false.</returns>
         public bool TryGetTypeFromGUID(string guid, out Type type)
         {
             type = null;
@@ -534,15 +551,29 @@ namespace RoR2.Editor
             return type != null;
         }
 
+        /// <summary>
+        /// Returns the Type of asset that <paramref name="guid"/> points to without any safety
+        /// </summary>
+        /// <param name="guid">The guid of the asset to get it's type</param>
+        /// <returns>The Type of the GUID</returns>
         public Type GetTypeFromGUID(string guid)
         {
             return Type.GetType(guidToEntryDictionary[guid].assemblyQualifiedTypeName);
         }
 
+        /// <summary>
+        /// Access to the Serialized Dictionary as an IList, this should not be modified as it's exposed exclusively for VisualElements
+        /// </summary>
         public IList GetSerializedCacheAsIList()
         {
             return dictionaryCache.serializedCacheList;
         }
+
+        /// <summary>
+        /// Opens the ProjectSettings window and selects the Addressables Path Dictionary
+        /// </summary>
+        [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Settings/Project/PerUser/Addressable Dictionary Cache View")]
+        public static void OpenCacheView() => SettingsService.OpenProjectSettings("Project/RoR2EditorKit/PerUser/Addressables Path Dictionary");
         #region Obsolete
         [Obsolete("Create a new instance of \"EntryLookup\" and call \"PerformLookup\" instead")]
         public ReadOnlyArray<string> GetAllPathsOfType(Type t)
