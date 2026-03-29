@@ -1,10 +1,29 @@
+# 5.6.6
+
+### Core Changes
+
+* Added new const paths to R2EKConstants to get the Project Settings
+* Fixed the R2EKLog.Error logging as Info.
+* Added new "PerUser" project settings.
+	* These are settings that should existin per project, but also be per user.
+	* These settings are automatically git-ignored, meaning that they'll never be pushed into the remote.
+* filePickerPath can now save paths as Project Relative paths
+
+### RoR2ScriptsChanges
+
+* AddressablesPathDictionary is now a "PerUser" Project Setting
+	* This causes a cache invalidation and flushes it out.
+* Added a window for users to delete or clear the cache in the Project Settings
+* Fixed an issue where the AddressablesPathDictionary may accidentally hit or save an empty result cache.
+* Fixed editor wizards not working
+
 # 5.6.5
 
 ### Core Changes
 
 * Added a ``DisposableProgressBar``, used to interface with ``EditorUtility.DisplayProgressBar()``.
 
-## RoR2ScriptsChanges
+### RoR2ScriptsChanges
 
 * Added a new ``ItemDisplayRuleSet`` inspector
 	* The inspector only shows the KeyAssetRuleGroups array
@@ -17,7 +36,7 @@
 		* Drone: Taking the displays from gunner drone, useful for Drone characters.
 	* The utility will only add displays that are not found on the IDRS itself, it will proceed to add the vanilla displays using the addressable system.
 
-## R2APIScripts Changes
+### R2APIScripts Changes
 
 * The ``AddressReferencedAssetPropertyDrawer`` now nullifies the address or the asset, depending on the value of ``UseDirectReference``
 
