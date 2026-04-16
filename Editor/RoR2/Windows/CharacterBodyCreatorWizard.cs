@@ -56,7 +56,7 @@ The resulting prefab contains the necesary components for it's specified type, a
         private List<SkillDef> _createdSkillDefs = new List<SkillDef>();
 
         [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Wizards/Character Body")]
-        private static void Open() => Open<CharacterBodyWizard>(null);
+        private static void Open() => EditorWindow.CreateWindow<CharacterBodyWizard>().Show();
 
         protected override void OnEnable()
         {

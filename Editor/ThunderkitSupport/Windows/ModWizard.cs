@@ -57,7 +57,7 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
         private ManifestIdentity _modIdentity;
 
         [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Wizards/Mod")]
-        private static void OpenWindow() => Open<ModWizard>(null);
+        private static void OpenWindow() => EditorWindow.CreateWindow<ModWizard>().Show();
 
         protected override void SetupControls()
         {

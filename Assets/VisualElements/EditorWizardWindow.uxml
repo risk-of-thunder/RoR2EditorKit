@@ -1,14 +1,20 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <Style src="project://database/Packages/riskofthunder-ror2editorkit/Assets/VisualElements/R2EKGlobalStlye.uss?fileID=7433441132597879392&amp;guid=81861b4c6318b874391de872e1793059&amp;type=3#R2EKGlobalStlye" />
-    <ui:VisualElement name="Header">
-        <ui:Label text="Wizard Type" display-tooltip-when-elided="true" class="r2ek-text_header r2ek-bombardier r2ek-text_center_aligned" style="white-space: normal;" />
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:VisualElement name="HeaderContainer" style="flex-direction: row; align-items: center; justify-content: space-between; flex-shrink: 0;">
+        <ui:Label text="Editor Wizard Window" display-tooltip-when-elided="true" style="-unity-font: url(&apos;project://database/Packages/riskofthunder-ror2editorkit/Assets/Bombardier.ttf?fileID=12800000&amp;guid=c206b3ea191bcc942ad15474d24d061e&amp;type=3#Bombardier&apos;); -unity-font-definition: initial; font-size: 24px; background-color: rgb(51, 51, 51); margin-right: 0; padding-right: 2.5px; padding-top: 2.5px; padding-bottom: 2.5px; padding-left: 2.5px; border-left-color: rgb(54, 54, 54); border-right-color: rgb(54, 54, 54); border-top-color: rgb(54, 54, 54); border-bottom-color: rgb(54, 54, 54); border-top-width: 2.5px; border-right-width: 2.5px; border-bottom-width: 2.5px; border-left-width: 2.5px;" />
+        <ui:VisualElement name="TooltipContainer" style="background-image: none; width: 32px; height: 32px; flex-shrink: 0;" />
     </ui:VisualElement>
-    <ui:ScrollView scroll-deceleration-rate="0,135" elasticity="0,1" name="WizardElementContainer" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto" style="height: auto; flex-grow: 1;" />
-    <ui:VisualElement name="Footer" style="border-top-width: 3px; border-left-color: rgb(47, 47, 47); border-right-color: rgb(47, 47, 47); border-top-color: rgb(47, 47, 47); border-bottom-color: rgb(47, 47, 47);">
-        <ui:ProgressBar value="0" name="ProgressBar" high-value="1" />
-        <ui:VisualElement class="r2ek-horizontal_layout">
-            <ui:Button text="Close" display-tooltip-when-elided="true" name="CloseWizardButton" style="flex-grow: 1; width: 48%;" />
-            <ui:Button text="Run Wizard" display-tooltip-when-elided="true" name="RunWizard" style="flex-grow: 1; width: 48%; flex-basis: auto;" />
+    <ui:VisualElement name="ContentContainer" style="flex-grow: 1;" />
+    <ui:VisualElement name="FooterContainer" style="background-color: rgb(51, 51, 51); border-left-color: rgb(54, 54, 54); border-right-color: rgb(54, 54, 54); border-top-color: rgb(54, 54, 54); border-bottom-color: rgb(54, 54, 54); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; flex-shrink: 0;">
+        <ui:VisualElement name="LoggingContainer">
+            <ui:Toggle label="Do Verbose Logging" name="VerboseLogging" tooltip="If checked, the wizard will log verbose messages.Giving intensive feedback on what it&apos;s doing" />
+            <ui:VisualElement name="LogOutputPathContainer" style="flex-direction: row;">
+                <ui:TextField picking-mode="Ignore" label="Log Output Path" value="filler text" name="LogOutput" tooltip="If specified, the Wizard will output its log in this file" style="flex-grow: 1; flex-shrink: 1;" />
+                <ui:Button text="..." display-tooltip-when-elided="true" name="LogOutputButton" tooltip="Select Save Location" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:ProgressBar value="0.5" title="Message Here" high-value="1" name="ProgressBar" tooltip="The wizard is running, please wait..." />
+        <ui:VisualElement name="ButtonContainer" tooltip="Run the wizard" style="flex-direction: row; justify-content: space-around;">
+            <ui:Button text="Run" display-tooltip-when-elided="true" name="Run" style="flex-grow: 1;" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

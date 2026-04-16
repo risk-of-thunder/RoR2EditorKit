@@ -36,7 +36,7 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
         private GameObject _sceneInfoGO;
 
         [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Wizards/Stage")]
-        private static void Open() => Open<StageCreatorWizard>(null);
+        private static void Open() => EditorWindow.CreateWindow<StageCreatorWizard>().Show();
 
         protected override void OnEnable()
         {
