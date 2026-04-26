@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 using IOPath = System.IO.Path;
 
 namespace RoR2.Editor.Windows
@@ -37,17 +39,18 @@ namespace RoR2.Editor.Windows
         public List<SerializableSystemType> extraComponents;
         public bool ignoreExtraComponentDuplicates;
 
-        protected override string wizardTitleTooltip =>
-@"The CharacterBodyWizard is a Wizard that creates a fully working CharacterBody from a Template.
+        protected override string GetHelpTooltip()
+        {
+            return @"The CharacterBodyWizard is a Wizard that creates a fully working CharacterBody from a Template.
 
 The resulting prefab contains the necesary components for it's specified type, a minimum of 3 EntityStateMachines and a minimum of 4 GenericSkills, alongside an instantiated model for the FBX. This wizard does not set up complex hurtBoxes or ragdoll controllers.";
+        }
 
         protected override bool requiresTokenPrefix => true;
 
         private Dictionary<TemplateChoice, GameObject> _choiceToTemplate = new Dictionary<TemplateChoice, GameObject>();
 
         private WizardCoroutineHelper _wizardCoroutineHelper;
-        private (Func<IEnumerator> subroutine, string step)[] _steps;
 
         private string _bodyTokenFormat;
         private string _skillDefTokenFormat;
@@ -65,7 +68,21 @@ The resulting prefab contains the necesary components for it's specified type, a
             _choiceToTemplate.Add(TemplateChoice.Flying, R2EKConstants.AssetGUIDs.flyingTemplateBody);
             _choiceToTemplate.Add(TemplateChoice.Stationary, R2EKConstants.AssetGUIDs.stationaryTemplateBody);
             _choiceToTemplate.Add(TemplateChoice.Boss, R2EKConstants.AssetGUIDs.bossTemplateBody);
+        }
 
+        protected override bool ValidateData(string coroutineName)
+        {
+            bool baseValue = base.ValidateData(coroutineName);
+            if (string.IsNullOrEmpty(characterName) || string.IsNullOrWhiteSpace(characterName))
+            {
+                RoR2EKLog.Warning($"Cannot run wizard because the CharacterName is not Valid.");
+                return false;
+            }
+            return baseValue && true;
+        }
+
+        protected override IEnumerator RunWizardCoroutine()
+        {
             _wizardCoroutineHelper = new WizardCoroutineHelper(this);
             _wizardCoroutineHelper.AddStep(CreateTokenFormat(), "Creating Token Format");
             _wizardCoroutineHelper.AddStep(InstantiateTemplateAndUnpack(), "Instantiating Template and Unpacking");
@@ -75,25 +92,7 @@ The resulting prefab contains the necesary components for it's specified type, a
             _wizardCoroutineHelper.AddStep(AddComponents(), "Adding Components");
             _wizardCoroutineHelper.AddStep(SetupModelGameObject(), "Setting up Model");
             _wizardCoroutineHelper.AddStep(CreateAssets(), "Creating Assets");
-        }
-
-        protected override bool ValidateData()
-        {
-            if (string.IsNullOrEmpty(characterName) || string.IsNullOrWhiteSpace(characterName))
-            {
-                RoR2EKLog.Warning($"Cannot run wizard because the CharacterName is not Valid.");
-                return false;
-            }
-            return true;
-        }
-
-        protected override IEnumerator RunWizardCoroutine()
-        {
-            while (_wizardCoroutineHelper.MoveNext())
-            {
-                yield return _wizardCoroutineHelper.Current;
-            }
-            yield break;
+            return _wizardCoroutineHelper;
         }
 
         private IEnumerator CreateTokenFormat()
@@ -195,7 +194,16 @@ The resulting prefab contains the necesary components for it's specified type, a
                 var skillSlot = genericSkills[i];
                 var stepProgress = R2EKMath.Remap(i, 0, genericSkills.Count - 1, 0, 1);
                 yield return stepProgress;
-                var genericSkill = _copiedBody.AddComponent<GenericSkill>();
+                GenericSkill genericSkill = null;
+                try
+                {
+                    genericSkill = _copiedBody.AddComponent<GenericSkill>();
+                }
+                catch (Exception ex)
+                {
+                    LogError($"Exception caught on adding a GenericSkill due to poorly written Reset method. This has been supressed.");
+                }
+
                 genericSkill.skillName = skillSlot.ToString();
 
                 if (skillLocator)
@@ -236,6 +244,7 @@ The resulting prefab contains the necesary components for it's specified type, a
                             break;
                     }
                 }
+                
 
                 RoR2EKLog.Debug($"Creating SkillFamily and SkillDef for generic skill of skillSlot {skillSlot}");
                 yield return stepProgress;
@@ -458,22 +467,26 @@ The resulting prefab contains the necesary components for it's specified type, a
             yield return 1f;
         }
 
-        protected override void Cleanup()
+        protected override void Cleanup(string coroutineName)
         {
-            foreach (var sd in _createdSkillDefs)
+            if(coroutineName == "Run")
             {
-                if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(sd)))
-                    DestroyImmediate(sd);
-            }
+                foreach (var sd in _createdSkillDefs)
+                {
+                    if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(sd)))
+                        DestroyImmediate(sd);
+                }
 
-            foreach (var sf in _createdSkillFamilies)
-            {
-                if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(sf)))
-                    DestroyImmediate(sf);
-            }
+                foreach (var sf in _createdSkillFamilies)
+                {
+                    if (string.IsNullOrEmpty(AssetDatabase.GetAssetPath(sf)))
+                        DestroyImmediate(sf);
+                }
 
-            DestroyImmediate(_copiedBody);
+                DestroyImmediate(_copiedBody);
+            }
         }
+
         public enum TemplateChoice
         {
             Standing,

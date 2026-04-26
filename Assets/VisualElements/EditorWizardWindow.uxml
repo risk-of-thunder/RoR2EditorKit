@@ -3,7 +3,9 @@
         <ui:Label text="Editor Wizard Window" display-tooltip-when-elided="true" style="-unity-font: url(&apos;project://database/Packages/riskofthunder-ror2editorkit/Assets/Bombardier.ttf?fileID=12800000&amp;guid=c206b3ea191bcc942ad15474d24d061e&amp;type=3#Bombardier&apos;); -unity-font-definition: initial; font-size: 24px; background-color: rgb(51, 51, 51); margin-right: 0; padding-right: 2.5px; padding-top: 2.5px; padding-bottom: 2.5px; padding-left: 2.5px; border-left-color: rgb(54, 54, 54); border-right-color: rgb(54, 54, 54); border-top-color: rgb(54, 54, 54); border-bottom-color: rgb(54, 54, 54); border-top-width: 2.5px; border-right-width: 2.5px; border-bottom-width: 2.5px; border-left-width: 2.5px;" />
         <ui:VisualElement name="TooltipContainer" style="background-image: none; width: 32px; height: 32px; flex-shrink: 0;" />
     </ui:VisualElement>
-    <ui:VisualElement name="ContentContainer" style="flex-grow: 1;" />
+    <ui:VisualElement name="ContentContainer" style="flex-grow: 1;">
+        <ui:Label text="Note: A Token Prefix is required for this Wizard to run." display-tooltip-when-elided="true" name="TokenPrefixRequirementLabel" tooltip="You can set the token prefix in the RoR2EditorKit settings window under your Project Settings." style="-unity-font-style: bold;" />
+    </ui:VisualElement>
     <ui:VisualElement name="FooterContainer" style="background-color: rgb(51, 51, 51); border-left-color: rgb(54, 54, 54); border-right-color: rgb(54, 54, 54); border-top-color: rgb(54, 54, 54); border-bottom-color: rgb(54, 54, 54); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; flex-shrink: 0;">
         <ui:VisualElement name="LoggingContainer">
             <ui:Toggle label="Do Verbose Logging" name="VerboseLogging" tooltip="If checked, the wizard will log verbose messages.Giving intensive feedback on what it&apos;s doing" />

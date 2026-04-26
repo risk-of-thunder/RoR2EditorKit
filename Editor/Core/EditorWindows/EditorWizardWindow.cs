@@ -215,8 +215,10 @@ namespace RoR2.Editor
             _buttonContainer = rootVisualElement.Q<VisualElement>("ButtonContainer");
             _loggingContainer = rootVisualElement.Q<VisualElement>("LoggingContainer");
 
+#pragma warning disable CS0618 // Type or member is obsolete
             string tooltip = GetHelpTooltip() ?? wizardTitleTooltip;
-            if(!string.IsNullOrEmpty(tooltip))
+#pragma warning restore CS0618 // Type or member is obsolete
+            if (!string.IsNullOrEmpty(tooltip))
             {
                 VisualElement headerIcon = headerContainer.Q<VisualElement>("TooltipContainer");
                 headerIcon.style.backgroundImage = (StyleBackground)EditorGUIUtility.IconContent("console.infoicon").image;
@@ -251,36 +253,8 @@ namespace RoR2.Editor
             _logFilePathButton = footerContainer.Q<Button>("LogOutputButton");
             _logFilePathButton.clicked += SelectLogOutputLocation;
 
-            //TODO: Redo this
-            label = new Label();
-            label.name = "TokenPrefixNotice";
-            label.text = "Note: A Token prefix is required for this wizard to run.";
-            label.tooltip = "You can set the token prefix in the RoR2EditorKit settings window under your ProjectSettings.";
-
-            var fontStyle = label.style.unityFontStyleAndWeight;
-            fontStyle.value = FontStyle.Bold;
-            label.style.unityFontStyleAndWeight = fontStyle;
-
-            wizardElementContainer.Add(label);
-            label.BringToFront();
-
-            /*headerContainer = rootVisualElement.Q<VisualElement>("Header");
-            var label = headerContainer.Q<Label>();
-            label.text = ObjectNames.NicifyVariableName(GetType().Name);
-            label.tooltip = wizardTitleTooltip;
-
-            wizardElementContainer = rootVisualElement.Q<VisualElement>("WizardElementContainer");
-
-            footerContainer = rootVisualElement.Q<VisualElement>("Footer");
-
-            _progressBar = footerContainer.Q<ProgressBar>();
-            _progressBar.SetDisplay(false);
-
-            _closeButton = footerContainer.Q<Button>("CloseWizardButton");
-            _closeButton.clicked += CloseInternal;
-
-            _runButton = footerContainer.Q<Button>("RunWizard");
-            _runButton.clicked += StartCoroutine;*/
+            Label tokenPrefixRequirementLabel = contentContainer.Q<Label>("TokenPrefixRequirementLabel");
+            tokenPrefixRequirementLabel.SetDisplay(requiresTokenPrefix);
         }
 
         private void OnVerboseLoggingChanged(ChangeEvent<bool> evt)
@@ -343,7 +317,10 @@ namespace RoR2.Editor
 
         private void RunButtonClicked()
         {
-            if(!ValidateData("Run") || !ValidateData())
+#pragma warning disable CS0618 // Type or member is obsolete
+            bool isValid = (ValidateData("Run") || ValidateData());
+#pragma warning restore CS0618 // Type or member is obsolete
+            if (!isValid)
             {
                 return;
             }
