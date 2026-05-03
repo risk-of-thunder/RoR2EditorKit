@@ -40,12 +40,12 @@ namespace RoR2.Editor.Windows
         public List<AssemblyDefinitionAsset> assemblyDefinitionReferences = new List<AssemblyDefinitionAsset>();
         public List<string> precompiledAssemblyReferences = new List<string>();
 
-        protected override string wizardTitleTooltip =>
-@"The ModWizard is a Wizard that creates a very basic BepInExMod from the data you provide.
+        protected override string GetHelpTooltip()
+        {
+            return @"The ModWizard is a Wizard that creates a very basic BepInExMod from the data you provide.
 
 The wizard will create an Assemblydef with references to your chosen Assembly References, a MainClass and a ContentProvider class that'll load your assetbundle asynchronously, a folder for your Assets that will go to the AssetBundle, and a ThunderKit manifest for your mod.";
-
-        private WizardCoroutineHelper _wizardCoroutineHelper;
+        }
 
         private string _folderOutput;
         private string _assetBundleFolder;
@@ -112,7 +112,7 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
             base.OnEnable();
             foreach (var guid in _defaultAssemblyDefinitions)
             {
-                if (AssetDatabase.GUIDToAssetPath(guid.guid).IsNullOrEmptyOrWhiteSpace())
+                if (string.IsNullOrWhiteSpace(AssetDatabase.GUIDToAssetPath(guid.guid)))
                     continue;
 
                 assemblyDefinitionReferences.Add(guid);
@@ -120,65 +120,69 @@ The wizard will create an Assemblydef with references to your chosen Assembly Re
 
             foreach (var assemblyName in _defaultPrecompiledAssemblies)
             {
-                if (CompilationPipeline.GetPrecompiledAssemblyPathFromAssemblyName(assemblyName).IsNullOrEmptyOrWhiteSpace())
+                if (string.IsNullOrWhiteSpace(CompilationPipeline.GetPrecompiledAssemblyPathFromAssemblyName(assemblyName)))
                     continue;
 
                 precompiledAssemblyReferences.Add(assemblyName);
             }
-
-            _wizardCoroutineHelper = new WizardCoroutineHelper(this);
-            _wizardCoroutineHelper.AddStep(CreateFolders(), "Creating Folders");
-            _wizardCoroutineHelper.AddStep(CreateAssemblyDef(), "Writing AssemblyDef");
-            _wizardCoroutineHelper.AddStep(CreateMainClass(), "Writing Main Class");
-            _wizardCoroutineHelper.AddStep(CreateContentProvider(), "Writing Content Provider");
-            _wizardCoroutineHelper.AddStep(CreateFiles(), "Creating ReadMe, Changelog and Icon");
-            _wizardCoroutineHelper.AddStep(CreateManifest(), "Creating Manifest");
-            _wizardCoroutineHelper.AddStep(ComputeManifestDependencies(), "Computing Manifest Dependencies");
         }
 
-        protected override bool ValidateData()
+        protected override bool ValidateData(string coroutineName)
         {
-            if (authorName.IsNullOrEmptyOrWhiteSpace())
+            bool baseValue = base.ValidateData(coroutineName);
+            if (string.IsNullOrWhiteSpace(authorName))
             {
                 RoR2EKLog.Error($"Cannot run wizard, authorName is not valid.");
                 return false;
             }
 
-            if (modName.IsNullOrEmptyOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(modName))
             {
                 RoR2EKLog.Error($"Cannot run wizard, modName is not valid");
                 return false;
             }
 
-            if (humanReadableModName.IsNullOrEmptyOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(humanReadableModName))
             {
                 RoR2EKLog.Error($"Cannot run wizard, humanReadableModName is not valid");
                 return false;
             }
 
-            if (modDescription.IsNullOrEmptyOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(modDescription))
             {
                 RoR2EKLog.Error($"Cannot run wizard, modDescription is not valid");
                 return false;
             }
 
-            return true;
+            return baseValue && true;
         }
         protected override IEnumerator RunWizardCoroutine()
         {
-            EditorApplication.LockReloadAssemblies();
-            try
+            var wizardCoroutineHelper = new WizardCoroutineHelper(this);
+            wizardCoroutineHelper.AddStep(LockReloadAssemblies(trueLockFalseUnlock: true), "Locking Assembly Reload");
+            wizardCoroutineHelper.AddStep(CreateFolders(), "Creating Folders");
+            wizardCoroutineHelper.AddStep(CreateAssemblyDef(), "Writing AssemblyDef");
+            wizardCoroutineHelper.AddStep(CreateMainClass(), "Writing Main Class");
+            wizardCoroutineHelper.AddStep(CreateContentProvider(), "Writing Content Provider");
+            wizardCoroutineHelper.AddStep(CreateFiles(), "Creating ReadMe, Changelog and Icon");
+            wizardCoroutineHelper.AddStep(CreateManifest(), "Creating Manifest");
+            wizardCoroutineHelper.AddStep(ComputeManifestDependencies(), "Computing Manifest Dependencies");
+            wizardCoroutineHelper.AddStep(LockReloadAssemblies(trueLockFalseUnlock: false), "Unlocking Assembly Reload");
+            return wizardCoroutineHelper;
+        }
+
+        private IEnumerator LockReloadAssemblies(bool trueLockFalseUnlock)
+        {
+            yield return 0;
+            if(trueLockFalseUnlock)
             {
-                while (_wizardCoroutineHelper.MoveNext())
-                {
-                    yield return _wizardCoroutineHelper.Current;
-                }
+                EditorApplication.LockReloadAssemblies();
             }
-            finally
+            else
             {
                 EditorApplication.UnlockReloadAssemblies();
             }
-            yield break;
+            yield return 1;
         }
 
         private IEnumerator CreateFolders()
@@ -616,7 +620,7 @@ yield break;");
             for (int i = 0; i < _allReferencedAssemblyPaths.Length; i++)
             {
                 var assemblyPath = _allReferencedAssemblyPaths[i];
-                if (assemblyPath.IsNullOrEmptyOrWhiteSpace())
+                if (string.IsNullOrWhiteSpace(assemblyPath))
                     continue;
 
                 string currentDirToSearch = IOPath.GetDirectoryName(assemblyPath);
@@ -665,15 +669,18 @@ yield break;");
             yield break;
         }
 
-        protected override void Cleanup()
+        protected override void Cleanup(string coroutineName)
         {
-            _folderOutput = "";
-            _assetBundleFolder = "";
-            _modAssemblyDef = null;
-            _allReferencedAssembliesFromModAssemblyDefinition = Array.Empty<string>();
-            _allReferencedAssemblyPaths = Array.Empty<string>();
-            _manifestFiles = Array.Empty<UnityEngine.Object>();
-            _modIdentity = null;
+            if(coroutineName == "Run")
+            {
+                _folderOutput = "";
+                _assetBundleFolder = "";
+                _modAssemblyDef = null;
+                _allReferencedAssembliesFromModAssemblyDefinition = Array.Empty<string>();
+                _allReferencedAssemblyPaths = Array.Empty<string>();
+                _manifestFiles = Array.Empty<UnityEngine.Object>();
+                _modIdentity = null;
+            }
         }
 
         static ModWizard()

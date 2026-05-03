@@ -396,7 +396,7 @@ namespace RoR2.Editor
             string logOutput = _logBuilder.ToString();
             _logBuilder.Clear();
 
-            Debug.Log(logOutput);
+            RoR2EKLog.Debug(logOutput);
             if (string.IsNullOrEmpty(logFilePath))
             {
                 return;

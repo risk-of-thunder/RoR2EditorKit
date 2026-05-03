@@ -11,6 +11,27 @@ namespace RoR2.Editor
     /// </summary>
     public static class AssetDatabaseUtil
     {
+        public class AssetEditingScope : IDisposable
+        {
+            public AssetEditingScope()
+            {
+                AssetDatabase.StartAssetEditing();
+            }
+
+            public virtual void Dispose()
+            {
+                AssetDatabase.StopAssetEditing();
+            }
+        }
+
+        public class AssetEditingSaveScope : AssetEditingScope
+        {
+            public override void Dispose()
+            {
+                AssetDatabase.SaveAssets();
+                base.Dispose();
+            }
+        }
         /// <summary>
         /// Directly obtains the GUID for the given asset in a hexadecimal representation, assuming the asset exists within the database
         /// </summary>

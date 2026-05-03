@@ -17,15 +17,16 @@ namespace RoR2.Editor.Windows
         public string stageName;
         public int stageOrder;
 
-        protected override string wizardTitleTooltip =>
+        protected override string GetHelpTooltip()
+        {
+            return
 @"The StageCreatorWizard is a Wizard that creates a stage that can be later loaded into the game.
 It'll create a basic scene asset with necesary components to be used as a stage in a run, alongside a SceneDef for the scene.
 
 It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
+        }
 
         protected override bool requiresTokenPrefix => true;
-
-        private WizardCoroutineHelper _wizardCoroutineHelper;
 
         private string _folderOutput;
         private string _upperToken;
@@ -38,55 +39,54 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
         [MenuItem(R2EKConstants.ROR2EK_MENU_ROOT + "/Wizards/Stage")]
         private static void Open() => EditorWindow.CreateWindow<StageCreatorWizard>().Show();
 
-        protected override void OnEnable()
+        protected override void Cleanup(string coroutineName)
         {
-            base.OnEnable();
-            _wizardCoroutineHelper = new WizardCoroutineHelper(this);
-            _wizardCoroutineHelper.AddStep(CreateTokens(), "Creating Tokens");
-            _wizardCoroutineHelper.AddStep(DuplicateSceneAsset(), "Creating Scene Asset");
-            _wizardCoroutineHelper.AddStep(OpenScene(), "Opening Scene Asset");
-            _wizardCoroutineHelper.AddStep(CreateNodeGraphs(), "Creating Node Graphs");
-            _wizardCoroutineHelper.AddStep(CreateDCCS(), "Creating DCCS");
-            _wizardCoroutineHelper.AddStep(CreateDCCSPool(), "Creating DCCSPool");
-            _wizardCoroutineHelper.AddStep(SaveScene(), "Saving Scene Changes");
-            _wizardCoroutineHelper.AddStep(CreateSceneDef(), "Creating Scene Def");
+            base.Cleanup(coroutineName);
+
+            if(coroutineName == "Run")
+            {
+                EditorSceneManager.CloseScene(_scene, true);
+                _folderOutput = "";
+                _upperToken = "";
+                _lowerToken = "";
+                _scene = default;
+                _monsterDCCS = null;
+                _interactableDCCS = null;
+                _sceneInfoGO = null;
+            }
         }
 
-        protected override void Cleanup()
+        protected override bool ValidateData(string coroutineName)
         {
-            base.Cleanup();
-            EditorSceneManager.CloseScene(_scene, true);
-            _folderOutput = "";
-            _upperToken = "";
-            _lowerToken = "";
-            _scene = default;
-            _monsterDCCS = null;
-            _interactableDCCS = null;
-            _sceneInfoGO = null;
-        }
-
-        protected override bool ValidateData()
-        {
-            if (stageName.IsNullOrEmptyOrWhiteSpace())
+            bool baseValue = base.ValidateData(coroutineName);
+            if(coroutineName == "Run")
             {
-                RoR2EKLog.Error($"Cannot run wizard because the Stage Name is null, empty or whitespace.");
-                return false;
+                if (string.IsNullOrWhiteSpace(stageName))
+                {
+                    RoR2EKLog.Error($"Cannot run wizard because the Stage Name is null, empty or whitespace.");
+                    return false;
+                }
+                if (string.IsNullOrWhiteSpace(folderPath))
+                {
+                    RoR2EKLog.Error($"Cannot run wizard because the Folder Path is null, empty or whitespace.");
+                    return false;
+                }
             }
-            if (folderPath.IsNullOrEmptyOrWhiteSpace())
-            {
-                RoR2EKLog.Error($"Cannot run wizard because the Folder Path is null, empty or whitespace.");
-                return false;
-            }
-            return true;
+            return baseValue && true;
         }
 
         protected override IEnumerator RunWizardCoroutine()
         {
-            while (_wizardCoroutineHelper.MoveNext())
-            {
-                yield return _wizardCoroutineHelper.Current;
-            }
-            yield break;
+            var wizardCoroutineHelper = new WizardCoroutineHelper(this);
+            wizardCoroutineHelper.AddStep(CreateTokens(), "Creating Tokens");
+            wizardCoroutineHelper.AddStep(DuplicateSceneAsset(), "Creating Scene Asset");
+            wizardCoroutineHelper.AddStep(OpenScene(), "Opening Scene Asset");
+            wizardCoroutineHelper.AddStep(CreateNodeGraphs(), "Creating Node Graphs");
+            wizardCoroutineHelper.AddStep(CreateDCCS(), "Creating DCCS");
+            wizardCoroutineHelper.AddStep(CreateDCCSPool(), "Creating DCCSPool");
+            wizardCoroutineHelper.AddStep(SaveScene(), "Saving Scene Changes");
+            wizardCoroutineHelper.AddStep(CreateSceneDef(), "Creating Scene Def");
+            return wizardCoroutineHelper;
         }
 
         private IEnumerator CreateTokens()
@@ -125,7 +125,7 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
             for (int i = 0; i < mapNodeGroupObjects.Length; i++)
             {
                 var gameObject = mapNodeGroupObjects[i];
-                RoR2EKLog.Debug($"Creating Node Graph for {gameObject}");
+                Log($"Creating Node Graph for {gameObject}");
                 yield return R2EKMath.Remap(i, 0, mapNodeGroupObjects.Length - 1, 0, 1f);
                 var nodeGroup = gameObject.GetComponent<MapNodeGroup>();
                 var nodeGraph = CreateInstance<NodeGraph>();
@@ -152,7 +152,7 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
 
         private IEnumerator CreateDCCS()
         {
-            RoR2EKLog.Debug($"Creating interactable and monster DCCS");
+            Log($"Creating interactable and monster DCCS");
             _monsterDCCS = CreateInstance<DirectorCardCategorySelection>();
             var path = IOUtils.GenerateUniqueFileName(_folderOutput, $"dccs{stageName}Monsters", ".asset");
             AssetDatabase.CreateAsset(_monsterDCCS, path);
@@ -166,7 +166,7 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
 
         private IEnumerator CreateDCCSPool()
         {
-            RoR2EKLog.Debug($"Creating DCCSPools for Monsters and Interactables");
+            Log($"Creating DCCSPools for Monsters and Interactables");
 
             ClassicStageInfo stageInfo = _sceneInfoGO.GetComponent<ClassicStageInfo>();
             var stageInfoSerializedObject = new SerializedObject(stageInfo);
@@ -211,7 +211,7 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
 
         private IEnumerator SaveScene()
         {
-            RoR2EKLog.Debug("Saving Scene Changes");
+            Log("Saving Scene Changes");
             yield return null;
             EditorSceneManager.SaveScene(_scene);
             yield break;
@@ -219,7 +219,7 @@ It'll also create the NodeGraphs, DCCS and DCCSPool for the stage.";
 
         private IEnumerator CreateSceneDef()
         {
-            RoR2EKLog.Debug("Creating Scene Def");
+            Log("Creating Scene Def");
 
             var sceneDef = CreateInstance<SceneDef>();
 
