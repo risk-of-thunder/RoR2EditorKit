@@ -2,6 +2,7 @@ using HG;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -184,30 +185,38 @@ namespace RoR2.Editor
             {
                 typeToCompareAssetTypeAgainst = typeof(GameObject);
             }
+
             //Work off GUIDS, like god intended
-            foreach (var guid in AddressablesPathDictionary.instance.GetAllGUIDS())
+            ReadOnlyCollection<string> allGUIDS = AddressablesPathDictionary.instance.GetAllGUIDS();
+            using (var disposableProgress = new DisposableProgressBar(string.Format("Building cache for {0} {1}", type.Name, searchInChildren ? "(Searching in Children)" : ""), "No info to display...", 0))
             {
-                Type assetType = GetAssetType(guid);
-                //If we obtained the resource type, and the resource type is same or subclass of type, add it to the result
-                if (assetType != null && (assetType == typeToCompareAssetTypeAgainst || assetType.IsSubclassOf(typeToCompareAssetTypeAgainst)))
+                for(int i = 0; i < allGUIDS.Count; i++)
                 {
-                    //We need to do an extra check if the type to compare against is GameObject, and the actual type we want is a component.
-                    if (typeToCompareAssetTypeAgainst == typeof(GameObject) && type.IsSubclassOf(typeof(Component)))
+                    string guid = allGUIDS[i];
+
+                    disposableProgress.Update(R2EKMath.Remap(i, 0, allGUIDS.Count, 0, 1), null, $"({i}/{allGUIDS.Count - 1}) Processing {guid}...");
+                    Type assetType = GetAssetType(guid);
+                    //If we obtained the resource type, and the resource type is same or subclass of type, add it to the result
+                    if (assetType != null && (assetType == typeToCompareAssetTypeAgainst || assetType.IsSubclassOf(typeToCompareAssetTypeAgainst)))
                     {
-                        GameObject gameObject = Addressables.LoadAssetAsync<GameObject>(guid).WaitForCompletion();
-                        if (!gameObject)
+                        //We need to do an extra check if the type to compare against is GameObject, and the actual type we want is a component.
+                        if (typeToCompareAssetTypeAgainst == typeof(GameObject) && type.IsSubclassOf(typeof(Component)))
                         {
-                            continue;
+                            GameObject gameObject = Addressables.LoadAssetAsync<GameObject>(guid).WaitForCompletion();
+                            if (!gameObject)
+                            {
+                                continue;
+                            }
+
+                            //If it doesnt have the component we want, skip it.
+                            bool hasComponent = searchInChildren ? gameObject.GetComponentInChildren(type) : gameObject.TryGetComponent(type, out _);
+                            if (!hasComponent)
+                                continue;
                         }
 
-                        //If it doesnt have the component we want, skip it.
-                        bool hasComponent = searchInChildren ? gameObject.GetComponentInChildren(type) : gameObject.TryGetComponent(type, out _);
-                        if (!hasComponent)
-                            continue;
+                        resultGuids.Add(guid);
+                        resultPaths.Add(AddressablesPathDictionary.instance.GetPathFromGUID(guid));
                     }
-
-                    resultGuids.Add(guid);
-                    resultPaths.Add(AddressablesPathDictionary.instance.GetPathFromGUID(guid));
                 }
             }
 

@@ -118,7 +118,7 @@ namespace RoR2.Editor
             var visualTreeAsset = VisualElementTemplateDictionary.instance.LoadTemplate(GetType().Name, ValidateUXMLPath);
             if(!visualTreeAsset)
             {
-                var imguiContainer = new IMGUIContainer(OnIMGUI);
+                var imguiContainer = new IMGUIContainer(OnIMGUIWrapper);
                 imguiContainer.name = $"{wizardName}_IMGUIContainer";
                 contentContainer.Add(imguiContainer);
                 OnIMGUIContainerAdded();
@@ -131,6 +131,12 @@ namespace RoR2.Editor
         }
 
         protected virtual void OnIMGUIContainerAdded() { }
+        private void OnIMGUIWrapper()
+        {
+            serializedObject.Update();
+            OnIMGUI();
+            serializedObject.ApplyModifiedProperties();
+        }
         protected virtual void OnIMGUI() => EditorGUILayout.LabelField("No IMGUI Implemented...");
         protected virtual string GetHelpTooltip() => "";
         protected void BeginCoroutine(IEnumerator coroutine, string coroutineName)
