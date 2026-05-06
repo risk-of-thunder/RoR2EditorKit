@@ -35,13 +35,18 @@ namespace RoR2.Editor
         protected override AdvancedDropdownItem BuildRoot()
         {
             using var entryLookup = new AddressablesPathDictionary.EntryLookup();
-
-            entryLookup.WithLookupType(AddressablesPathDictionary.EntryType.Path)
+            ReadOnlyCollection<string> keys = null;
+            using(var progressBar = new DisposableProgressBar("Building Dropdown...", "Building the Dropdown, please wait.", 0))
+            {
+                entryLookup.WithLookupType(AddressablesPathDictionary.EntryType.Path)
                 .WithTypeRestriction(_requiredTypes)
                 .WithFilter(_filter)
-                .WithComponentRequirement(_componentRequirement, _searchComponentInChildren);
+                .WithComponentRequirement(_componentRequirement, _searchComponentInChildren)
+                .WithProgressReport(progressBar);
 
-            ReadOnlyCollection<string> keys = entryLookup.PerformLookup();
+                keys = entryLookup.PerformLookup();
+            }
+
 
             var items = new Dictionary<string, Item>();
             var rootItem = new Item(_rootItemKey, _rootItemKey);

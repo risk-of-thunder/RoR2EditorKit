@@ -76,7 +76,12 @@ namespace RoR2.Editor
             /// The results of the lookup, this is populated after <see cref="PerformLookup"/> or <see cref="PerformLookupAsync"/>
             /// </summary>
             public ReadOnlyCollection<string> results;
-            public List<string> _results;
+            private List<string> _results;
+
+            /// <summary>
+            /// An action to invoke when there's progress to report.
+            /// </summary>
+            public IProgress<float> progressReport;
 
             /// <summary>
             /// Performs the Lookup with the given parameters
@@ -97,32 +102,33 @@ namespace RoR2.Editor
             /// <returns>A coroutine that can be awaited, once it's complete, the results are stored within <see cref="results"/></returns>
             public IEnumerator PerformLookupAsync()
             {
-                _results = ListPool<string>.RentCollection();
-
-                if(typeRestriction.Length == 0 && (componentRequirement != null && componentRequirement.IsSubclassOf(typeof(Component))))
+                if (typeRestriction.Length == 0 && (componentRequirement != null && componentRequirement.IsSubclassOf(typeof(Component))))
                 {
                     HG.ArrayUtils.ArrayAppend(ref typeRestriction, typeof(GameObject));
                 }
 
                 //Get each result for each type, request entries returns the cache if it exists, and if not, it builds it
-                foreach (Type type in typeRestriction)
+                for (int i = 0; i < typeRestriction.Length; i++)
                 {
+                    float minProgress = ((float)i) / typeRestriction.Length;
+                    float maxProgress = ((float)i + 1) / typeRestriction.Length;
                     yield return null;
+
+                    Type type = typeRestriction[i];
                     string[] cache = instance.dictionaryCache.RequestEntries(type, componentRequirement, searchComponentInChildren, entryLookupType);
 
-
                     var modulo = Mathf.Floor((Mathf.Log10(cache.Length) + 1) * 2);
-                    for (int i = 0; i < cache.Length; i++)
+                    for (int j = 0; j < cache.Length; j++)
                     {
-                        string cacheEntry = cache[i];
+                        string cacheEntry = cache[j];
 
-                        if (i % modulo == 0)
+                        if(i % modulo == 0)
                         {
                             yield return null;
                         }
 
-                        //If we have a filter, filter the results
-                        if (!filter.IsNullOrEmptyOrWhiteSpace())
+                        progressReport?.Report(R2EKMath.Remap(j, 0, cache.Length, minProgress, maxProgress));//If we have a filter, filter the results
+                        if (!string.IsNullOrWhiteSpace(filter))
                         {
                             if (cacheEntry.Contains(filter) && !_results.Contains(cacheEntry))
                             {
@@ -184,6 +190,12 @@ namespace RoR2.Editor
                 return this;
             }
 
+            public EntryLookup WithProgressReport(IProgress<float> progressReport)
+            {
+                this.progressReport = progressReport;
+                return this;
+            }
+
             /// <summary>
             /// Disposes the resources utilized for the lookup
             /// </summary>
@@ -194,6 +206,11 @@ namespace RoR2.Editor
                     ListPool<string>.ReturnCollection(_results);
                     _results = null;
                 }
+            }
+
+            public EntryLookup()
+            {
+                _results = ListPool<string>.RentCollection();
             }
         }
 

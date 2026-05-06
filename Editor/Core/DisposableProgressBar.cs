@@ -8,7 +8,7 @@ namespace RoR2.Editor
     /// <br></br>
     /// Due to the <see cref="IDisposable"/> implementation, this should be utilized with an using disposable statement.
     /// </summary>
-    public struct DisposableProgressBar : IDisposable
+    public struct DisposableProgressBar : IDisposable, IProgress<float>
     {
         private string _title;
         private string _info;
@@ -49,6 +49,11 @@ namespace RoR2.Editor
         public void Dispose()
         {
             EditorUtility.ClearProgressBar();
+        }
+
+        void IProgress<float>.Report(float value)
+        {
+            Update(value, null, null);
         }
     }
 }
