@@ -1,3 +1,24 @@
+# 5.7.0
+
+### Core Changes
+
+* Improved the Editor Wizard Experience
+	* EditorWizards no longer inherit from ``ExtendedEditorWindow``, despite this, they still have Settings support.
+	* The Serialized Object that represents the window itself is now created lazily
+	* Added the ability to implement specific cleanups for different coroutine executions
+	* UI can now be implemented using IMGUI
+	* Added a logging system to log things the wizards are doing
+* Added an AssetEditingScope to ``AssetDatabaseUtil``
+	* IDisposable implementation of ``AssetDatabase.StartAssetEditing()`` and ``AssetDatabase.StopAssetEditing()``
+
+### RoR2ScriptsChanges
+
+* Wizards can now be ran multiple times without needing to close and open the window.
+* The ``AddressablesPathDictionary`` now displays a Progress Bar whenever it's buiding a ``CacheEntry``
+	* This should reduce the feeling of the editor freezing suddenly whenever complex addressable queries are executed.
+* The AddressablesPathDropdown now displays a progress bar when building the dropdown
+* All ``AddressablesPathDictionary`` methods now can implement a way to track progress of the operation.
+
 # 5.6.6
 
 ### Core Changes
