@@ -172,9 +172,22 @@ namespace RoR2.Editor
                 return this;
             }
 
+            public EntryLookup WithTypeRestriction<T>()
+            {
+                typeRestriction = new Type[] { typeof(T) };
+                return this;
+            }
+
             public EntryLookup WithComponentRequirement(Type componentRequirement, bool searchComponentInChildren)
             {
                 this.componentRequirement = componentRequirement;
+                this.searchComponentInChildren = searchComponentInChildren;
+                return this;
+            }
+
+            public EntryLookup WithComponentRequirement<T>(bool searchComponentInChildren)
+            {
+                this.componentRequirement = typeof(T);
                 this.searchComponentInChildren = searchComponentInChildren;
                 return this;
             }

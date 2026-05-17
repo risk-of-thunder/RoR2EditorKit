@@ -10,7 +10,7 @@ namespace RoR2.Editor
     /// 
     /// <para>Coroutines added as steps using <see cref="AddStep(IEnumerator, string)"/> can yield return floats, these floats represent the individual percentage of completion of said step. this value should be between 0 and 1.</para>
     /// </summary>
-    public class WizardCoroutineHelper : IEnumerator
+    public class WizardCoroutineHelper : IEnumerator, IProgress<float>
     {
         /// <summary>
         /// The EditorWizardWindow that created this instance.
@@ -26,6 +26,7 @@ namespace RoR2.Editor
 
         private IEnumerator _internalCoroutine;
         private int _maxProgress;
+        private int _completedSubroutines;
 
         /// <summary>
         /// Adds a new step to the coroutine helper.
@@ -64,12 +65,12 @@ namespace RoR2.Editor
             //Makes sure it doesnt execute the proper while loop.
             yield return null;
 
-            int completedSubroutines = 0;
+            _completedSubroutines = 0;
             while (_stepsQueue.TryDequeue(out var step))
             {
                 var subroutine = step.subroutine;
                 var stepName = step.subroutineName;
-                wizardInstance.UpdateProgress(R2EKMath.Remap(completedSubroutines, 0, _maxProgress, 0, 1), stepName);
+                wizardInstance.UpdateProgress(R2EKMath.Remap(_completedSubroutines, 0, _maxProgress, 0, 1), stepName);
                 yield return null;
 
                 //Progress the subroutine to completion
@@ -78,12 +79,12 @@ namespace RoR2.Editor
                     //Handle yielded object.
                     if (subroutine.Current is float f) //If float, update progress
                     {
-                        wizardInstance.UpdateProgress(CalculateProgress(completedSubroutines, f), stepName);
+                        wizardInstance.UpdateProgress(CalculateProgress(_completedSubroutines, f), stepName);
                         yield return null;
                     }
                     yield return subroutine.Current; //yield current object, might be a wait for seconds.
                 }
-                completedSubroutines++;
+                _completedSubroutines++;
             }
         }
 
@@ -93,6 +94,11 @@ namespace RoR2.Editor
             var subroutineMaxProgress = Mathf.Min(completedSubroutines + 1, _maxProgress);
             var val = R2EKMath.Remap(subroutineProgress, 0, 1, completedSubroutines, Mathf.Min(completedSubroutines + 1, subroutineMaxProgress));
             return R2EKMath.Remap(val, 0, _maxProgress, 0, 1);
+        }
+
+        void IProgress<float>.Report(float value)
+        {
+            wizardInstance.UpdateProgress(CalculateProgress(_completedSubroutines, value));
         }
 
         /// <summary>
