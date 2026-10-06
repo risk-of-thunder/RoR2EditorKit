@@ -30,7 +30,7 @@ namespace RoR2.Editor.PropertyDrawers
             EditorGUI.BeginProperty(position, label, property);
             EditorGUI.BeginDisabledGroup(true);
             position.height = GetPropertyHeight(property, label);
-            EditorGUI.PropertyField(position, property, true);
+            EditorGUI.PropertyField(position, property, property.GetGUIContent(), true);
             EditorGUI.EndDisabledGroup();
             EditorGUI.EndProperty();
         }
