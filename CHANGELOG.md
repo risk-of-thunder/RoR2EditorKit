@@ -1,5 +1,7 @@
 # 5.7.0
 
+* Updated to Hallowed Concepts (1.5.0)
+
 ### Core Changes
 
 * Improved the Editor Wizard Experience
@@ -9,10 +11,20 @@
 	* UI can now be implemented using IMGUI
 	* Added a logging system to log things the wizards are doing
 * Added an AssetEditingScope to ``AssetDatabaseUtil``
-	* IDisposable implementation of ``AssetDatabase.StartAssetEditing()`` and ``AssetDatabase.StopAssetEditing()``
+	* IDisposable implementation of ``AssetDatabase.StartAssetEditing()`` and ``AssetDatabase.StopAssetEditing()``	
+* Removed the LRAPI_Returns file from the project
+* Added a StringBuilder support to RoR2EKLog.
+	* Used to log in bulk and then displaying it as a big unity log instead of spamming the console with multiple logs
+	* Added a disposable ref struct to assist with this feature
 
 ### RoR2ScriptsChanges
 
+* The ``AddressablesPathDictionary`` no longer crashes if it fails to load an asset's type via ``lrapi_returns``'s ``assemblyQuialifiedTypeName`` string.
+* Fixed ``ReadOnlyDrawer`` not displaying the Field's label
+* Added inspectors for the following RoR2 Types
+	* ZiprailController
+	* BasicBezierSpline
+	* BasicBezierSplineControlPoint
 * Wizards can now be ran multiple times without needing to close and open the window.
 * The ``AddressablesPathDictionary`` now displays a Progress Bar whenever it's buiding a ``CacheEntry``
 	* This should reduce the feeling of the editor freezing suddenly whenever complex addressable queries are executed.

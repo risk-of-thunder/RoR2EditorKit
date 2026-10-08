@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Contexts;
+using System.Text;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -13,6 +15,54 @@ namespace RoR2.Editor
     /// </summary>
     public static class RoR2EKLog
     {
+        /// <summary>
+        /// A Disposable Ref Struct that can be used with a Using() clause to redirect all logging to a StringBuilder
+        /// </summary>
+        public ref struct StringBuilderRedirectorDisposable
+        {
+            private StringBuilder _sb;
+            /// <summary>
+            /// Constructor, redirects all logging entries to the StringBuilder in <paramref name="sb"/>
+            /// </summary>
+            public StringBuilderRedirectorDisposable(StringBuilder sb)
+            {
+                _sb = sb;
+                AssignStringBuilderRedirection(sb);
+            }
+
+            /// <summary>
+            /// Disposes the StringBuilderRedirectorDisposable, calling <see cref="RoR2EKLog.ReleaseStringBuilderRedirection"/>
+            /// </summary>
+            public void Dispose()
+            {
+                ReleaseStringBuilderRedirection();
+            }
+        }
+
+        /// <summary>
+        /// Assigns a StringBuilder to redirect all logging entries to it, which can later be dumped as a single editor log.
+        /// <br></br>
+        /// See <see cref="StringBuilderRedirectorDisposable"/> for using this feature with the Using() clause.
+        /// </summary>
+        public static void AssignStringBuilderRedirection(StringBuilder sb)
+        {
+            if(_sb != null && _sb != sb)
+            {
+                UDebug.LogError($"A StringBuilder redirection is already set!");
+            }
+
+            _sb = sb;
+        }
+
+        /// <summary>
+        /// Releases the current StringBuilder redirection
+        /// </summary>
+        public static void ReleaseStringBuilderRedirection()
+        {
+            _sb = null;
+        }
+
+        private static StringBuilder _sb;
         private enum LogLevel
         {
             Message,
@@ -209,24 +259,46 @@ namespace RoR2.Editor
             switch (logLevel)
             {
                 case LogLevel.Message:
-                    UDebug.Log(formattedMessage, context);
+
+                    if(_sb != null)
+                        _sb.AppendLine(formattedMessage);
+                    else
+                        UDebug.Log(formattedMessage, context);
+
                     EditorUtility.DisplayDialog($"Message", data.ToString(), "Ok");
                     break;
                 case LogLevel.Debug:
-                    UDebug.Log(formattedMessage, context);
+
+                    if(_sb != null)
+                        _sb.AppendLine(formattedMessage);
+                    else
+                        UDebug.Log(formattedMessage, context);
+
                     break;
                 case LogLevel.Warning:
-                    UDebug.LogWarning(formattedMessage, context);
+
+                    if(_sb != null)
+                        _sb.AppendLine(formattedMessage);
+                    else
+                        UDebug.LogWarning(formattedMessage, context);
+                    
                     break;
                 case LogLevel.Error:
-                    UDebug.LogError(formattedMessage, context);
+                    
+                    if(_sb != null)
+                        _sb.AppendLine(formattedMessage);
+                    else
+                        UDebug.LogError(formattedMessage, context);
+                    
                     break;
                 case LogLevel.Fatal:
+                    
                     UDebug.LogError(formattedMessage, context);
                     EditorUtility.DisplayDialog("FATAL ERROR OCCURRED", string.Format("{0}\n\n{1}", formattedMessage, "The Editor will now save its assets then close"), "Ok");
                     AssetDatabase.SaveAssets();
                     EditorSceneManager.SaveOpenScenes();
                     EditorApplication.Exit(0);
+                    
                     break;
             }
         }
