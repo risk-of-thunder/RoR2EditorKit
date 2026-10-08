@@ -15,22 +15,36 @@ namespace RoR2.Editor
     /// </summary>
     public static class RoR2EKLog
     {
-        public ref struct StringBuilderDisposable
+        /// <summary>
+        /// A Disposable Ref Struct that can be used with a Using() clause to redirect all logging to a StringBuilder
+        /// </summary>
+        public ref struct StringBuilderRedirectorDisposable
         {
             private StringBuilder _sb;
-            public StringBuilderDisposable(StringBuilder sb)
+            /// <summary>
+            /// Constructor, redirects all logging entries to the StringBuilder in <paramref name="sb"/>
+            /// </summary>
+            public StringBuilderRedirectorDisposable(StringBuilder sb)
             {
                 _sb = sb;
-                AssignStringBuilder(sb);
+                AssignStringBuilderRedirection(sb);
             }
 
+            /// <summary>
+            /// Disposes the StringBuilderRedirectorDisposable, calling <see cref="RoR2EKLog.ReleaseStringBuilderRedirection"/>
+            /// </summary>
             public void Dispose()
             {
-                ReleaseStringBuilder(_sb);
+                ReleaseStringBuilderRedirection();
             }
         }
 
-        public static void AssignStringBuilder(StringBuilder sb)
+        /// <summary>
+        /// Assigns a StringBuilder to redirect all logging entries to it, which can later be dumped as a single editor log.
+        /// <br></br>
+        /// See <see cref="StringBuilderRedirectorDisposable"/> for using this feature with the Using() clause.
+        /// </summary>
+        public static void AssignStringBuilderRedirection(StringBuilder sb)
         {
             if(_sb != null && _sb != sb)
             {
@@ -40,7 +54,10 @@ namespace RoR2.Editor
             _sb = sb;
         }
 
-        public static void ReleaseStringBuilder(StringBuilder sb)
+        /// <summary>
+        /// Releases the current StringBuilder redirection
+        /// </summary>
+        public static void ReleaseStringBuilderRedirection()
         {
             _sb = null;
         }

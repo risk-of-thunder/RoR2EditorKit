@@ -283,7 +283,7 @@ namespace RoR2.Editor
             
             var stopwatch = Stopwatch.StartNew();
 
-            using(new RoR2EKLog.StringBuilderDisposable(sb))
+            using(new RoR2EKLog.StringBuilderRedirectorDisposable(sb))
             {
 
                 string jsonData = GetLRAPIReturnsJsonData(GetLRAPIReturnsPath(), out fileDateTime);
