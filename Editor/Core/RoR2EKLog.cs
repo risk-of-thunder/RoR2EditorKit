@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Contexts;
+using System.Text;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -13,6 +15,37 @@ namespace RoR2.Editor
     /// </summary>
     public static class RoR2EKLog
     {
+        public ref struct StringBuilderDisposable
+        {
+            private StringBuilder _sb;
+            public StringBuilderDisposable(StringBuilder sb)
+            {
+                _sb = sb;
+                AssignStringBuilder(sb);
+            }
+
+            public void Dispose()
+            {
+                ReleaseStringBuilder(_sb);
+            }
+        }
+
+        public static void AssignStringBuilder(StringBuilder sb)
+        {
+            if(_sb != null && _sb != sb)
+            {
+                UDebug.LogError($"A StringBuilder redirection is already set!");
+            }
+
+            _sb = sb;
+        }
+
+        public static void ReleaseStringBuilder(StringBuilder sb)
+        {
+            _sb = null;
+        }
+
+        private static StringBuilder _sb;
         private enum LogLevel
         {
             Message,
@@ -209,24 +242,46 @@ namespace RoR2.Editor
             switch (logLevel)
             {
                 case LogLevel.Message:
-                    UDebug.Log(formattedMessage, context);
+
+                    if(_sb != null)
+                        _sb.AppendLine(formattedMessage);
+                    else
+                        UDebug.Log(formattedMessage, context);
+
                     EditorUtility.DisplayDialog($"Message", data.ToString(), "Ok");
                     break;
                 case LogLevel.Debug:
-                    UDebug.Log(formattedMessage, context);
+
+                    if(_sb != null)
+                        _sb.AppendLine(formattedMessage);
+                    else
+                        UDebug.Log(formattedMessage, context);
+
                     break;
                 case LogLevel.Warning:
-                    UDebug.LogWarning(formattedMessage, context);
+
+                    if(_sb != null)
+                        _sb.AppendLine(formattedMessage);
+                    else
+                        UDebug.LogWarning(formattedMessage, context);
+                    
                     break;
                 case LogLevel.Error:
-                    UDebug.LogError(formattedMessage, context);
+                    
+                    if(_sb != null)
+                        _sb.AppendLine(formattedMessage);
+                    else
+                        UDebug.LogError(formattedMessage, context);
+                    
                     break;
                 case LogLevel.Fatal:
+                    
                     UDebug.LogError(formattedMessage, context);
                     EditorUtility.DisplayDialog("FATAL ERROR OCCURRED", string.Format("{0}\n\n{1}", formattedMessage, "The Editor will now save its assets then close"), "Ok");
                     AssetDatabase.SaveAssets();
                     EditorSceneManager.SaveOpenScenes();
                     EditorApplication.Exit(0);
+                    
                     break;
             }
         }

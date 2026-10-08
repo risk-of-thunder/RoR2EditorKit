@@ -232,6 +232,7 @@ namespace RoR2.Editor
             public string path;
             public string guid;
             public string assemblyQualifiedTypeName;
+            public string typeName;
         }
 
         private const string ADDRESSABLES_PATH_DICTIONARY_FILE_NAME = "AddressablesPathDictionary.asset";
@@ -278,100 +279,117 @@ namespace RoR2.Editor
 
         private void LoadJSONFileData(out DateTime fileDateTime)
         {
+            using var stringBuilderRental = HG.StringBuilderPool.RentStringBuilder(out var sb);
+            
             var stopwatch = Stopwatch.StartNew();
 
-            string jsonData = GetLRAPIReturnsJsonData(GetLRAPIReturnsPath(), out fileDateTime);
-
-            var rootJSONNode = JSON.Parse(jsonData);
-
-            Dictionary<string, Entry> guidToEntries = new();
-            Dictionary<string, Entry> pathToEntries = new();
-            List<Entry> entries = new();
-
-            int randomAssNumber = 0;
-            bool checkedForProperVersionOfLRAPI = false;
-            foreach (var keyGUID in rootJSONNode.Keys)
+            using(new RoR2EKLog.StringBuilderDisposable(sb))
             {
-                if (wwiseRegex.Match(keyGUID).Success)
+
+                string jsonData = GetLRAPIReturnsJsonData(GetLRAPIReturnsPath(), out fileDateTime);
+
+                var rootJSONNode = JSON.Parse(jsonData);
+
+                Dictionary<string, Entry> guidToEntries = new();
+                Dictionary<string, Entry> pathToEntries = new();
+                List<Entry> entries = new();
+
+                int randomAssNumber = 0;
+                bool checkedForProperVersionOfLRAPI = false;
+                foreach (var keyGUID in rootJSONNode.Keys)
                 {
-                    continue;
-                }
-
-                Entry entry = null;
-                try
-                {
-                    JSONNode entryNode = rootJSONNode[keyGUID];
-
-                    JSONNode pathNode = entryNode["path"];
-                    JSONNode assemblyQualifiedTypeNameNode = entryNode["assemblyQualifiedTypeName"];
-
-                    entry = new Entry
+                    if (wwiseRegex.Match(keyGUID).Success)
                     {
-                        path = pathNode.Value,
-                        guid = keyGUID,
-                        assemblyQualifiedTypeName = assemblyQualifiedTypeNameNode.Value
-                    };
-                }
-                catch(Exception ex)
-                {
-                    string guidToAttemptToParse = keyGUID;
-                    if(subAssetExtractor.Match(keyGUID).Success)
-                    {
-                        guidToAttemptToParse = subAssetExtractor.Replace(keyGUID, "");
+                        continue;
                     }
-                    if(!GUID.TryParse(guidToAttemptToParse, out _))
-                    {
-                        EditorUtility.DisplayDialog($"Exception during LRAPI_Returns parsing.", "It appears that your LRAPI_Returns file located in your game's streaming assets is outdated, this is because the keys are asset paths instead of GUIDS.\n\nThis is because either you're using a version of the game older than 1.4.1, or because LRAPI_Returns for this version of the game is missing. You can download a newer version of LRAPI_Returns on the modding discord if necessary.", "Ok");
-                    }
-                    else
-                    {
-                        EditorUtility.DisplayDialog($"Unknown Exception during LRAPI_Returns parsing.", "An unknown exception happened while LRAPI_Returns was being parsed, please submit a bug report", "Ok");
-                    }
-                    RoR2EKLog.Error(ex);
-                    return;
-                }
 
-                if (!guidToEntries.TryAdd(entry.guid, entry))
-                {
-                    RoR2EKLog.Error($"A GUID to Entry was attempted to be added, but the key is already in the dictionary! (key={entry.guid},path={entry.path})");
-                }
-                if (!pathToEntries.TryAdd(entry.path, entry))
-                {
-                    //Path conflict resolution part 1, include typeName
-                    Type assetType = Type.GetType(entry.assemblyQualifiedTypeName);
-                    entry.path = string.Format("{0}:{1}", entry.path, assetType.Name);
-                    if (!pathToEntries.TryAdd(entry.path, entry))
+                    Entry entry = null;
+                    try
                     {
-                        //Path conflict resolution part 2, just put a number.
-                        entry.path = string.Format("{0}*{1}", entry.path, randomAssNumber);
-                        randomAssNumber++;
-                        if (!pathToEntries.TryAdd(entry.path, entry))
+                        JSONNode entryNode = rootJSONNode[keyGUID];
+
+                        JSONNode pathNode = entryNode["path"];
+                        JSONNode assemblyQualifiedTypeNameNode = entryNode["assemblyQualifiedTypeName"];
+                        JSONNode typeName = entryNode["typeName"];
+
+                        entry = new Entry
                         {
-                            RoR2EKLog.Error($"A Path to Entry was attempted to be added, but the key is already in the dictionary! (key={entry.path},guid={entry.guid})");
+                            path = pathNode.Value,
+                            guid = keyGUID,
+                            assemblyQualifiedTypeName = assemblyQualifiedTypeNameNode.Value,
+                            typeName = typeName
+                        };
+                    }
+                    catch(Exception ex)
+                    {
+                        string guidToAttemptToParse = keyGUID;
+                        if(subAssetExtractor.Match(keyGUID).Success)
+                        {
+                            guidToAttemptToParse = subAssetExtractor.Replace(keyGUID, "");
+                        }
+                        if(!GUID.TryParse(guidToAttemptToParse, out _))
+                        {
+                            EditorUtility.DisplayDialog($"Exception during LRAPI_Returns parsing.", "It appears that your LRAPI_Returns file located in your game's streaming assets is outdated, this is because the keys are asset paths instead of GUIDS.\n\nThis is because either you're using a version of the game older than 1.4.1, or because LRAPI_Returns for this version of the game is missing. You can download a newer version of LRAPI_Returns on the modding discord if necessary.", "Ok");
                         }
                         else
                         {
-                            RoR2EKLog.Warning($"Path to Entry was added after including Type name and Number, (key={entry.path}, guid={entry.guid}");
+                            EditorUtility.DisplayDialog($"Unknown Exception during LRAPI_Returns parsing.", "An unknown exception happened while LRAPI_Returns was being parsed, please submit a bug report", "Ok");
                         }
+                        RoR2EKLog.Error(ex);
+                        return;
                     }
-                    else
+
+                    Type assetType = Type.GetType(entry.assemblyQualifiedTypeName);
+                    if(assetType == null)
                     {
-                        RoR2EKLog.Warning($"Path to Entry was added after including Type name, (key={entry.path}, guid={entry.guid}");
+                        RoR2EKLog.Debug($"Skipping entry with guid \"{entry.guid}\" and path \"{entry.path}\" as it's Type resolved to null");
+                        continue;
                     }
 
+                    if (!guidToEntries.TryAdd(entry.guid, entry))
+                    {
+                        RoR2EKLog.Error($"A GUID to Entry was attempted to be added, but the key is already in the dictionary! (key={entry.guid},path={entry.path})");
+                    }
+                    if (!pathToEntries.TryAdd(entry.path, entry))
+                    {
+                        //Path conflict resolution part 1, include typeName
+
+                        entry.path = string.Format("{0}:{1}", entry.path, assetType?.Name);
+                        if (!pathToEntries.TryAdd(entry.path, entry))
+                        {
+                            //Path conflict resolution part 2, just put a number.
+                            entry.path = string.Format("{0}*{1}", entry.path, randomAssNumber);
+                            randomAssNumber++;
+                            if (!pathToEntries.TryAdd(entry.path, entry))
+                            {
+                                RoR2EKLog.Error($"A Path to Entry was attempted to be added, but the key is already in the dictionary! (key={entry.path},guid={entry.guid})");
+                            }
+                            else
+                            {
+                                RoR2EKLog.Warning($"Path to Entry was added after including Type name and Number, (key={entry.path}, guid={entry.guid}");
+                            }
+                        }
+                        else
+                        {
+                            RoR2EKLog.Warning($"Path to Entry was added after including Type name, (key={entry.path}, guid={entry.guid}");
+                        }
+
+                    }
+                    entries.Add(entry);
                 }
-                entries.Add(entry);
+
+                //Initialize the inner dictionaries with the new values.
+                pathToEntryDictionary = pathToEntries;
+                guidToEntryDictionary = guidToEntries;
+                allEntries = entries.ToArray();
+
+                paths = allEntries.Select(entry => entry.path).ToArray();
+                guids = allEntries.Select(entry => entry.guid).ToArray();
+
+                stopwatch.Stop();
             }
-
-            //Initialize the inner dictionaries with the new values.
-            pathToEntryDictionary = pathToEntries;
-            guidToEntryDictionary = guidToEntries;
-            allEntries = entries.ToArray();
-
-            paths = allEntries.Select(entry => entry.path).ToArray();
-            guids = allEntries.Select(entry => entry.guid).ToArray();
-
-            stopwatch.Stop();
+            RoR2EKLog.Debug($"Printing AddressablesPathDictionary loading log.");
+            RoR2EKLog.Debug(sb.ToString());
             RoR2EKLog.Debug($"AddressablesPathDictionary took " + stopwatch.ElapsedMilliseconds + "ms");
         }
 
@@ -387,30 +405,11 @@ namespace RoR2.Editor
         {
             fileDateTime = default;
 
-            //Make it just use the R2EK one, revert to the original one later.
-            TextAsset lrapiReturns1dot4dot1TextAsset = R2EKConstants.AssetGUIDs.lrapiReturnsFor1dot4dot1;
-            if (lrapiReturns1dot4dot1TextAsset)
-            {
-                jsonFilePath = IOPath.GetFullPath(AssetDatabase.GetAssetPath(lrapiReturns1dot4dot1TextAsset));
-                fileDateTime = File.GetLastWriteTimeUtc(jsonFilePath);
-                return lrapiReturns1dot4dot1TextAsset.text;
-            }
-
-            /*if (File.Exists(jsonFilePath))
+            if (File.Exists(jsonFilePath))
             {
                 fileDateTime = File.GetLastWriteTimeUtc(jsonFilePath);
                 return System.IO.File.ReadAllText(jsonFilePath);
             }
-            else
-            {
-                TextAsset lrapiReturns1dot4dot1TextAsset = R2EKConstants.AssetGUIDs.lrapiReturnsFor1dot4dot1;
-                if(lrapiReturns1dot4dot1TextAsset)
-                {
-                    jsonFilePath = IOPath.GetFullPath(AssetDatabase.GetAssetPath(lrapiReturns1dot4dot1TextAsset));
-                    fileDateTime = File.GetLastWriteTimeUtc(jsonFilePath);
-                    return lrapiReturns1dot4dot1TextAsset.text;
-                }
-            }*/
 
             RoR2EKLog.Fatal("LRAPI_RETURNS NOT FOUND!\n The json file lrapi_returns was not found, This version of RoR2EditorKit requires the game to be at the very least post memory management update.");
             return "";
