@@ -16,14 +16,20 @@ namespace RoR2.Editor
     /// </summary>
     public static class EditorStringSerializer
     {
-        private static readonly HashSet<Type> _serializableTypes = new HashSet<Type>();
+        private static ReadOnlyCollection<Type> _serializableTypesReadOnly;
+        private static readonly List<Type> _serializableTypes = new List<Type>();
         private static readonly Dictionary<Type, SerializationHandler> _typeToSerializationHandlers = new Dictionary<Type, SerializationHandler>();
         private static SerializationHandler _enumHandler;
 
         /// <summary>
         /// Returns a collection of the Serializable types
         /// </summary>
-        public static ReadOnlyCollection<Type> GetSerializableTypes() => _serializableTypes.ToList().AsReadOnly();
+        public static ReadOnlyCollection<Type> GetSerializableTypes()
+        {
+            _serializableTypesReadOnly ??= new ReadOnlyCollection<Type>(_serializableTypes);
+            return _serializableTypesReadOnly;
+        }
+
         /// <summary>
         /// Returns true if <typeparamref name="T"/> can be serialized.
         /// </summary>

@@ -94,8 +94,14 @@ namespace RoR2.Editor
         }
         private SerializedProperty _boundProperty;
 
+        /// <summary>
+        /// An action that gets invoked when the value of a field changes
+        /// </summary>
         public Action<FieldInfo, SerializedProperty, object> onFieldValueChanged;
 
+        /// <summary>
+        /// Returns a ReadOnlyCollection of all the fields that are being serialized.
+        /// </summary>
         public ReadOnlyCollection<FieldInfo> serializableFields { get; private set; }
         private readonly List<FieldInfo> _serializableFields = new List<FieldInfo>();
 

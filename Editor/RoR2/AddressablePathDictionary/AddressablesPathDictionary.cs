@@ -1,5 +1,4 @@
 using HG;
-using RoR2.SolusWingGrid;
 using SimpleJSON;
 using System;
 using System.Collections;
@@ -8,13 +7,9 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.ResourceLocations;
-using Debug = UnityEngine.Debug;
 using IOPath = System.IO.Path;
 
 namespace RoR2.Editor
@@ -503,10 +498,9 @@ namespace RoR2.Editor
         }
 
         /// <summary>
-        /// Obtains a guid from <paramref name="path"/> directly with no safety.
+        /// Obtains a guid from <paramref name="path"/>, returns an empty string if the path is not in the AddressablesPathDictionary
         /// </summary>
         /// <param name="path">The addressable path from which we want it's guid</param>
-        /// <returns>The guid itself.</returns>
         public string GetGUIDFromPath(string path)
         {
             if(TryGetGUIDFromPath(path, out string guid))
@@ -535,10 +529,9 @@ namespace RoR2.Editor
         }
 
         /// <summary>
-        /// Obtains a path from <paramref name="guid"/> directly with no safety.
+        /// Obtains a path from <paramref name="guid"/>, returns an empty string if the guid is not in the AddressablesPathDictionary
         /// </summary>
         /// <param name="guid">The addressable guid from which we want it's path</param>
-        /// <returns>The path itself.</returns>
         public string GetPathFromGUID(string guid)
         {
             if(TryGetPathFromGUID(guid, out string? path))
@@ -567,10 +560,9 @@ namespace RoR2.Editor
         }
 
         /// <summary>
-        /// Returns the Type of asset that <paramref name="path"/> points to without any safety
+        /// Returns the Type of asset that <paramref name="path"/> points to, returns null if the path is not in the AddressablesPathDictionary
         /// </summary>
         /// <param name="path">The path of the asset to get it's type</param>
-        /// <returns>The Type of the Path</returns>
         public Type GetTypeFromPath(string path)
         {
             if(TryGetTypeFromPath(path, out Type type))
@@ -598,10 +590,9 @@ namespace RoR2.Editor
         }
 
         /// <summary>
-        /// Returns the Type of asset that <paramref name="guid"/> points to without any safety
+        /// Returns the Type of asset that <paramref name="guid"/> points to, returns null if the guid is not in the AddressablesPathDictionary
         /// </summary>
         /// <param name="guid">The guid of the asset to get it's type</param>
-        /// <returns>The Type of the GUID</returns>
         public Type GetTypeFromGUID(string guid)
         {
             if (TryGetTypeFromGUID(guid, out Type type))

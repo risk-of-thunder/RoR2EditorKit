@@ -13,15 +13,38 @@ namespace RoR2.Editor
     /// </summary>
     public static class VisualElementUtil
     {
+        /// <summary>
+        /// Represents arguments to build a Control for a FieldInfo/SerializedProperty
+        /// </summary>
         public struct ControlBuilderArgs
         {
+            /// <summary>
+            /// The desired label for the element
+            /// </summary>
             public string elementLabel;
+            /// <summary>
+            /// A method that will return the current value of the fieldProperty
+            /// </summary>
             public Func<object> valueRetriever;
+            /// <summary>
+            /// An event to invoke when the value changes.
+            /// </summary>
             public DeconstructedChangeEvent changeEvent;
 
+            /// <summary>
+            /// The FieldInfo that represents <see cref="fieldProperty"/>
+            /// </summary>
             public FieldInfo fieldInfo;
+            /// <summary>
+            /// The SerializedProperty that we're creating a control for.
+            /// </summary>
             public SerializedProperty fieldProperty;
         }
+        /// <summary>
+        /// Delegate that represents a method that creates a VisualElement control
+        /// </summary>
+        /// <param name="args">The arguments for creating the visual element</param>
+        /// <returns>The visual element</returns>
         public delegate VisualElement ControlBuilder(ControlBuilderArgs args);
 
         private static Dictionary<Type, ControlBuilder> _typeToControlBuilder = new Dictionary<Type, ControlBuilder>();
@@ -74,8 +97,20 @@ namespace RoR2.Editor
             valueRetriever = valueGetter
         });
 
+        /// <summary>
+        /// Creates a control for type <typeparamref name="T"/>
+        /// </summary>
+        /// <typeparam name="T">The type to create it's control</typeparam>
+        /// <param name="args">The arguments for creation</param>
+        /// <returns>The created visual element, returns a Label if the creation of control for <typeparamref name="T"/> is not implemented.</returns>
         public static VisualElement CreateControlFromType<T>(ControlBuilderArgs args) => CreateControlFromType(typeof(T), args);
 
+        /// <summary>
+        /// Creates a control for type <typeparamref name="T"/>
+        /// </summary>
+        /// <param name="type">The type to create it's control</param>
+        /// <param name="args">The arguments for creation</param>
+        /// <returns>The created visual element, returns a Label if the creation of control for <typeparamref name="T"/> is not implemented.</returns>
         public static VisualElement CreateControlFromType(Type type, ControlBuilderArgs args)
         {
             if (typeof(UnityEngine.Object).IsAssignableFrom(type))

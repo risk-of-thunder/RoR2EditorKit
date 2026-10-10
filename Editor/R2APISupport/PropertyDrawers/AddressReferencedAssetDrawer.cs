@@ -192,7 +192,6 @@ namespace RoR2.Editor.PropertyDrawers
         /// Overriding this may be useful in case you want to accept ScriptableObjects using AddressReferencedAsset, but restrict to only specific ScriptableObjects, such as is the case with the <see cref="ItemDisplayRuleSet.KeyAssetRuleGroup.keyAssetAddress"/>
         /// </summary>
         /// <returns>An array of valid types for this field</returns>
-        /// <exception cref="NullReferenceException">Thrown from the base method in case the field info does not inherit from AddressREferencedAsset<></exception>
         protected virtual Type[] GetRequiredAssetTypes()
         {
             //Get the type of the field, and a reference to AddressReferencedAsset<>
