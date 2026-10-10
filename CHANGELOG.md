@@ -1,3 +1,34 @@
+# 5.7.1
+
+### Core Changes
+
+* The ``EditorStringSerializer`` has been made public
+	* publicized methods to add new SerializationHandlers manually.
+	* Has a method for getting all the Serializable types
+	* Despite this, it is still recommended to use the ``SerializationMediator`` when it comes to serializing data for the game.
+* Added the capability to ``SerializationMediator`` to add new serializable types.
+	* These SerializableTypes are only added if the EditorStringSerializer can serialize them.
+* The ``SerializationMediator.SafetyBypass`` has been marked as obsolete, since ``EditorStringSerializer`` is now public
+* Publicized the ability to add new Controls for the ``VisualElementUtil`` control creation system.
+* Added the following fields to the ``SerializedFieldCollectionElement``
+	* an ``Action<FieldInfo, SerializedProperty, object>`` that gets invoked when the control updates a value
+	* A ``ReadOnlyCollection<FieldInfo>`` of all the fields being serialized.
+
+### RoR2ScriptsChanges
+
+* Added support for using ``EntityStateGameObject`` in EntityStates
+	* The ``EntityStateConfiguration`` inspector shows these fields as an AddressablesPathDropdown. You'll be able to reference vanilla prefabs in EntitystateConfigurations this way.
+* The ``EntityStateConfiguration`` inspector saves any ``EntityStateGameObject`` guids to it's internal "preloadGUIDReferences" array
+* Added the ``AddressablesPathPropertyDrawerPickerHelper``, a static class used to centralize RoR2EK's AddressablesPathDictionary dropdown.
+* The ``BaseGameAssetReferenceTDrawer`` now uses the ``AddressablesPathPropertyDrawerPickerHelper``
+* ``AddressablesPathDictionary`` "Unsafe" methods now use the "Try" methods internally, returning empty string or null when applicable.
+* Added an "isNone" property to ``AddressablesPathDropdown.Item``. Used to denote if the selected item is the special "None" item.
+
+### R2APIScriptsChanges
+
+* The ``AddressReferencedAssetDrawer`` now uses the ``AddressablesPathPropertyDrawerPickerHelper`` for drawing the picker
+* Fixed clicking "None" not setting the value to null for ``AddressReferencedAssetDrawer``
+
 # 5.7.0
 
 * Updated to Hallowed Concepts (1.5.0)

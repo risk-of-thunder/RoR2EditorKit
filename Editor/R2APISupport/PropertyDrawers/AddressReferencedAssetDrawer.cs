@@ -232,8 +232,12 @@ namespace RoR2.Editor.PropertyDrawers
             if (AddressablesPathDictionary.instance.TryGetGUIDFromPath(item.assetPath, out var guid))
             {
                 _addressProperty.stringValue = guid;
-                _addressProperty.serializedObject.ApplyModifiedProperties();
             }
+            else if(item.isNone)
+            {
+                _addressProperty.stringValue = "";
+            }
+            _addressProperty.serializedObject.ApplyModifiedProperties();
         }
 
         /// <summary>
