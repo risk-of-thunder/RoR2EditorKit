@@ -110,7 +110,13 @@ namespace RoR2.Editor
                 settingValue.boxedValue = evt.newValue;
                 settings[arg2] = settingValue;
             };
-            element.Add(VisualElementUtil.CreateControlFromType(settingType, label, getter, changeEvent));
+
+            element.Add(VisualElementUtil.CreateControlFromType(settingType, new VisualElementUtil.ControlBuilderArgs
+            {
+                changeEvent = changeEvent,
+                elementLabel = label,
+                valueRetriever = getter
+            }));
         }
 
         private VisualElement CreateEditorSettingValueContainer()

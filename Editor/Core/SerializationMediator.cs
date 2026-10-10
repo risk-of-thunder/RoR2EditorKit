@@ -8,7 +8,7 @@ namespace RoR2.Editor
 {
     /// <summary>
     /// The <see cref="SerializationMediator"/> is a class that mediates the String serialization capabilities built into RoR2EditorKit. it's used for managing what fields can be serialized by the <see cref="SerializedFieldCollectionElement"/>. and the methods for creating control elements within <see cref="VisualElementUtil"/> 
-    /// <br>You can bypass this mediator by using <see cref="SafetyBypass"/>'s methods</br>
+    /// <br>You can bypass this mediator by using <see cref="EditorStringSerializer"/> directly</br>
     /// 
     /// <para>The types that can be serialized change depending on what assemblies are found within the project.</para>
     /// <list type="bullet">
@@ -26,6 +26,31 @@ namespace RoR2.Editor
     public static class SerializationMediator
     {
         private static HashSet<Type> _typesWeShouldSerialize = new HashSet<Type>();
+
+        /// <summary>
+        /// Adds a new type to serialize to the SerializationMediator.
+        /// <br></br>
+        /// Logs an error if the <see cref="EditorStringSerializer"/> doesnt support the Type.
+        /// </summary>
+        /// <typeparam name="T">The type to add to the mediator</typeparam>
+        public static void AddTypeToSerialize<T>() => AddTypeToSerialize(typeof(T));
+
+        /// <summary>
+        /// Adds a new type to serialize to the SerializationMediator.
+        /// <br></br>
+        /// Logs an error if the <see cref="EditorStringSerializer"/> doesnt support the Type.
+        /// </summary>
+        /// <param name="type">The type to add to the mediator</param>
+        public static void AddTypeToSerialize(Type type)
+        {
+            if(!EditorStringSerializer.CanSerializeType(type))
+            {
+                RoR2EKLog.Error($"Cannot serialize {type} as the internal EditorStringSerializer does not have support for it.");
+                return;
+            }
+
+            _typesWeShouldSerialize.Add(type);
+        }
 
         /// <summary>
         /// Returns wether the given field can be serialized in a string format under the current project context
@@ -154,10 +179,10 @@ namespace RoR2.Editor
 
         private static bool ShouldSerializeEnum()
         {
-#if !RISKOFRAIN2
+#if !R2EK_ROR2_INSTALLED
             return true;
 #else
-#if RISKOFTHUNDER_R2API_STRINGSERIALIZEREXTENSIONS
+#if R2EK_STRINGSERIALIZEREXTENSIONS_INSTALLED
             return true;
 #else
             return false;
@@ -165,125 +190,52 @@ namespace RoR2.Editor
 #endif
         }
 
-        /// <summary>
-        /// --o--!!!READ ME!!!--o--!!!READ ME!!!--o--!!!READ ME!!!--o--!!!READ ME!!!--o--!!!READ ME!!!---o----
-        /// 
-        /// <para>This class is used to directly interact with the EditorStringSerializer within RoR2EditorKit, these methods should only be used for Editor related serialization and NOT runtime serialization.</para>
-        /// 
-        /// The EditorStringSerializer can serialize the following types:
-        /// <list type="bullet">
-        ///     <item>[*]<see cref="short"/></item>
-        ///     <item>[*]<see cref="ushort"/></item>
-        ///     <item>[*]<see cref="int"/></item>
-        ///     <item>[*]<see cref="uint"/></item>
-        ///     <item>[*]<see cref="long"/></item>
-        ///     <item>[*]<see cref="ulong"/></item>
-        ///     <item>[*]<see cref="bool"/></item>
-        ///     <item>[*]<see cref="float"/></item>
-        ///     <item>[*]<see cref="double"/></item>
-        ///     <item>[*]<see cref="string"/></item>
-        ///     <item>[*]<see cref="Color"/></item>
-        ///     <item><see cref="LayerMask"/></item>
-        ///     <item>[*]<see cref="Vector2"/></item>
-        ///     <item><see cref="Vector2Int"/></item>
-        ///     <item>[*]<see cref="Vector3"/></item>
-        ///     <item><see cref="Vector3Int"/></item>
-        ///     <item><see cref="Vector4"/></item>
-        ///     <item><see cref="Rect"/></item>
-        ///     <item><see cref="RectInt"/></item>
-        ///     <item><see cref="char"/></item>
-        ///     <item><see cref="Bounds"/></item>
-        ///     <item><see cref="BoundsInt"/></item>
-        ///     <item><see cref="Quaternion"/></item>
-        ///     <item>[*]<see cref="AnimationCurve"/></item>
-        ///     <item><see cref="Enum"/></item>
-        ///     <item><see cref="Enum"/> with <see cref="FlagsAttribute"/></item>
-        /// </list>
-        /// <br>Entries marked with "[*]" means that these are equal to the base game's string serializer, and as such are the only ones available in <see cref="SerializationMediator"/> when RoR2 is installed but not the R2API.StringSerializerExtensions module.</br>
-        /// </summary>
+        [Obsolete("If you wish to bypass the mediator, use EditorStringSerializer directly.")]
         public static class SafetyBypass
         {
-            /// <summary>
-            /// Checks wether the given type can be serialized in a string format
-            /// </summary>
-            /// <typeparam name="T">The type to check</typeparam>
-            /// <returns>True if it can be serialized, otherwise false</returns>
             public static bool CanSerializeType<T>() => EditorStringSerializer.CanSerializeType<T>();
 
-            /// <summary>
-            /// Checks wether the given type can be serialized in a string format
-            /// </summary>
-            /// <param name="t">The type to check</param>
-            /// <returns>True if it can be serialized, otherwise false</returns>
             public static bool CanSerializeType(Type t) => EditorStringSerializer.CanSerializeType(t);
 
-            /// <summary>
-            /// Serializes a given value into a string representation
-            /// </summary>
-            /// <typeparam name="T">The type to serialize</typeparam>
-            /// <param name="value">The value to serialize</param>
-            /// <returns>The serialized value</returns>
             public static string Serialize<T>(T value) => EditorStringSerializer.Serialize(value);
 
-            /// <summary>
-            /// Serializes a given value into a string representation
-            /// </summary>
-            /// <param name="type">The type to serialize</param>
-            /// <param name="value">The value to serialize</param>
-            /// <returns>The serialized value</returns>
             public static string Serialize(Type valueType, object value) => EditorStringSerializer.Serialize(valueType, value);
 
-            /// <summary>
-            /// Deserializes a given string representation into the selected value
-            /// </summary>
-            /// <typeparam name="T">The type to serialize</typeparam>
-            /// <param name="input">The type's string representation</param>
-            /// <returns>The deserialized value</returns>
             public static T Deserialize<T>(string input) => EditorStringSerializer.Deserialize<T>(input);
 
-            /// <summary>
-            /// Deserializes a given string representation into the selected value
-            /// </summary>
-            /// <param name="type">The type to serialize</typeparam>
-            /// <param name="input">The type's string representation</param>
-            /// <returns>The deserialized value</returns>
             public static object Deserialize(Type type, string input) => EditorStringSerializer.Deserialize(type, input);
         }
 
         static SerializationMediator()
         {
-#if !RISKOFRAIN2
+#if !R2EK_ROR2_INSTALLED
             //No ror2 installed? utilize the editor string serializer directly.
-            foreach(var type in EditorStringSerializer._typeToSerializationHandlers.Keys)
+            foreach(var type in EditorStringSerializer.GetSerializableTypes())
             {
-                _typesWeShouldSerialize.Add(type);
+                AddTypeToSerialize(type);
             }
-#else
-#if RISKOFTHUNDER_R2API_STRINGSERIALIZEREXTENSIONS
+#elif R2EK_STRINGSERIALIZEREXTENSIONS_INSTALLED
             //String serializer extensions is installed, EditorStringSerializer handles everything from there. so also use these
-            foreach (var type in EditorStringSerializer._typeToSerializationHandlers.Keys)
+            foreach (var type in EditorStringSerializer.GetSerializableTypes())
             {
-                _typesWeShouldSerialize.Add(type);
+                AddTypeToSerialize(type);
             }
 #else
             //Only utilize the officially supported types
-            Add<bool>();
-            Add<long>();
-            Add<ulong>();
-            Add<int>();
-            Add<uint>();
-            Add<short>();
-            Add<ushort>();
-            Add<float>();
-            Add<double>();
-            Add<string>();
-            Add<Vector2>();
-            Add<Vector3>();
-            Add<Color>();
-            Add<AnimationCurve>();
-
-            void Add<T>() => _typesWeShouldSerialize.Add(typeof(T));
-#endif
+            AddTypeToSerialize<bool>();
+            AddTypeToSerialize<long>();
+            AddTypeToSerialize<ulong>();
+            AddTypeToSerialize<int>();
+            AddTypeToSerialize<uint>();
+            AddTypeToSerialize<short>();
+            AddTypeToSerialize<ushort>();
+            AddTypeToSerialize<float>();
+            AddTypeToSerialize<double>();
+            AddTypeToSerialize<string>();
+            AddTypeToSerialize<Vector2>();
+            AddTypeToSerialize<Vector3>();
+            AddTypeToSerialize<Color>();
+            AddTypeToSerialize<AnimationCurve>();
 #endif
         }
     }

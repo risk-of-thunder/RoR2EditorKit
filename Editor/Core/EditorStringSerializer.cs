@@ -1,24 +1,65 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using UnityEngine;
 
 namespace RoR2.Editor
 {
-    internal static class EditorStringSerializer
+    /// <summary>
+    /// The EditorStringSerializer is a StringSerializer that's bundled with R2EK.
+    /// <br></br>
+    /// It has the same capabilities as the base game string serializer, alongside supporting all the string serialization capabilities of R2API_StringSerializerExtensions.
+    /// <para></para>
+    /// It is greatly recommended to utilize <see cref="SerializationMediator"/> instead, as the SerializationMediator will ensure only types that can be serialized in the current modding context can be. (IE: Not having the string serializer extensions installed will ensure you cannot serialize enums)
+    /// </summary>
+    public static class EditorStringSerializer
     {
-        internal static readonly Dictionary<Type, SerializationHandler> _typeToSerializationHandlers = new Dictionary<Type, SerializationHandler>();
+        private static ReadOnlyCollection<Type> _serializableTypesReadOnly;
+        private static readonly List<Type> _serializableTypes = new List<Type>();
+        private static readonly Dictionary<Type, SerializationHandler> _typeToSerializationHandlers = new Dictionary<Type, SerializationHandler>();
         private static SerializationHandler _enumHandler;
 
+        /// <summary>
+        /// Returns a collection of the Serializable types
+        /// </summary>
+        public static ReadOnlyCollection<Type> GetSerializableTypes()
+        {
+            _serializableTypesReadOnly ??= new ReadOnlyCollection<Type>(_serializableTypes);
+            return _serializableTypesReadOnly;
+        }
+
+        /// <summary>
+        /// Returns true if <typeparamref name="T"/> can be serialized.
+        /// </summary>
+        /// <typeparam name="T">The type to serialize</typeparam>
         public static bool CanSerializeType<T>() => CanSerializeType(typeof(T));
+
+        /// <summary>
+        /// Returns true if <paramref name="t"/> can be serialized.
+        /// </summary>
+        /// <param name="t">The type to serialize</param>
         public static bool CanSerializeType(Type t) => t == typeof(Enum) || t.IsEnum || _typeToSerializationHandlers.ContainsKey(t);
+
+        /// <summary>
+        /// Serializes <paramref name="value"/> as a string. If no serialization handler exists, an empty string is returned.
+        /// </summary>
+        /// <typeparam name="T">The type of value to serialize</typeparam>
+        /// <param name="value">The value to serialize</param>
+        /// <returns>The serialized value, returns an empty string if no serialization handler exists</returns>
         public static string Serialize<T>(T value)
         {
             var type = typeof(T);
             return Serialize(type, value);
         }
 
+        /// <summary>
+        /// Serializes <paramref name="value"/> as a string. If no serialization handler exists, an empty string is returned.
+        /// </summary>
+        /// <param name="type">The type of value to serialize</param>
+        /// <param name="value">The value to serialize</param>
+        /// <returns>The serialized value, returns an empty string if no serialization handler exists</returns>
         public static string Serialize(Type type, object value)
         {
             if (type.IsEnum)
@@ -32,12 +73,24 @@ namespace RoR2.Editor
             return string.Empty;
         }
 
+        /// <summary>
+        /// Deserializes the <paramref name="input"/> into an instance of <typeparamref name="T"/>. If no serialization handler exists, the default object is returned.
+        /// </summary>
+        /// <typeparam name="T">The type of value to deserialize</typeparam>
+        /// <param name="input">The value to deserialize</param>
+        /// <returns>The deserialized value, or a default object if no serialization handler exists.</returns>
         public static T Deserialize<T>(string input)
         {
             var type = typeof(T);
             return (T)Deserialize(type, input);
         }
 
+        /// <summary>
+        /// Deserializes the <paramref name="input"/> into an instance of <paramref name="type"/>. If no serialization handler exists, the default object is returned.
+        /// </summary>
+        /// <param name="type">The type of value to deserialize</param>
+        /// <param name="input">The value to deserialize</param>
+        /// <returns>The deserialized value, or a default object if no serialization handler exists</returns>
         public static object Deserialize(Type type, string input)
         {
             if (type.IsEnum)
@@ -51,18 +104,47 @@ namespace RoR2.Editor
             return default;
         }
 
-        private static void AddSerializationHandler<T>(SerializationHandler serializationDelegate)
+        /// <summary>
+        /// Adds a SerializationHandler to the EditorStringSerializer
+        /// </summary>
+        /// <typeparam name="T">The Type that the serialization handler serializes</typeparam>
+        /// <param name="serializationHandler">The serialization handler</param>
+        public static void AddSerializationHandler<T>(DeserializationDelegate deserializationDelegate, SerializationDelegate serializationDelegate) => AddSerializationHandler(typeof(T), deserializationDelegate, serializationDelegate);
+
+        /// <summary>
+        /// Adds a SerializationHandler to the EditorStringSerializer
+        /// </summary>
+        /// <param name="type">The Type that the serialization handler serializes</param>
+        /// <param name="deserialization">The deserialization method, see <see cref="DeserializationDelegate"/></param>
+        /// <param name="serialization">The serialization method, see <see cref="SerializationDelegate"/></param>
+        public static void AddSerializationHandler(Type type, DeserializationDelegate deserialization, SerializationDelegate serialization) => AddSerializationHandlerInternal(type, new SerializationHandler
         {
-            if (_typeToSerializationHandlers.ContainsKey(typeof(T)))
+            serializer = serialization,
+            deserializer = deserialization,
+        });
+
+        private static void AddSerializationHandlerInternal<T>(SerializationHandler handler) => AddSerializationHandlerInternal(typeof(T), handler);
+        private static void AddSerializationHandlerInternal(Type type, SerializationHandler serializationHandler)
+        {
+            if (_typeToSerializationHandlers.ContainsKey(type))
             {
-                RoR2EKLog.Error($"Cannot add serialization delegate for type {typeof(T).FullName} as a Serializer already exists.");
+                RoR2EKLog.Error($"Cannot add serialization delegate for type {type.FullName} as a Serializer already exists.");
                 return;
             }
 
-            _typeToSerializationHandlers.Add(typeof(T), serializationDelegate);
+            _serializableTypes.Add(type);
+            _typeToSerializationHandlers.Add(type, serializationHandler);
         }
 
-        private static bool TrySplit<T>(string input, int minComponentCount, out string[] output)
+        /// <summary>
+        /// Tries to split the <paramref name="input"/> using ','. If the result of the split is less than <paramref name="minComponentCount"/>, a warning is returned an an empty array is assigned to <paramref name="output"/>
+        /// </summary>
+        /// <typeparam name="T">The type that <paramref name="input"/> is supposed to represent</typeparam>
+        /// <param name="input">The string input</param>
+        /// <param name="minComponentCount">The minimum amount of components the split string should produce</param>
+        /// <param name="output">The output string array, if the split output is less than <paramref name="minComponentCount"/>, it's an empty array</param>
+        /// <returns>True if the splitting procedure is succesful</returns>
+        public static bool TrySplit<T>(string input, int minComponentCount, out string[] output)
         {
             output = input.Split(',');
             if (output.Length < minComponentCount)
@@ -77,57 +159,57 @@ namespace RoR2.Editor
         static EditorStringSerializer()
         {
             CultureInfo culture = CultureInfo.InvariantCulture;
-            AddSerializationHandler<short>(new SerializationHandler
+            AddSerializationHandlerInternal<short>(new SerializationHandler
             {
                 deserializer = (txt) => short.Parse(txt, culture),
                 serializer = (obj) => ((short)obj).ToString(culture)
             });
-            AddSerializationHandler<ushort>(new SerializationHandler
+            AddSerializationHandlerInternal<ushort>(new SerializationHandler
             {
                 deserializer = (txt) => ushort.Parse(txt, culture),
                 serializer = (obj) => ((ushort)obj).ToString(culture)
             });
-            AddSerializationHandler<int>(new SerializationHandler
+            AddSerializationHandlerInternal<int>(new SerializationHandler
             {
                 deserializer = (txt) => int.Parse(txt, culture),
                 serializer = (obj) => ((int)obj).ToString(culture)
             });
-            AddSerializationHandler<uint>(new SerializationHandler
+            AddSerializationHandlerInternal<uint>(new SerializationHandler
             {
                 deserializer = txt => uint.Parse(txt, culture),
                 serializer = (obj) => ((uint)obj).ToString(culture)
             });
-            AddSerializationHandler<long>(new SerializationHandler
+            AddSerializationHandlerInternal<long>(new SerializationHandler
             {
                 deserializer = (str) => long.Parse(str, culture),
                 serializer = (obj) => ((long)obj).ToString(culture)
             });
-            AddSerializationHandler<ulong>(new SerializationHandler
+            AddSerializationHandlerInternal<ulong>(new SerializationHandler
             {
                 deserializer = txt => ulong.Parse(txt),
                 serializer = obj => ((ulong)obj).ToString(culture)
             });
-            AddSerializationHandler<bool>(new SerializationHandler
+            AddSerializationHandlerInternal<bool>(new SerializationHandler
             {
                 deserializer = txt => int.Parse(txt, culture) > 0,
                 serializer = obj => ((bool)obj) ? "1" : "0"
             });
-            AddSerializationHandler<float>(new SerializationHandler
+            AddSerializationHandlerInternal<float>(new SerializationHandler
             {
                 deserializer = txt => float.Parse(txt, culture),
                 serializer = obj => ((float)obj).ToString(culture)
             });
-            AddSerializationHandler<double>(new SerializationHandler
+            AddSerializationHandlerInternal<double>(new SerializationHandler
             {
                 deserializer = txt => double.Parse(txt, culture),
                 serializer = obj => ((double)obj).ToString(culture)
             });
-            AddSerializationHandler<string>(new SerializationHandler
+            AddSerializationHandlerInternal<string>(new SerializationHandler
             {
                 deserializer = txt => txt,
                 serializer = obj => (string)obj
             });
-            AddSerializationHandler<Color>(new SerializationHandler
+            AddSerializationHandlerInternal<Color>(new SerializationHandler
             {
                 deserializer = txt =>
                 {
@@ -149,7 +231,7 @@ namespace RoR2.Editor
                     return $"{asColor.r.ToString(culture)}, {asColor.g.ToString(culture)}, {asColor.b.ToString(culture)}, {asColor.a.ToString(culture)}";
                 }
             });
-            AddSerializationHandler<LayerMask>(new SerializationHandler
+            AddSerializationHandlerInternal<LayerMask>(new SerializationHandler
             {
                 deserializer = txt => new LayerMask { value = int.Parse(txt, culture) },
                 serializer = obj =>
@@ -161,7 +243,7 @@ namespace RoR2.Editor
                     return ((LayerMask)obj).value.ToString(culture);
                 }
             });
-            AddSerializationHandler<Vector2>(new SerializationHandler
+            AddSerializationHandlerInternal<Vector2>(new SerializationHandler
             {
                 deserializer = txt =>
                 {
@@ -181,7 +263,7 @@ namespace RoR2.Editor
                     return $"{vector2.x.ToString(culture)}, {vector2.y.ToString(culture)}";
                 }
             });
-            AddSerializationHandler<Vector2Int>(new SerializationHandler
+            AddSerializationHandlerInternal<Vector2Int>(new SerializationHandler
             {
                 deserializer = txt =>
                 {
@@ -201,7 +283,7 @@ namespace RoR2.Editor
                     return $"{vector2.x.ToString(culture)}, {vector2.y.ToString(culture)}";
                 }
             });
-            AddSerializationHandler<Vector3>(new SerializationHandler
+            AddSerializationHandlerInternal<Vector3>(new SerializationHandler
             {
                 deserializer = txt =>
                 {
@@ -222,7 +304,7 @@ namespace RoR2.Editor
                     return $"{vector3.x.ToString(culture)}, {vector3.y.ToString(culture)}, {vector3.z.ToString(culture)}";
                 }
             });
-            AddSerializationHandler<Vector3Int>(new SerializationHandler
+            AddSerializationHandlerInternal<Vector3Int>(new SerializationHandler
             {
                 deserializer = txt =>
                 {
@@ -243,7 +325,7 @@ namespace RoR2.Editor
                     return $"{vector3.x.ToString(culture)}, {vector3.y.ToString(culture)}, {vector3.z.ToString(culture)}";
                 }
             });
-            AddSerializationHandler<Vector4>(new SerializationHandler
+            AddSerializationHandlerInternal<Vector4>(new SerializationHandler
             {
                 deserializer = txt =>
                 {
@@ -265,7 +347,7 @@ namespace RoR2.Editor
                     return $"{vector4.x.ToString(culture)}, {vector4.y.ToString(culture)}, {vector4.z.ToString(culture)}, {vector4.z.ToString(culture)}";
                 }
             });
-            AddSerializationHandler<Rect>(new SerializationHandler
+            AddSerializationHandlerInternal<Rect>(new SerializationHandler
             {
                 deserializer = txt =>
                 {
@@ -287,7 +369,7 @@ namespace RoR2.Editor
                     return $"{rect.x.ToString(culture)}, {rect.y.ToString(culture)}, {rect.width.ToString(culture)}, {rect.height.ToString(culture)}";
                 }
             });
-            AddSerializationHandler<RectInt>(new SerializationHandler
+            AddSerializationHandlerInternal<RectInt>(new SerializationHandler
             {
                 deserializer = txt =>
                 {
@@ -309,7 +391,7 @@ namespace RoR2.Editor
                     return $"{rect.x.ToString(culture)}, {rect.y.ToString(culture)}, {rect.width.ToString(culture)}, {rect.height.ToString(culture)}";
                 }
             });
-            AddSerializationHandler<char>(new SerializationHandler
+            AddSerializationHandlerInternal<char>(new SerializationHandler
             {
                 deserializer = txt => txt.ToCharArray().FirstOrDefault(),
                 serializer = obj =>
@@ -321,7 +403,7 @@ namespace RoR2.Editor
                     return ((char)obj).ToString(culture);
                 }
             });
-            AddSerializationHandler<Bounds>(new SerializationHandler
+            AddSerializationHandlerInternal<Bounds>(new SerializationHandler
             {
                 deserializer = txt =>
                 {
@@ -351,7 +433,7 @@ namespace RoR2.Editor
                     return $"{center.x.ToString(culture)}, {center.y.ToString(culture)}, {center.z.ToString(culture)}, {size.x.ToString(culture)}, {size.y.ToString(culture)}, {size.z.ToString(culture)}";
                 }
             });
-            AddSerializationHandler<BoundsInt>(new SerializationHandler
+            AddSerializationHandlerInternal<BoundsInt>(new SerializationHandler
             {
                 deserializer = txt =>
                 {
@@ -381,7 +463,7 @@ namespace RoR2.Editor
                     return $"{center.x.ToString(culture)}, {center.y.ToString(culture)}, {center.z.ToString(culture)}, {size.x.ToString(culture)}, {size.y.ToString(culture)}, {size.z.ToString(culture)}";
                 }
             });
-            AddSerializationHandler<Quaternion>(new SerializationHandler
+            AddSerializationHandlerInternal<Quaternion>(new SerializationHandler
             {
                 deserializer = txt =>
                 {
@@ -404,7 +486,7 @@ namespace RoR2.Editor
                     return $"{quat.x.ToString(culture)}, {quat.y.ToString(culture)}, {quat.z.ToString(culture)}, {quat.w.ToString(culture)}";
                 }
             });
-            AddSerializationHandler<AnimationCurve>(new SerializationHandler
+            AddSerializationHandlerInternal<AnimationCurve>(new SerializationHandler
             {
                 deserializer = txt =>
                 {
@@ -437,9 +519,21 @@ namespace RoR2.Editor
             };
         }
 
+        /// <summary>
+        /// Represents a delegate used to Deserialize <paramref name="serializedValue"/> into an <see cref="object"/>
+        /// </summary>
+        /// <param name="serializedValue">The string representation of the object</param>
+        /// <returns>The deserialized object</returns>
         public delegate object DeserializationDelegate(string serializedValue);
+
+        /// <summary>
+        /// Represents a delegate used to Serialize <paramref name="valueToSerialize"/> into a <see cref="string"/>
+        /// </summary>
+        /// <param name="valueToSerialize">The object to serialize as a string</param>
+        /// <returns>The serialized string representation</returns>
         public delegate string SerializationDelegate(object valueToSerialize);
-        public struct SerializationHandler
+
+        internal struct SerializationHandler
         {
             public DeserializationDelegate deserializer;
             public SerializationDelegate serializer;

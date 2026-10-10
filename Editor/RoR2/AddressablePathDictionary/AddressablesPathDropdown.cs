@@ -54,7 +54,7 @@ namespace RoR2.Editor
             var rootItem = new Item(_rootItemKey, _rootItemKey);
             items.Add(_rootItemKey, rootItem);
 
-            items.Add("None", new Item("None", string.Empty));
+            items.Add("None", new Item("None", string.Empty, true));
             foreach(var assetPath in keys)
             {
                 var fullPath = assetPath;
@@ -156,9 +156,15 @@ namespace RoR2.Editor
             /// </summary>
             public string assetPath { get; }
 
-            internal Item(string displayName, string assetPath) : base(displayName)
+            /// <summary>
+            /// This value is true if this is the "None" item.
+            /// </summary>
+            public bool isNone { get; }
+
+            internal Item(string displayName, string assetPath, bool isNone = false) : base(displayName)
             {
                 this.assetPath = assetPath;
+                this.isNone = isNone;
             }
         }
     }

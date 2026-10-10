@@ -26,7 +26,8 @@
         "Unity.Addressables.dll",
         "Unity.ResourceManager.dll",
         "com.unity.multiplayer-hlapi.Runtime.dll",
-        "R2API.Addressables.dll"
+        "R2API.Addressables.dll",
+        "AsyncManagement.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [

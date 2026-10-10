@@ -13,6 +13,17 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "riskofrain2",
+            "expression": "0.0.1",
+            "define": "R2EK_ROR2_INSTALLED"
+        },
+        {
+            "name": "riskofthunder-r2api_stringserializerextensions",
+            "expression": "0.0.1",
+            "define": "R2EK_STRINGSERIALIZEREXTENSIONS_INSTALLED"
+        }
+    ],
     "noEngineReferences": false
 }

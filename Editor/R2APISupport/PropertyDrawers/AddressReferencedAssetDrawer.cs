@@ -36,14 +36,18 @@ namespace RoR2.Editor.PropertyDrawers
         /// <summary>
         /// Wether the asset is currently using a direct reference.
         /// </summary>
-        protected bool usingDirectReference;
+        protected bool usingDirectReference => _useDirectReferenceProperty.boolValue;
 
         /// <summary>
         /// Wether the asset can be loaded from a catalog.
         /// </summary>
-        protected bool canLoadFromCatalog;
+        protected bool canLoadFromCatalog => _canLoadFromCatalogProperty?.boolValue ?? false;
 
-        private string _filter;
+        private SerializedProperty _assetProperty;
+        private SerializedProperty _addressProperty;
+        private SerializedProperty _useDirectReferenceProperty;
+        private SerializedProperty _canLoadFromCatalogProperty;
+        private AddressablesPathPropertyDrawerPickerHelper.DrawerArgs _drawerArgs;
 
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -51,10 +55,10 @@ namespace RoR2.Editor.PropertyDrawers
 
             AddressableComponentRequirementAttribute componentRequirement = fieldInfo.GetCustomAttribute<AddressableComponentRequirementAttribute>(true);
 
-            var _assetProperty = property.FindPropertyRelative("_asset");
-            var _addressProperty = property.FindPropertyRelative("_address");
-            var _useDirectReferenceProperty = property.FindPropertyRelative("_useDirectReference");
-            var _canLoadFromCatalogProperty = property.FindPropertyRelative("_canLoadFromCatalog");
+            _assetProperty = property.FindPropertyRelative("_asset");
+            _addressProperty = property.FindPropertyRelative("_address");
+            _useDirectReferenceProperty = property.FindPropertyRelative("_useDirectReference");
+            _canLoadFromCatalogProperty = property.FindPropertyRelative("_canLoadFromCatalog");
 
             //Fuck this shi, but if its using direct reference, nullify the address, otherwise, nullify the asset.
             if(_useDirectReferenceProperty.boolValue)
@@ -72,81 +76,79 @@ namespace RoR2.Editor.PropertyDrawers
                 _canLoadFromCatalogProperty.boolValue = false;
             }
 
-            usingDirectReference = _useDirectReferenceProperty.boolValue;
-            canLoadFromCatalog = _canLoadFromCatalogProperty?.boolValue ?? false;
-
-            EditorGUI.BeginProperty(position, label, property);
-            var fieldRect = new Rect(position.x, position.y, position.width - 16, standardPropertyHeight);
-
-            var rectForFilterProperty = new Rect(fieldRect.x + 64, fieldRect.y + standardPropertyHeight, fieldRect.width - 64, standardPropertyHeight);
-
-
-            string assetName = null;
-            if (AddressablesPathDictionary.instance.TryGetPathFromGUID(_addressProperty.stringValue, out var path))
+            if (_drawerArgs == null)
             {
-                assetName = System.IO.Path.GetFileNameWithoutExtension(path);
-            }
-
-            if (usingDirectReference)
-            {
-                EditorGUI.PropertyField(fieldRect, _assetProperty, new GUIContent(property.displayName));
-            }
-            else
-            {
-                _filter = EditorGUI.TextField(rectForFilterProperty, "Filter:", _filter);
-                if (canLoadFromCatalog) //If the asset can load from catalog, display a regular text field in case the user wants to load the asset via name.
+                _drawerArgs = new AddressablesPathPropertyDrawerPickerHelper.DrawerArgs
                 {
-                    string fieldDisplayName = property.displayName;
-                    var ctrlRect = EditorGUI.PrefixLabel(fieldRect, new GUIContent(fieldDisplayName));
-                    _addressProperty.stringValue = EditorGUI.TextField(ctrlRect, _addressProperty.stringValue);
+                    useFullPathForItems = _useFullPathForItems,
+                    allowedTypes = GetRequiredAssetTypes(),
+                    filter = "",
+                    label = property.GetGUIContent(),
+                    requiredComponentType = componentRequirement?.requiredComponentType ?? null,
+                    searchComponentInChildren = componentRequirement?.searchInChildren ?? false,
+                    onItemSelected = ValidateAssetAndAssign
+                };
+            }
+
+            _drawerArgs.currentGUIDValue = _addressProperty.stringValue;
+
+            using (new EditorGUI.PropertyScope(position, label, property))
+            {
+                var fieldRect = new Rect(position.x, position.y, position.width - 16, standardPropertyHeight);
+                if(usingDirectReference)
+                {
+                    EditorGUI.PropertyField(fieldRect, _assetProperty, new GUIContent(property.displayName));
                 }
                 else
                 {
-                    string dropdownDisplayName = assetName == null ? "None" : assetName;
-                    var ctrlRect = EditorGUI.PrefixLabel(fieldRect, property.GetGUIContent());
-                    if (EditorGUI.DropdownButton(ctrlRect, new GUIContent(dropdownDisplayName), FocusType.Passive))
+                    if(canLoadFromCatalog)
                     {
-                        OpenAddressablesDropdown(fieldRect, _addressProperty, componentRequirement);
+                        var filterRect = new Rect(fieldRect.x + 32, fieldRect.y + standardPropertyHeight, fieldRect.width - 32, standardPropertyHeight);
+                        _drawerArgs.filter = EditorGUI.TextField(filterRect, "Filter: ", _drawerArgs.filter);
+                        _addressProperty.stringValue = EditorGUI.TextField(fieldRect, property.displayName, _addressProperty.stringValue);
+                    }
+                    else
+                    {
+                        AddressablesPathPropertyDrawerPickerHelper.DrawPicker(fieldRect, _drawerArgs);
                     }
                 }
-            }
 
-            var contextRect = new Rect(fieldRect.xMax, position.y, 16, standardPropertyHeight);
-            EditorGUI.DrawTextureTransparent(contextRect, R2EKConstants.AssetGUIDs.r2ekIcon, ScaleMode.ScaleToFit);
-            if (Event.current.type == EventType.ContextClick)
-            {
-                Vector2 mousePos = Event.current.mousePosition;
-                if (contextRect.Contains(mousePos))
+                var contextRect = new Rect(fieldRect.xMax, position.y, 16, standardPropertyHeight);
+                EditorGUI.DrawTextureTransparent(contextRect, R2EKConstants.AssetGUIDs.r2ekIcon, ScaleMode.ScaleToFit);
+                if (Event.current.type == EventType.ContextClick)
                 {
-                    GenericMenu menu = new GenericMenu();
-                    menu.AddItem(new GUIContent($"Use Direct Reference"), _useDirectReferenceProperty.boolValue, () =>
+                    Vector2 mousePos = Event.current.mousePosition;
+                    if (contextRect.Contains(mousePos))
                     {
-                        SetBoolValue(_useDirectReferenceProperty, !_useDirectReferenceProperty.boolValue);
-                    });
-
-                    if (_canLoadFromCatalogProperty != null && !hasNoCatalogLoad)
-                    {
-                        menu.AddItem(new GUIContent("Can Load from Catalog"), _canLoadFromCatalogProperty.boolValue, () =>
+                        GenericMenu menu = new GenericMenu();
+                        menu.AddItem(new GUIContent($"Use Direct Reference"), _useDirectReferenceProperty.boolValue, () =>
                         {
-                            SetBoolValue(_canLoadFromCatalogProperty, !_canLoadFromCatalogProperty.boolValue);
+                            SetBoolValue(_useDirectReferenceProperty, !_useDirectReferenceProperty.boolValue);
                         });
-                    }
 
-                    if (canLoadFromCatalog)
-                    {
-                        menu.AddItem(new GUIContent("Open Address Picker"), false, () =>
+                        if (_canLoadFromCatalogProperty != null && !hasNoCatalogLoad)
                         {
-                            OpenAddressablesDropdown(fieldRect, _addressProperty, componentRequirement);
-                        });
+                            menu.AddItem(new GUIContent("Can Load from Catalog"), _canLoadFromCatalogProperty.boolValue, () =>
+                            {
+                                SetBoolValue(_canLoadFromCatalogProperty, !_canLoadFromCatalogProperty.boolValue);
+                            });
+                        }
+
+                        if (canLoadFromCatalog)
+                        {
+                            menu.AddItem(new GUIContent("Open Address Picker"), false, () =>
+                            {
+                                OpenAddressablesDropdown(fieldRect, componentRequirement);
+                            });
+                        }
+                        ModifyContextMenu(menu);
+                        menu.ShowAsContext();
+                        Event.current.Use();
                     }
-                    ModifyContextMenu(menu);
-                    menu.ShowAsContext();
-                    Event.current.Use();
                 }
+                serializedObject.ApplyModifiedProperties();
+                serializedObject.Update();
             }
-            serializedObject.ApplyModifiedProperties();
-            serializedObject.Update();
-            EditorGUI.EndProperty();
         }
 
         public override bool CanCacheInspectorGUI(SerializedProperty property)
@@ -166,22 +168,19 @@ namespace RoR2.Editor.PropertyDrawers
         /// <param name="menu">The menu that's being modified.</param>
         protected virtual void ModifyContextMenu(GenericMenu menu) { }
 
-        private void OpenAddressablesDropdown(Rect rectForDropdown, SerializedProperty addressProperty, AddressableComponentRequirementAttribute componentRequirement)
+        private void OpenAddressablesDropdown(Rect rectForDropdown, AddressableComponentRequirementAttribute componentRequirement)
         {
             Type requiredComponentType = componentRequirement?.requiredComponentType;
             bool searchInChildren = componentRequirement?.searchInChildren ?? false;
 
             AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(),
                 _useFullPathForItems,
-                _filter,
+                _drawerArgs.filter,
                 requiredComponentType,
                 searchInChildren,
                 GetRequiredAssetTypes());
 
-            dropdown.onItemSelected += (item) =>
-            {
-                ValidateAssetAndAssign(item, addressProperty);
-            };
+            dropdown.onItemSelected += ValidateAssetAndAssign;
             dropdown.Show(rectForDropdown);
         }
 
@@ -193,7 +192,6 @@ namespace RoR2.Editor.PropertyDrawers
         /// Overriding this may be useful in case you want to accept ScriptableObjects using AddressReferencedAsset, but restrict to only specific ScriptableObjects, such as is the case with the <see cref="ItemDisplayRuleSet.KeyAssetRuleGroup.keyAssetAddress"/>
         /// </summary>
         /// <returns>An array of valid types for this field</returns>
-        /// <exception cref="NullReferenceException">Thrown from the base method in case the field info does not inherit from AddressREferencedAsset<></exception>
         protected virtual Type[] GetRequiredAssetTypes()
         {
             //Get the type of the field, and a reference to AddressReferencedAsset<>
@@ -229,13 +227,17 @@ namespace RoR2.Editor.PropertyDrawers
             property.serializedObject.ApplyModifiedProperties();
         }
 
-        private void ValidateAssetAndAssign(AddressablesPathDropdown.Item item, SerializedProperty addressProperty)
+        private void ValidateAssetAndAssign(AddressablesPathDropdown.Item item)
         {
             if (AddressablesPathDictionary.instance.TryGetGUIDFromPath(item.assetPath, out var guid))
             {
-                addressProperty.stringValue = guid;
-                addressProperty.serializedObject.ApplyModifiedProperties();
+                _addressProperty.stringValue = guid;
             }
+            else if(item.isNone)
+            {
+                _addressProperty.stringValue = "";
+            }
+            _addressProperty.serializedObject.ApplyModifiedProperties();
         }
 
         /// <summary>
