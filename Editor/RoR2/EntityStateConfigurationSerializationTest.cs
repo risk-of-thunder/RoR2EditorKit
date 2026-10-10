@@ -1,10 +1,14 @@
 ﻿using EntityStates;
+using R2API.AddressReferencedAssets;
+using RoR2.AsyncManagement;
+using RoR2.Projectile;
 using UnityEngine;
 
 namespace RoR2.Editor
 {
     public class EntityStateConfigurationSerializationTest : EntityState
     {
+        /*
         public static short shortValue;
         public static ushort ushortValue;
         public static int intValue;
@@ -16,8 +20,10 @@ namespace RoR2.Editor
         public static double doubleValue;
         public static string stringValue;
         public static BoundsInt boundsIntValue;
-        public static Quaternion quaternionValue;
+        public static Quaternion quaternionValue;*/
+        public static EntityStateGameObject vanillaPrefab;
 
+        /*
         [SerializeField]
         public Color colorValue;
         [SerializeField]
@@ -45,6 +51,8 @@ namespace RoR2.Editor
         [SerializeField]
         public DamageType enumFlagsValue;
         [SerializeField]
-        public HullClassification enumValue;
+        public HullClassification enumValue;*/
+        [SerializeField, AddressableComponentRequirement(typeof(ProjectileController))]
+        public EntityStateGameObject projectilePrefab;
     }
 }

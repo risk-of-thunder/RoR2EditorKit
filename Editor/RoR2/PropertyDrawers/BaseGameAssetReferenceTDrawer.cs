@@ -30,19 +30,90 @@ namespace RoR2.Editor.PropertyDrawers
         private static bool _useFullPathForItems;
         private string filter;
         private static Regex subObjectNameExtractor = new Regex(@"(?<=\[).*?(?=\])");
+
+        private AddressablesPathPropertyDrawerPickerHelper.DrawerArgs _drawerArgs;
+        private SerializedProperty m_AssetGUIDProperty;
+        private SerializedProperty m_SubObjectNameProperty;
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
 #if R2EK_R2API_ADDRESSABLES
             AddressableComponentRequirementAttribute componentRequirement = fieldInfo.GetCustomAttribute<AddressableComponentRequirementAttribute>(true);
 #endif
-            var pathDictionaryInstance = AddressablesPathDictionary.instance;
             Type[] typesOfAsset = GetAssetTypes();
+
+            m_AssetGUIDProperty = property.FindPropertyRelative("m_AssetGUID");
+            m_SubObjectNameProperty = property.FindPropertyRelative("m_SubObjectName");
+
+            if (_drawerArgs == null)
+            {
+                _drawerArgs = new AddressablesPathPropertyDrawerPickerHelper.DrawerArgs
+                {
+                    useFullPathForItems = _useFullPathForItems,
+                    allowedTypes = typesOfAsset,
+                    filter = filter,
+                    label = property.GetGUIContent(),
+                    requiredComponentType = componentRequirement?.requiredComponentType ?? null,
+                    searchComponentInChildren = componentRequirement?.searchInChildren ?? false,
+                    onItemSelected = OnItemSelected
+                };
+            }
+
+            _drawerArgs.currentGUIDValue = GetCurrentGUIDValue();
+            using (new EditorGUI.PropertyScope(position, label, property))
+            {
+                AddressablesPathPropertyDrawerPickerHelper.DrawPicker(position, _drawerArgs);
+            }
+        }
+
+        private string GetCurrentGUIDValue()
+        {
+            if (string.IsNullOrWhiteSpace(m_SubObjectNameProperty.stringValue))
+            {
+                return m_AssetGUIDProperty.stringValue;
+            }
+            else
+            {
+                return $"{m_AssetGUIDProperty.stringValue}[{m_SubObjectNameProperty.stringValue}]";
+            }
+        }
+
+        private void OnItemSelected(AddressablesPathDropdown.Item item)
+        {
+            if (!string.IsNullOrWhiteSpace(item.assetPath))
+            {
+                string guid = AddressablesPathDictionary.instance.GetGUIDFromPath(item.assetPath);
+
+                //We'll match using regex to get the subObjectName
+                Match match = subObjectNameExtractor.Match(guid);
+                if (match == Match.Empty)
+                {
+                    m_AssetGUIDProperty.stringValue = AddressablesPathDictionary.instance.GetGUIDFromPath(item.assetPath);
+                }
+                else //We've found the subobjectname, we need to store it within its correct property.
+                {
+                    string subObjectName = match.Value;
+                    string mainAssetGUID = guid.Substring(0, guid.IndexOf('['));
+
+                    m_AssetGUIDProperty.stringValue = mainAssetGUID;
+                    m_SubObjectNameProperty.stringValue = subObjectName;
+                }
+            }
+            else
+            {
+                m_AssetGUIDProperty.stringValue = "";
+                m_SubObjectNameProperty.stringValue = "";
+            }
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        private bool oldMethod(Rect position, SerializedProperty property, GUIContent label, AddressableComponentRequirementAttribute componentRequirement, AddressablesPathDictionary pathDictionaryInstance, Type[] typesOfAsset)
+        {
             using (new EditorGUI.PropertyScope(position, label, property))
             {
                 if (typesOfAsset == null)
                 {
                     EditorGUI.PropertyField(position, property, label, true);
-                    return;
+                    return false;
                 }
 
                 //Draw the label for the main control
@@ -57,7 +128,7 @@ namespace RoR2.Editor.PropertyDrawers
                 var rectForFilterProperty = new Rect(rectForDropdownControl.x, rectForDropdownControl.y + standardPropertyHeight, rectForDropdownControl.width, standardPropertyHeight);
                 filter = EditorGUI.TextField(rectForFilterProperty, "Filter:", filter);
 
-                
+
                 //finally, draw the main control
                 SerializedProperty m_AssetGUIDProperty = property.FindPropertyRelative("m_AssetGUID");
                 SerializedProperty m_SubObjectNameProperty = property.FindPropertyRelative("m_SubObjectName");
@@ -90,37 +161,15 @@ namespace RoR2.Editor.PropertyDrawers
 
                     dropdown.onItemSelected += (item) =>
                     {
-                        if(!string.IsNullOrWhiteSpace(item.assetPath))
-                        {
-                            string guid = pathDictionaryInstance.GetGUIDFromPath(item.assetPath);
-                            
-                            //We'll match using regex to get the subObjectName
-                            Match match = subObjectNameExtractor.Match(guid);
-                            if(match == Match.Empty)
-                            {
-                                m_AssetGUIDProperty.stringValue = pathDictionaryInstance.GetGUIDFromPath(item.assetPath);
-                            }
-                            else //We've found the subobjectname, we need to store it within its correct property.
-                            {
-                                string subObjectName = match.Value;
-                                string mainAssetGUID = guid.Substring(0, guid.IndexOf('['));
-
-                                m_AssetGUIDProperty.stringValue = mainAssetGUID;
-                                m_SubObjectNameProperty.stringValue = subObjectName;
-                            }
-                        }
-                        else
-                        {
-                            m_AssetGUIDProperty.stringValue = "";
-                            m_SubObjectNameProperty.stringValue = "";
-                        }
-                        serializedObject.ApplyModifiedProperties();
+                        
                     };
 
                     var mousePoint = Event.current.mousePosition;
                     dropdown.Show(rectForDropdownControl);
                 }
             }
+
+            return true;
         }
 
         private GUIContent GetDropdownButtonLabel(AddressablesPathDictionary addressablesDictionary, string assetGUID, string subObjectName)

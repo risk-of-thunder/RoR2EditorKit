@@ -1,4 +1,5 @@
 using HG;
+using RoR2.SolusWingGrid;
 using SimpleJSON;
 using System;
 using System.Collections;
@@ -7,14 +8,14 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.ResourceLocations;
-using IOPath = System.IO.Path;
 using Debug = UnityEngine.Debug;
-using System.Text;
+using IOPath = System.IO.Path;
 
 namespace RoR2.Editor
 {
@@ -508,7 +509,12 @@ namespace RoR2.Editor
         /// <returns>The guid itself.</returns>
         public string GetGUIDFromPath(string path)
         {
-            return pathToEntryDictionary[path].guid;
+            if(TryGetGUIDFromPath(path, out string guid))
+            {
+                return guid;
+            }
+            RoR2EKLog.Warning($"Path {path} is not in the AddressablesPathDictionary");
+            return string.Empty;
         }
 
         /// <summary>
@@ -535,7 +541,13 @@ namespace RoR2.Editor
         /// <returns>The path itself.</returns>
         public string GetPathFromGUID(string guid)
         {
-            return guidToEntryDictionary[guid].path;
+            if(TryGetPathFromGUID(guid, out string? path))
+            {
+                return path;
+            }
+
+            RoR2EKLog.Warning($"GUID {guid} is not in the AddressablesPathDictionary");
+            return string.Empty;
         }
 
         /// <summary>
@@ -561,7 +573,12 @@ namespace RoR2.Editor
         /// <returns>The Type of the Path</returns>
         public Type GetTypeFromPath(string path)
         {
-            return Type.GetType(pathToEntryDictionary[path].assemblyQualifiedTypeName);
+            if(TryGetTypeFromPath(path, out Type type))
+            {
+                return type;
+            }
+            RoR2EKLog.Warning($"Path {path} is not in the AddressablesPathDictionary");
+            return null;
         }
 
         /// <summary>
@@ -587,7 +604,12 @@ namespace RoR2.Editor
         /// <returns>The Type of the GUID</returns>
         public Type GetTypeFromGUID(string guid)
         {
-            return Type.GetType(guidToEntryDictionary[guid].assemblyQualifiedTypeName);
+            if (TryGetTypeFromGUID(guid, out Type type))
+            {
+                return type;
+            }
+            RoR2EKLog.Warning($"GUID {guid} is not in the AddressablesPathDictionary");
+            return null;
         }
 
         /// <summary>

@@ -13,9 +13,45 @@ namespace RoR2.Editor
     /// </summary>
     public static class VisualElementUtil
     {
+        public struct ControlBuilderArgs
+        {
+            public string elementLabel;
+            public Func<object> valueRetriever;
+            public DeconstructedChangeEvent changeEvent;
+
+            public FieldInfo fieldInfo;
+            public SerializedProperty fieldProperty;
+        }
+        public delegate VisualElement ControlBuilder(ControlBuilderArgs args);
+
         private static Dictionary<Type, ControlBuilder> _typeToControlBuilder = new Dictionary<Type, ControlBuilder>();
         private static ControlBuilder _enumFlagsControlBuilder;
         private static ControlBuilder _enumIndexControlBuilder;
+
+        /// <summary>
+        /// Assigns <paramref name="controlBuilder"/> to the type in <typeparamref name="T"/>
+        /// </summary>
+        /// <typeparam name="T">The type that <paramref name="controlBuilder"/> builds a controller for</typeparam>
+        /// <param name="controlBuilder">The controller builder</param>
+        /// <returns>True if the controller builder was succesfully added, otherwise false.</returns>
+        public static bool AddControlBuilderForType<T>(ControlBuilder controlBuilder) => AddControlBuilderForType(typeof(T), controlBuilder);
+
+        /// <summary>
+        /// Assigns <paramref name="controlBuilder"/> to the type in <paramref name="controlType"/>
+        /// </summary>
+        /// <param name="controlType">The type that <paramref name="controlBuilder"/> builds a controller for</param>
+        /// <param name="controlBuilder">The controller builder</param>
+        /// <returns>True if the controller builder was succesfully added, otherwise false.</returns>
+        public static bool AddControlBuilderForType(Type controlType, ControlBuilder controlBuilder)
+        {
+            if(_typeToControlBuilder.ContainsKey(controlType))
+            {
+                RoR2EKLog.Error($"Cannot add control builder for type {controlType} as one already exists.");
+                return false;
+            }
+            _typeToControlBuilder.Add(controlType, controlBuilder);
+            return true;
+        }
 
         /// <summary>
         /// Checks if its possible to build a Control for the specified type
@@ -27,36 +63,27 @@ namespace RoR2.Editor
             return typeof(UnityEngine.Object).IsAssignableFrom(type) || type.IsEnum || _typeToControlBuilder.ContainsKey(type);
         }
 
-        /// <summary>
-        /// Creates a Control from the specified type in <typeparamref name="T"/>
-        /// </summary>
-        /// <typeparam name="T">The type of control</typeparam>
-        /// <param name="label">The label for the control</param>
-        /// <param name="valueGetter">A function that obtains the current value for the control</param>
-        /// <param name="changeEvent">A deconstructed change event to handle what happens when the value changes</param>
-        /// <returns>A <see cref="INotifyValueChanged{T}"/> element that can be used as a control</returns>
-        public static INotifyValueChanged<T> CreateControlFromType<T>(string label, Func<object> valueGetter, DeconstructedChangeEvent changeEvent)
-        {
-            return (INotifyValueChanged<T>)CreateControlFromType(typeof(T), label, valueGetter, changeEvent);
-        }
+        [Obsolete("Use CreateControlFromType<T>(ControlBuilderArgs) instead. Keep in mind the new method returns a VisualElement instead of a NotifyValueChanged<T>")]
+        public static INotifyValueChanged<T> CreateControlFromType<T>(string label, Func<object> valueGetter, DeconstructedChangeEvent changeEvent) => (INotifyValueChanged<T>)CreateControlFromType(typeof(T), label, valueGetter, changeEvent);
 
-        /// <summary>
-        /// Creates a generic control from the specified type in <paramref name="type"/>
-        /// </summary>
-        /// <param name="type">The type of control</param>
-        /// <param name="label">The label for the control</param>
-        /// <param name="valueGetter">A function that obtains the current value for the control</param>
-        /// <param name="changeEvent">A deconstructed change event to handle what happens when the value changes</param>
-        /// <returns>A VisualElement that can be used as a control</returns>
-        /// <returns></returns>
-        public static VisualElement CreateControlFromType(Type type, string label, Func<object> valueGetter, DeconstructedChangeEvent changeEvent)
+        [Obsolete("Use CreateControlFromType<T>(ControlBuilderArgs) instead.")]
+        public static VisualElement CreateControlFromType(Type type, string label, Func<object> valueGetter, DeconstructedChangeEvent changeEvent) => CreateControlFromType(type, new ControlBuilderArgs
+        {
+            changeEvent = changeEvent,
+            elementLabel = label,
+            valueRetriever = valueGetter
+        });
+
+        public static VisualElement CreateControlFromType<T>(ControlBuilderArgs args) => CreateControlFromType(typeof(T), args);
+
+        public static VisualElement CreateControlFromType(Type type, ControlBuilderArgs args)
         {
             if (typeof(UnityEngine.Object).IsAssignableFrom(type))
             {
-                var objectField = new ObjectField(label);
+                var objectField = new ObjectField(args.elementLabel);
                 objectField.objectType = type;
-                objectField.value = (UnityEngine.Object)valueGetter();
-                objectField.RegisterValueChangedCallback(evt => changeEvent(new DeconstructedChangeEventData
+                objectField.value = (UnityEngine.Object)args.valueRetriever();
+                objectField.RegisterValueChangedCallback(evt => args.changeEvent(new DeconstructedChangeEventData
                 {
                     eventBase = evt,
                     newValue = evt.newValue,
@@ -69,13 +96,13 @@ namespace RoR2.Editor
             {
                 if (type.GetCustomAttribute<FlagsAttribute>() != null)
                 {
-                    return _enumFlagsControlBuilder(label, valueGetter, changeEvent);
+                    return _enumFlagsControlBuilder(args);
                 }
-                return _enumIndexControlBuilder(label, valueGetter, changeEvent);
+                return _enumIndexControlBuilder(args);
             }
             if (_typeToControlBuilder.TryGetValue(type, out var builder))
             {
-                return builder(label, valueGetter, changeEvent);
+                return builder(args);
             }
 
             return new Label($"Creation of control for type {type.Name} is not implemented.");
@@ -113,7 +140,6 @@ namespace RoR2.Editor
         /// <returns>A normalized string for an UXML trait</returns>
         public static string NormalizeNameForUXMLTrait(string nameofProperty) => ObjectNames.NicifyVariableName(nameofProperty).ToLower().Replace(" ", "-");
 
-        private delegate VisualElement ControlBuilder(string label, Func<object> valueGetter, DeconstructedChangeEvent changeEvent);
 
         /// <summary>
         /// Represents a deconstructed version of a <see cref="ChangeEvent{T}"/>, since there's no non generic version of <see cref="ChangeEvent{T}"/>, this is used instead.
@@ -144,8 +170,12 @@ namespace RoR2.Editor
 
         static VisualElementUtil()
         {
-            Add<short>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<short>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new IntegerField(label);
                 field.value = (short)valueGetter();
                 field.RegisterValueChangedCallback(e =>
@@ -171,8 +201,12 @@ namespace RoR2.Editor
                 });
                 return field;
             });
-            Add<ushort>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<ushort>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new IntegerField(label);
                 field.value = (ushort)valueGetter();
                 field.RegisterValueChangedCallback(e =>
@@ -198,8 +232,12 @@ namespace RoR2.Editor
                 });
                 return field;
             });
-            Add<int>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<int>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new IntegerField(label);
                 field.value = (int)valueGetter();
                 field.RegisterValueChangedCallback(e =>
@@ -213,8 +251,12 @@ namespace RoR2.Editor
                 });
                 return field;
             });
-            Add<uint>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<uint>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new LongField(label);
                 field.value = (uint)valueGetter();
                 field.RegisterValueChangedCallback(e =>
@@ -241,8 +283,12 @@ namespace RoR2.Editor
                 });
                 return field;
             });
-            Add<long>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<long>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new LongField(label);
                 field.value = (long)valueGetter();
                 field.RegisterValueChangedCallback(e =>
@@ -256,8 +302,12 @@ namespace RoR2.Editor
                 });
                 return field;
             });
-            Add<ulong>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<ulong>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new LongField(label);
                 field.value = (long)(ulong)valueGetter();
                 field.RegisterValueChangedCallback(e =>
@@ -280,38 +330,62 @@ namespace RoR2.Editor
                 });
                 return field;
             });
-            Add<bool>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<bool>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var toggle = new Toggle(label);
                 GenericSetup(toggle, valueGetter, changeEvent);
                 return toggle;
             });
-            Add<float>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<float>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new FloatField(label);
                 GenericSetup(field, valueGetter, changeEvent);
                 return field;
             });
-            Add<double>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<double>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new DoubleField(label);
                 GenericSetup(field, valueGetter, changeEvent);
                 return field;
             });
-            Add<string>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<string>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new TextField(label);
                 GenericSetup(field, valueGetter, changeEvent);
                 return field;
             });
-            Add<Color>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<Color>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new ColorField(label);
                 GenericSetup(field, valueGetter, changeEvent);
                 return field;
             });
-            Add<LayerMask>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<LayerMask>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new LayerMaskField(label);
                 field.value = ((LayerMask)valueGetter()).value;
                 field.RegisterValueChangedCallback(evt =>
@@ -325,50 +399,82 @@ namespace RoR2.Editor
                 });
                 return field;
             });
-            Add<Vector2>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<Vector2>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new Vector2Field(label);
                 GenericSetup(field, valueGetter, changeEvent);
                 return field;
             });
-            Add<Vector3>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<Vector3>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new Vector3Field(label);
                 GenericSetup(field, valueGetter, changeEvent);
                 return field;
             });
-            Add<Vector4>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<Vector4>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new Vector4Field(label);
                 GenericSetup(field, valueGetter, changeEvent);
                 return field;
             });
-            Add<Vector2Int>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<Vector2Int>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new Vector2IntField(label);
                 GenericSetup(field, valueGetter, changeEvent);
                 return field;
             });
-            Add<Vector3Int>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<Vector3Int>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new Vector3IntField(label);
                 GenericSetup(field, valueGetter, changeEvent);
                 return field;
             });
-            Add<Rect>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<Rect>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new RectField(label);
                 GenericSetup(field, valueGetter, changeEvent);
                 return field;
             });
-            Add<RectInt>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<RectInt>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new RectIntField(label);
                 GenericSetup(field, valueGetter, changeEvent);
                 return field;
             });
-            Add<char>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<char>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new TextField(label, 1, false, false, '*');
                 field.value = char.ToString((char)valueGetter());
                 field.RegisterValueChangedCallback(evt => changeEvent(new DeconstructedChangeEventData
@@ -379,20 +485,32 @@ namespace RoR2.Editor
                 }));
                 return field;
             });
-            Add<Bounds>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<Bounds>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new BoundsField(label);
                 GenericSetup(field, valueGetter, changeEvent);
                 return field;
             });
-            Add<BoundsInt>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<BoundsInt>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new BoundsIntField(label);
                 GenericSetup(field, valueGetter, changeEvent);
                 return field;
             });
-            Add<Quaternion>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<Quaternion>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new Vector3Field(label);
                 field.value = ((Quaternion)valueGetter()).eulerAngles;
                 field.RegisterValueChangedCallback(evt =>
@@ -409,31 +527,38 @@ namespace RoR2.Editor
                 });
                 return field;
             });
-            Add<AnimationCurve>((label, valueGetter, changeEvent) =>
+            AddControlBuilderForType<AnimationCurve>((args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var field = new CurveField(label);
                 GenericSetup(field, valueGetter, changeEvent);
                 return field;
             });
 
-            _enumFlagsControlBuilder = (label, valueGetter, changeEvent) =>
+            _enumFlagsControlBuilder = (args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var enumFlagsField = new EnumFlagsField(label, (Enum)valueGetter());
                 GenericSetup(enumFlagsField, valueGetter, changeEvent);
                 return enumFlagsField;
             };
 
-            _enumIndexControlBuilder = (label, valueGetter, changeEvent) =>
+            _enumIndexControlBuilder = (args) =>
             {
+                var label = args.elementLabel;
+                var valueGetter = args.valueRetriever;
+                var changeEvent = args.changeEvent;
+
                 var enumField = new EnumField(label, (Enum)valueGetter());
                 GenericSetup(enumField, valueGetter, changeEvent);
                 return enumField;
             };
-
-            void Add<T>(ControlBuilder func)
-            {
-                _typeToControlBuilder.Add(typeof(T), func);
-            }
 
             void GenericSetup<T>(BaseField<T> field, Func<object> getter, DeconstructedChangeEvent changeEvent)
             {

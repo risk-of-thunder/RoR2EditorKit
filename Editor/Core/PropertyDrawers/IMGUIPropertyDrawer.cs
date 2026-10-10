@@ -10,10 +10,7 @@ namespace RoR2.Editor
     /// <typeparam name="T"><inheritdoc cref="ExtendedPropertyDrawer{T}"/></typeparam>
     public abstract class IMGUIPropertyDrawer<T> : ExtendedPropertyDrawer<T>
     {
-        /// <summary>
-        /// Returns the sum of <see cref="EditorGUIUtility.singleLineHeight"/> and <see cref="EditorGUIUtility.standardVerticalSpacing"/>
-        /// </summary>
-        public float standardPropertyHeight => EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+        public float standardPropertyHeight => EditorGUIUtility.singleLineHeight;
 
         /// <summary>
         /// <inheritdoc cref="ExtendedPropertyDrawer{T}.OnGUI(Rect, SerializedProperty, GUIContent)"/>

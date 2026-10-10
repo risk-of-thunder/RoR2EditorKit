@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
@@ -93,11 +94,15 @@ namespace RoR2.Editor
         }
         private SerializedProperty _boundProperty;
 
+        public Action<FieldInfo, SerializedProperty, object> onFieldValueChanged;
+
+        public ReadOnlyCollection<FieldInfo> serializableFields { get; private set; }
+        private readonly List<FieldInfo> _serializableFields = new List<FieldInfo>();
+
         private SerializedProperty _serializedFieldsProperty;
         private readonly List<FieldInfo> _serializableStaticFields = new List<FieldInfo>();
         private readonly List<FieldInfo> _serializableInstanceFields = new List<FieldInfo>();
         private readonly List<KeyValuePair<SerializedProperty, int>> _unrecognizedFields = new List<KeyValuePair<SerializedProperty, int>>();
-
         /// <summary>
         /// Checks for the type being serialized and updates the UI accordingly
         /// </summary>
@@ -141,6 +146,9 @@ namespace RoR2.Editor
 
             _serializableInstanceFields.AddRange(filteredFields.Where(fInfo => !fInfo.IsStatic));
             _serializableStaticFields.AddRange(filteredFields.Where(fInfo => fInfo.IsStatic));
+
+            _serializableFields.AddRange(_serializableInstanceFields);
+            _serializableFields.AddRange(_serializableStaticFields);
         }
 
         private void UpdateSerializedFieldElements()
@@ -325,8 +333,18 @@ namespace RoR2.Editor
                 SerializationMediator.SerializeFromFieldInfo(fieldInfo, data.newValue, out var result);
                 stringValue.stringValue = result.serializedString;
                 stringValue.serializedObject.ApplyModifiedProperties();
+
+                onFieldValueChanged(fieldInfo, fieldProperty, data.newValue);
             };
-            return VisualElementUtil.CreateControlFromType(fieldType, label, valueGetter, changeEvent);
+
+            return VisualElementUtil.CreateControlFromType(fieldType, new VisualElementUtil.ControlBuilderArgs
+            {
+                changeEvent = changeEvent,
+                elementLabel = label,
+                valueRetriever = valueGetter,
+                fieldInfo = fieldInfo,
+                fieldProperty = fieldProperty
+            });
         }
 
         /// <summary>
@@ -349,6 +367,8 @@ namespace RoR2.Editor
             unrecognizedFieldContainer = this.Q<VisualElement>("UnrecognizedFieldContainer");
             clearUnrecognizedFieldsButton = this.Q<Button>("ClearUnrecognizedFields");
             unrecognizedFieldsFoldout = this.Q<Foldout>("UnrecognizedFields");
+
+            serializableFields = new ReadOnlyCollection<FieldInfo>(_serializableFields);
         }
     }
 }
