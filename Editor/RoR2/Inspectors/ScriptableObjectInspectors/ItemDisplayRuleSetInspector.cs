@@ -9,7 +9,7 @@ using UnityEngine.UIElements;
 namespace RoR2.Editor.Inspectors
 {
     [CustomEditor(typeof(ItemDisplayRuleSet))]
-    public class ItemDisplayRuleSetInspector : VisualElementScriptableObjectInspector<ItemDisplayRuleSet>
+    public class ItemDisplayRuleSetInspector : ScriptableObjectVisualElementEditor<ItemDisplayRuleSet>
     {
         TextField _keyAssetFilterText;
         ListView _keyAssetListView;
