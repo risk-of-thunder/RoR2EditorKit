@@ -11,9 +11,9 @@ using UnityEngine.UIElements;
 namespace RoR2.Editor.Inspectors
 {
     [CustomEditor(typeof(MapNodeGroup))]
-    public class MapNodeGroupInspector : VisualElementComponentInspector<MapNodeGroup>
+    public class MapNodeGroupInspector : ComponentVisualElementEditor<MapNodeGroup>
     {
-        public string parentGameObjectName => inspectorProjectSettings.GetOrCreateSetting(nameof(parentGameObjectName), "NodeContainer");
+        public string parentGameObjectName => editorProjectSettings.GetOrCreateSetting(nameof(parentGameObjectName), "NodeContainer");
 
         private Vector3 _offsetUpVector;
         private ObjectField _parentObjectField;
@@ -48,29 +48,29 @@ namespace RoR2.Editor.Inspectors
         private VisualElement _buttonsContainer;
 
         private EditorCoroutine _bakingCoroutine;
-        protected override void OnInspectorEnabled()
+        protected override void OnEditorEnabled()
         {
-            base.OnInspectorEnabled();
+            base.OnEditorEnabled();
             _parentObject = targetType.transform.Find(parentGameObjectName)?.gameObject ?? null;
-            _offsetUpVector = inspectorProjectSettings.GetOrCreateSetting(nameof(_offsetUpVector), new Vector3(0, 15, 0));
-            _raycastMask = inspectorProjectSettings.GetOrCreateSetting(nameof(_raycastMask), LayerIndex.CommonMasks.bullet);
+            _offsetUpVector = editorProjectSettings.GetOrCreateSetting(nameof(_offsetUpVector), new Vector3(0, 15, 0));
+            _raycastMask = editorProjectSettings.GetOrCreateSetting(nameof(_raycastMask), LayerIndex.CommonMasks.bullet);
 
-            _nodeCylinderSize = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_nodeCylinderSize), 1f);
-            _addNodeKeyCode = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_addNodeKeyCode), KeyCode.B);
-            _deleteNearestKeyCode = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_deleteNearestKeyCode), KeyCode.M);
-            _addOnCamPosKeyCode = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_addOnCamPosKeyCode), KeyCode.V);
-            _linkPreviewColor = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_linkPreviewColor), Color.yellow);
-            _previewNodeInRangeColor = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_previewNodeInRangeColor), Color.yellow);
-            _previewNodeOutOfRangeColor = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_previewNodeOutOfRangeColor), Color.red);
-            _placedNodeWithNoLinksColor = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_placedNodeWithNoLinksColor), (Color)new Color32
+            _nodeCylinderSize = editorPreferenceSettings.GetOrCreateSetting(nameof(_nodeCylinderSize), 1f);
+            _addNodeKeyCode = editorPreferenceSettings.GetOrCreateSetting(nameof(_addNodeKeyCode), KeyCode.B);
+            _deleteNearestKeyCode = editorPreferenceSettings.GetOrCreateSetting(nameof(_deleteNearestKeyCode), KeyCode.M);
+            _addOnCamPosKeyCode = editorPreferenceSettings.GetOrCreateSetting(nameof(_addOnCamPosKeyCode), KeyCode.V);
+            _linkPreviewColor = editorPreferenceSettings.GetOrCreateSetting(nameof(_linkPreviewColor), Color.yellow);
+            _previewNodeInRangeColor = editorPreferenceSettings.GetOrCreateSetting(nameof(_previewNodeInRangeColor), Color.yellow);
+            _previewNodeOutOfRangeColor = editorPreferenceSettings.GetOrCreateSetting(nameof(_previewNodeOutOfRangeColor), Color.red);
+            _placedNodeWithNoLinksColor = editorPreferenceSettings.GetOrCreateSetting(nameof(_placedNodeWithNoLinksColor), (Color)new Color32
             {
                 a = 255,
                 r = 255,
                 g = 165
             });
-            _bakedNodeColor = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_bakedNodeColor), Color.green);
-            _invalidPlacedNodeColor = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_invalidPlacedNodeColor), Color.black);
-            _bakedLinkColor = inspectorPreferenceSettings.GetOrCreateSetting(nameof(_bakedLinkColor), Color.magenta);
+            _bakedNodeColor = editorPreferenceSettings.GetOrCreateSetting(nameof(_bakedNodeColor), Color.green);
+            _invalidPlacedNodeColor = editorPreferenceSettings.GetOrCreateSetting(nameof(_invalidPlacedNodeColor), Color.black);
+            _bakedLinkColor = editorPreferenceSettings.GetOrCreateSetting(nameof(_bakedLinkColor), Color.magenta);
         }
 
         protected override void InitializeVisualElement(VisualElement templateInstanceRoot)
@@ -91,39 +91,39 @@ namespace RoR2.Editor.Inspectors
 
             var drawAllNodes = templateInstanceRoot.Q<Toggle>("DrawAllNodes");
             drawAllNodes.RegisterValueChangedCallback(evt => _drawallNodes = evt.newValue);
-            drawAllNodes.ConnectWithSetting(inspectorPreferenceSettings, nameof(drawAllNodes), false);
-            _drawallNodes = inspectorPreferenceSettings.GetOrCreateSetting<bool>(nameof(drawAllNodes));
+            drawAllNodes.ConnectWithSetting(editorPreferenceSettings, nameof(drawAllNodes), false);
+            _drawallNodes = editorPreferenceSettings.GetOrCreateSetting<bool>(nameof(drawAllNodes));
 
             var drawNodeDistance = templateInstanceRoot.Q<FloatField>("DrawNodeDistance");
             drawNodeDistance.RegisterValueChangedCallback(evt => _drawNodeDistance = evt.newValue);
-            drawNodeDistance.ConnectWithSetting(inspectorPreferenceSettings, nameof(drawNodeDistance), 22500f);
-            _drawNodeDistance = inspectorPreferenceSettings.GetOrCreateSetting<float>(nameof(drawNodeDistance));
+            drawNodeDistance.ConnectWithSetting(editorPreferenceSettings, nameof(drawNodeDistance), 22500f);
+            _drawNodeDistance = editorPreferenceSettings.GetOrCreateSetting<float>(nameof(drawNodeDistance));
 
             var usePainter = templateInstanceRoot.Q<Toggle>("UsePainter");
             usePainter.RegisterValueChangedCallback(OnUsePainterSet);
-            usePainter.ConnectWithSetting(inspectorPreferenceSettings, nameof(usePainter), false);
-            _usePainter = inspectorPreferenceSettings.GetOrCreateSetting<bool>(nameof(usePainter));
+            usePainter.ConnectWithSetting(editorPreferenceSettings, nameof(usePainter), false);
+            _usePainter = editorPreferenceSettings.GetOrCreateSetting<bool>(nameof(usePainter));
             _painterContainer.SetDisplay(_usePainter);
 
             var painterSize = templateInstanceRoot.Q<FloatField>("BrushSize");
             painterSize.RegisterValueChangedCallback(evt => _painterSize = evt.newValue);
-            painterSize.ConnectWithSetting(inspectorPreferenceSettings, nameof(painterSize), 4f);
-            _painterSize = inspectorPreferenceSettings.GetOrCreateSetting<float>(nameof(painterSize));
+            painterSize.ConnectWithSetting(editorPreferenceSettings, nameof(painterSize), 4f);
+            _painterSize = editorPreferenceSettings.GetOrCreateSetting<float>(nameof(painterSize));
             
             var nodeDistance = templateInstanceRoot.Q<FloatField>("NodeDistance");
             nodeDistance.RegisterValueChangedCallback(evt => _maxDistance = evt.newValue);
-            nodeDistance.ConnectWithSetting(inspectorPreferenceSettings, nameof(nodeDistance), 15f);
-            _maxDistance = inspectorPreferenceSettings.GetOrCreateSetting<float>(nameof(nodeDistance));
+            nodeDistance.ConnectWithSetting(editorPreferenceSettings, nameof(nodeDistance), 15f);
+            _maxDistance = editorPreferenceSettings.GetOrCreateSetting<float>(nameof(nodeDistance));
 
             var roundHitPointToNearestGrid = templateInstanceRoot.Q<Toggle>("RoundPointToGrid");
             roundHitPointToNearestGrid.RegisterValueChangedCallback(evt => _roundHitPointToNearestGrid = evt.newValue);
-            roundHitPointToNearestGrid.ConnectWithSetting(inspectorPreferenceSettings, nameof(roundHitPointToNearestGrid), false);
-            _roundHitPointToNearestGrid = inspectorPreferenceSettings.GetOrCreateSetting<bool>(nameof(roundHitPointToNearestGrid));
+            roundHitPointToNearestGrid.ConnectWithSetting(editorPreferenceSettings, nameof(roundHitPointToNearestGrid), false);
+            _roundHitPointToNearestGrid = editorPreferenceSettings.GetOrCreateSetting<bool>(nameof(roundHitPointToNearestGrid));
 
             var gateName = templateInstanceRoot.Q<TextField>("GateName");
             gateName.RegisterValueChangedCallback(evt => _gateName = evt.newValue);
-            gateName.ConnectWithSetting(inspectorProjectSettings, nameof(gateName), "");
-            _gateName = inspectorProjectSettings.GetOrCreateSetting<string>(nameof(gateName));
+            gateName.ConnectWithSetting(editorProjectSettings, nameof(gateName), "");
+            _gateName = editorProjectSettings.GetOrCreateSetting<string>(nameof(gateName));
 
             templateInstanceRoot.Q<Button>("UpdateNoCeilingMasks").clicked += UpdateNoCeilingMasks;
             templateInstanceRoot.Q<Button>("UpdateTeleporterMasks").clicked += UpdateTeleporterMasks;
@@ -304,7 +304,7 @@ namespace RoR2.Editor.Inspectors
             _parentObject = evt.newValue ? evt.newValue as GameObject : null;
             if (evt.newValue)
             {
-                inspectorProjectSettings.SetSettingValue(nameof(parentGameObjectName), evt.newValue.name);
+                editorProjectSettings.SetSettingValue(nameof(parentGameObjectName), evt.newValue.name);
             }
         }
 
@@ -315,19 +315,19 @@ namespace RoR2.Editor.Inspectors
             EnumFlagsField flagsField = new EnumFlagsField(HullMask.None);
             flagsField.label = "Forbidden Hulls";
             flagsField.RegisterValueChangedCallback(evt => _forbiddenHulls = (HullMask)evt.newValue);
-            flagsField.ConnectWithSetting(inspectorProjectSettings, "forbiddenHullMask", _forbiddenHulls);
+            flagsField.ConnectWithSetting(editorProjectSettings, "forbiddenHullMask", _forbiddenHulls);
             flagContainer.Add(flagsField);
 
             flagsField = new EnumFlagsField(NodeFlags.None);
             flagsField.label = "Node Flags";
             flagsField.RegisterValueChangedCallback(evt => _nodeFlags = (NodeFlags)evt.newValue);
-            flagsField.ConnectWithSetting(inspectorProjectSettings, "nodeFlags", _nodeFlags);
+            flagsField.ConnectWithSetting(editorProjectSettings, "nodeFlags", _nodeFlags);
             flagContainer.Add(flagsField);
         }
 
         private void OnSceneGUI()
         {
-            if (inspectorEnabled && targetType.nodeGraph)
+            if (editorEnabled && targetType.nodeGraph)
             {
                 if (_bakingCoroutine == null)
                     DrawPlacerOrPainter();
