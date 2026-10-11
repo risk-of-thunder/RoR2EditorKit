@@ -1,3 +1,9 @@
+# 6.0.1
+
+### RoR2ScriptsChanges
+
+* Added a toggle to the CharacterBodyWizard editor to include the KeyItemSlot in the character
+
 # 6.0.0
 
 ### Core Changes
