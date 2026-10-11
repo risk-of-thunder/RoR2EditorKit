@@ -10,6 +10,7 @@
 
 ### RoR2ScriptsChanges
 
+* Added the ``RoR2ScriptableObjectAdvancedDropdown``. A custom MenuItem found under ``Assets/Create/RoR2/`` that displays an AdvancedDropdown with all of Risk of Rain 2's creatable Scriptable Objects.
 * Added the ``AdvancedDropdownEnumPropertyDrawer``, which shows enum fields as AdvancedDropdowns.
 	* New enums can be drawn this way by inheriting from the class
 * A lot of Inspectors have been updated with fixes and improvements
