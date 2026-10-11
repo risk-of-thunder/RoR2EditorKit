@@ -23,6 +23,7 @@ namespace RoR2.Editor.Windows
         public string characterName;
         public GameObject modelFBX;
         public bool simpleHurtBox;
+        public bool includeKeyItemSlot;
         public List<string> stateMachines = new List<string>
         {
             "Body",
@@ -293,6 +294,11 @@ The resulting prefab contains the necesary components for it's specified type, a
                 {
                     LogError(e);
                 }
+            }
+
+            if(includeKeyItemSlot)
+            {
+                _copiedBody.AddComponent<KeyItemSlot>();
             }
             yield break;
         }
