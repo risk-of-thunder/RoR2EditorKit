@@ -1,4 +1,5 @@
 ﻿using UnityEditor;
+using UnityEngine;
 
 namespace RoR2.Editor.Inspectors
 {
@@ -9,28 +10,24 @@ namespace RoR2.Editor.Inspectors
         protected override void DrawIMGUI()
         {
             collectionProp = serializedObject.FindProperty("transformPairs");
-            EditorGUILayout.BeginHorizontal();
-            collectionProp.isExpanded = EditorGUILayout.Foldout(collectionProp.isExpanded, collectionProp.displayName, true);
-            collectionProp.arraySize = EditorGUILayout.IntField("", collectionProp.arraySize);
-            EditorGUILayout.EndHorizontal();
-            if (collectionProp.isExpanded)
+
+            DrawDefaultInspector();
+
+            if(GUILayout.Button($"Fill empty names with transform names"))
             {
-                EditorGUI.indentLevel++;
-                for (int i = 0; i < collectionProp.arraySize; i++)
+                for(int i = 0; i < collectionProp.arraySize; i++)
                 {
-                    var element = collectionProp.GetArrayElementAtIndex(i);
-                    var name = element.FindPropertyRelative("name");
-                    var transform = element.FindPropertyRelative("transform");
+                    SerializedProperty nameTransformPairProp = collectionProp.GetArrayElementAtIndex(i);
 
-                    EditorGUILayout.BeginHorizontal();
+                    SerializedProperty nameProp = nameTransformPairProp.FindPropertyRelative(nameof(ChildLocator.NameTransformPair.name));
+                    SerializedProperty transformProp = nameTransformPairProp.FindPropertyRelative(nameof(ChildLocator.NameTransformPair.transform));
 
-                    IMGUIUtil.PropertyFieldWithSnugLabel(name, false, 20);
-
-                    IMGUIUtil.PropertyFieldWithSnugLabel(transform, false, 20);
-
-                    EditorGUILayout.EndHorizontal();
+                    if(string.IsNullOrWhiteSpace(nameProp.stringValue) && transformProp.objectReferenceValue)
+                    {
+                        nameProp.stringValue = transformProp.objectReferenceValue.name;
+                    }
                 }
-                EditorGUI.indentLevel--;
+                serializedObject.ApplyModifiedProperties();
             }
         }
     }
