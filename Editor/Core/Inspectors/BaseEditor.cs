@@ -4,8 +4,19 @@ using UnityEngine;
 
 namespace RoR2.Editor
 {
+    /// <summary>
+    /// The <see cref="BaseEditor{T}"/> is the base <see cref="UnityEditor.Editor"/> for all the R2EK inspectors.
+    /// <para></para>
+    /// These inspectors are extremely configurable by the end user by the usage of the <see cref="EditorSettingCollection"/> system. alongside this, the inspectors can be disabled or enabled, which is saved as a user preference.
+    /// <br></br>
+    /// Inspectors can be made with either IMGUI (<see cref="BaseIMGUIEditor{T}"/>) or Visual Elements (<see cref="BaseVisualElementEditor{T}"/>)
+    /// </summary>
+    /// <typeparam name="T">The type of Object being edited</typeparam>
     public abstract class BaseEditor<T> : UnityEditor.Editor where T : UnityEngine.Object
     {
+        /// <summary>
+        /// REturns the Editor's ProjectSetting's EditorSetting
+        /// </summary>
         public EditorSettingCollection editorProjectSettings
         {
             get
@@ -15,6 +26,9 @@ namespace RoR2.Editor
         }
         private EditorSettingCollection _editorProjectSettings;
 
+        /// <summary>
+        /// Returns the Editor's UserSetting's EditorSetting
+        /// </summary>
         public EditorSettingCollection editorPreferenceSettings
         {
             get
@@ -24,6 +38,9 @@ namespace RoR2.Editor
         }
         private EditorSettingCollection _editorPreferenceSettings;
 
+        /// <summary>
+        /// Checks wether the inspector is enabled or disabled, disabled inspectors should display their default inspector UI
+        /// </summary>
         public bool editorEnabled
         {
             get => editorPreferenceSettings.GetOrCreateSetting("isInspectorEnabled", false);
@@ -38,10 +55,23 @@ namespace RoR2.Editor
             }
         }
 
+
+        /// <summary>
+        /// Casts <see cref="UnityEditor.Editor.target"/> into <typeparamref name="T"/>
+        /// </summary>
         public T targetType => (T)target;
+
+        /// <summary>
+        /// Casts <see cref="UnityEditor.Editor.targets"/> into an array of <typeparamref name="T"/>
+        /// </summary>
         public T[] targetTypes => (T[])targets;
 
         //stinky, bad, but whatever
+        /// <summary>
+        /// Calls the method that gets called when an editor becomes enabled or disabled.
+        /// <para></para>
+        /// This method shouldn't be called unless you know what you're doing.
+        /// </summary>
         protected void ForceOnEditorEnabledChange() => OnEditorEnabledChangeInternal();
         
         private void OnEditorEnabledChangeInternal()
@@ -61,16 +91,30 @@ namespace RoR2.Editor
             serializedObject.ApplyModifiedProperties();
         }
 
+        /// <summary>
+        /// Method called before either <see cref="OnEditorEnabled"/> or <see cref="OnEditorDisabled"/>.
+        /// <br></br>
+        /// Either method is called depending on the value of <see cref="editorEnabled"/>
+        /// </summary>
         protected virtual void PreEditorEnabledCallbacks() { }
+
+        /// <summary>
+        /// Method called after either <see cref="OnEditorEnabled"/> or <see cref="OnEditorDisabled"/>.
+        /// <br></br>
+        /// Either method is called depending on the value of <see cref="editorEnabled"/>
+        /// </summary>
         protected virtual void PostEditorEnabledCallbacks() { }
 
+        /// <summary>
+        /// Called when the custom editor becomes enabled
+        /// </summary>
         protected virtual void OnEditorEnabled() { }
+        /// <summary>
+        /// Called when the custom editor becomes disabled
+        /// </summary>
         protected virtual void OnEditorDisabled() { }
 
-        protected virtual void OnEnable()
-        {
-
-        }
+        protected virtual void OnEnable() { }
 
         protected virtual void OnDisable()
         {

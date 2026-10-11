@@ -4,7 +4,7 @@ using UnityEngine;
 namespace RoR2.Editor.Inspectors
 {
     [CustomEditor(typeof(NetworkStateMachine))]
-    public sealed class NetworkStateMachineInspector : IMGUIComponentInspector<NetworkStateMachine>
+    public sealed class NetworkStateMachineInspector : ComponentIMGUIEditor<NetworkStateMachine>
     {
         protected override void DrawIMGUI()
         {

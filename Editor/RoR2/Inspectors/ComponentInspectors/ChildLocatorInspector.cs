@@ -4,7 +4,7 @@ using UnityEngine;
 namespace RoR2.Editor.Inspectors
 {
     [CustomEditor(typeof(ChildLocator))]
-    public class ChildLocatorInspector : IMGUIComponentInspector<ChildLocator>
+    public class ChildLocatorInspector : ComponentIMGUIEditor<ChildLocator>
     {
         SerializedProperty collectionProp;
         protected override void DrawIMGUI()

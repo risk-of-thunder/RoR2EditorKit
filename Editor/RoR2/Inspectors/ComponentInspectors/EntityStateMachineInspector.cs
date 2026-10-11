@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 namespace RoR2.Editor.Inspectors
 {
     [CustomEditor(typeof(EntityStateMachine))]
-    public class EntityStateMachineInspector : VisualElementComponentInspector<EntityStateMachine>
+    public class EntityStateMachineInspector : ComponentVisualElementEditor<EntityStateMachine>
     {
 
         private SerializedProperty _customNameProperty;
