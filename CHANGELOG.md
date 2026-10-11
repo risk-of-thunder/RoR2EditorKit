@@ -1,3 +1,10 @@
+# 5.7.2
+
+### RoR2ScriptsChanges
+
+* Added the ``AdvancedDropdownEnumPropertyDrawer``, which shows enum fields as AdvancedDropdowns.
+	* New enums can be drawn this way by inheriting from the class
+	
 # 5.7.1
 
 ### Core Changes
