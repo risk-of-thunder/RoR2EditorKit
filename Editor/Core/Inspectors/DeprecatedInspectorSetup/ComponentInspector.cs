@@ -1,14 +1,10 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace RoR2.Editor
+namespace RoR2.Editor.Deprecated
 {
-    /// <summary>
-    /// base <see cref="Inspector{T}"/> that's used for creating Inspectors for <see cref="Component"/>s.
-    /// <br>Implements a toggle on the UI that can be used to enable or disable the inspector</br>
-    /// <para>See also <see cref="VisualElementComponentInspector{T}"/> and <see cref="IMGUIComponentInspector{T}"/></para>
-    /// </summary>
-    /// <typeparam name="T">The type of component being inspected</typeparam>
+    [Obsolete(OBSOLETE_MESSAGE)]
     public abstract class ComponentInspector<T> : Inspector<T> where T : Component
     {
         private VisualElement toggleTemplateInstance;

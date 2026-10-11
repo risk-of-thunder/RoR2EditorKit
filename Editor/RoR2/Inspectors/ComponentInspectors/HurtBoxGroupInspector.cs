@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 namespace RoR2.Editor.Inspectors
 {
     [CustomEditor(typeof(HurtBoxGroup))]
-    public class HurtBoxGroupInspector : VisualElementComponentInspector<HurtBoxGroup>
+    public class HurtBoxGroupInspector : ComponentVisualElementEditor<HurtBoxGroup>
     {
 
         private SerializedProperty _hurtBoxesProperty;

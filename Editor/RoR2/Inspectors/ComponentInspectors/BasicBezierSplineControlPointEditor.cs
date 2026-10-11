@@ -5,7 +5,7 @@ using UnityEngine;
 namespace RoR2.Editor.Inspectors
 {
     [CustomEditor(typeof(BasicBezierSplineControlPoint))]
-    public sealed class BasicBezierSplineControlPointEditor : IMGUIComponentInspector<BasicBezierSplineControlPoint>
+    public sealed class BasicBezierSplineControlPointEditor : ComponentIMGUIEditor<BasicBezierSplineControlPoint>
     {
         private struct ControlPointContext
         {
@@ -137,6 +137,33 @@ namespace RoR2.Editor.Inspectors
                     targetType.transform.forward = previous.transform.position - targetType.transform.position;
                 }
             }
+        }
+
+        private void OnSceneGUI()
+        {
+            if(!editorEnabled)
+            {
+                return;
+            }
+
+            Matrix4x4 oldMatrix = Handles.matrix;
+
+            Matrix4x4 matrix = Matrix4x4.TRS(targetType.transform.position, targetType.transform.rotation, Vector3.one);
+            Handles.matrix = matrix;
+            Handles.color = Color.white;
+
+            EditorGUI.BeginChangeCheck();
+
+            Vector3 newForwardVelocity = Handles.FreeMoveHandle(targetType.forwardVelocity, Quaternion.identity, 0.2f, Vector3.zero, Handles.CubeHandleCap);
+            Vector3 newBackwardVelocity = Handles.FreeMoveHandle(targetType.backwardVelocity, Quaternion.identity, 0.2f, Vector3.zero, Handles.CubeHandleCap);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(target, "Move Handles");
+                targetType.forwardVelocity = newForwardVelocity;
+                targetType.backwardVelocity = newBackwardVelocity;
+            }
+
+            Handles.matrix = oldMatrix;
         }
     }
 }

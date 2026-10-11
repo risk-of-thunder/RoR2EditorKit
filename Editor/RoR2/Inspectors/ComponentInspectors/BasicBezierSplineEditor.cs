@@ -4,7 +4,7 @@ using UnityEngine;
 namespace RoR2.Editor.Inspectors
 {
     [CustomEditor(typeof(BasicBezierSpline))]
-    public sealed class BasicBezierSplineEditor : IMGUIComponentInspector<BasicBezierSpline>
+    public sealed class BasicBezierSplineEditor : ComponentIMGUIEditor<BasicBezierSpline>
     {
         protected override void DrawIMGUI()
         {

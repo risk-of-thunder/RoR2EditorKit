@@ -1,3 +1,31 @@
+# 6.0.0
+
+### Core Changes
+
+* The ``Inspector``, and it's relevant child classes have been marked as ``Obsolete``.
+	* These classes have been moved to the namespace ``RoR2.Editor.Deprecated``
+	* An upgrading guide has been left at the root of the repository, called ``UPGRADING_FROM_OLD_INSPECTOR_FRAMEWORK.md``
+	* They have been replaced by ``BaseEditor`` and it's child classes.
+		* Developer Note: While I was updating some inspectors to add new fields added in Hallowed Concepts, I noticed that the ``IMGUIComponentInspector`` had a glaring issue where the labels where being cut off by the controls. While I tried to fix this issue, it quickly became apparent that the actual fix was to create new versions of the classes and handle inheritance in a more elegant manner.
+
+### RoR2ScriptsChanges
+
+* Added a ``ShowThumbnail`` property drawer
+* Added the ``RoR2ScriptableObjectAdvancedDropdown``. A custom MenuItem found under ``Assets/Create/RoR2/`` that displays an AdvancedDropdown with all of Risk of Rain 2's creatable Scriptable Objects.
+* Added the ``AdvancedDropdownEnumPropertyDrawer``, which shows enum fields as AdvancedDropdowns.
+	* New enums can be drawn this way by inheriting from the class
+* A lot of Inspectors have been updated with fixes and improvements
+	* Added ``Handles`` to ``BasicBezierSplineControlPoint``, used to move around the Forward and Backward velocity.
+	* Added a ``PropertyDrawer`` for ``ChildLocator.NameTransformPair``
+	* Added a button to the ``ChildLocator`` inspector for filling empty names with transform names
+	* Added ``ignoreDeactivateHurtboxes`` to the ``HurtboxGroup`` inspector
+	* Fixed ``JumpVolume``'s inspector having missing fields and broken UI
+	* Fixed ``ItemDef``'s inspector being out of date, adding missing fields and fixing the broken display of the ``itemTierDef`` field
+	* Removed the ``SerializableContentPack`` inspector
+	* Added a ``NetworkStateMachine`` inspector
+* Snug propety labels in property drawers are properly snug
+* Fixed the package not working if R2API_Addressables wasnt installed
+	
 # 5.7.1
 
 ### Core Changes

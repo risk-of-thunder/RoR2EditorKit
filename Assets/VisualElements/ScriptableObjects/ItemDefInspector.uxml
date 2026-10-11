@@ -1,13 +1,20 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <ui:VisualElement name="GeneralSettings">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:VisualElement name="TierRelated">
         <uie:PropertyField name="DeprecatedTier" binding-path="deprecatedTier" label="Item Tier" />
-        <uie:PropertyField name="PickupIconSprite" binding-path="pickupIconSprite" />
-        <uie:PropertyField name="PickupModelPrefab" binding-path="pickupModelPrefab" />
         <uie:PropertyField name="ItemTierDef" binding-path="_itemTierDef" label="Custom ItemTier" style="display: none;" />
     </ui:VisualElement>
+    <ui:VisualElement name="PickupRelated">
+        <uie:PropertyField name="PickupIconSprite" binding-path="pickupIconSprite" />
+        <uie:PropertyField name="PickupIconSpriteReference" binding-path="pickupIconSpriteReference" />
+        <uie:PropertyField name="PickupModelPrefab" binding-path="pickupModelPrefab" />
+        <uie:PropertyField name="PickupModelReference" binding-path="pickupModelReference" />
+        <uie:PropertyField name="ItemPickupSpawnSound" binding-path="itemPickupSpawnSound" />
+        <uie:PropertyField name="ItemPickupDestroySound" binding-path="itemPickupDestroySound" />
+    </ui:VisualElement>
     <ui:VisualElement name="TagsAndOthers">
-        <uie:PropertyField name="Hidden" label="Is Hidden" binding-path="hidden" />
-        <uie:PropertyField binding-path="canRemove" label="Can be Removed from Inventory" name="CanRemove" />
+        <uie:PropertyField name="Hidden" binding-path="isConsumed" />
+        <uie:PropertyField name="Hidden" binding-path="hidden" />
+        <uie:PropertyField binding-path="canRemove" name="CanRemove" />
         <uie:PropertyField name="Tags" binding-path="tags" label="Item Tags" />
     </ui:VisualElement>
     <ui:VisualElement name="RequirementSettings">

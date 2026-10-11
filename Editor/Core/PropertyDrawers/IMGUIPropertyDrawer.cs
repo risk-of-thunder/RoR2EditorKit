@@ -62,7 +62,7 @@ namespace RoR2.Editor
         /// </summary>
         /// <param name="label">The label to calculate it's width</param>
         /// <returns>The minmum width for this label</returns>
-        protected float GetWidthForSnugLabel(GUIContent label) => EditorStyles.largeLabel.CalcSize(label).x + 10;
+        protected float GetWidthForSnugLabel(GUIContent label) => EditorStyles.largeLabel.CalcSize(label).x;
 
         /// <summary>
         /// Draws a PropertyField with a snug label
@@ -85,7 +85,7 @@ namespace RoR2.Editor
         protected void DrawPropertyFieldWithSnugLabel(Rect totalPosition, SerializedProperty property, GUIContent label, bool drawChildren)
         {
             var labelRect = totalPosition;
-            labelRect.width = GetWidthForSnugLabel(label) + 20;
+            labelRect.width = GetWidthForSnugLabel(label);
             EditorGUI.LabelField(labelRect, label);
 
             var controlRect = totalPosition;

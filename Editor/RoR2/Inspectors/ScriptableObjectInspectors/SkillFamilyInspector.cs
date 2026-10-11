@@ -4,13 +4,13 @@ using UnityEditor;
 namespace RoR2.Editor.Inspectors
 {
     [CustomEditor(typeof(SkillFamily))]
-    public class SkillFamilyInspector : IMGUIScriptableObjectInspector<SkillFamily>
+    public class SkillFamilyInspector : ScriptableObjectIMGUIEditor<SkillFamily>
     {
         SerializedProperty defaultVariantIndex;
         SerializedProperty variantsArray;
         int chosenIndex;
 
-        protected virtual void OnEnable()
+        protected override void OnEnable()
         {
             defaultVariantIndex = serializedObject.FindProperty("defaultVariantIndex");
             variantsArray = serializedObject.FindProperty(nameof(SkillFamily.variants));

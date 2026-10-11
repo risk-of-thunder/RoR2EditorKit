@@ -1,20 +1,80 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
 namespace RoR2.Editor.Inspectors
 {
     [CustomEditor(typeof(ItemDef))]
-    public class ItemDefInspector : VisualElementScriptableObjectInspector<ItemDef>
+    public class ItemDefInspector : ScriptableObjectVisualElementEditor<ItemDef>
     {
+        private const string ITEM_TOKEN_EXPANDED_SETTING_NAME = "itemTokensExpanded";
 
+        private SerializedProperty _nameTokenProperty;
+        private SerializedProperty _pickupTokenProperty;
+        private SerializedProperty _descriptionTokenProperty;
+        private SerializedProperty _loreTokenProperty;
 
-        private SerializedProperty deprecatedTierEnumProperty;
+        private PropertyField _itemTierDefPropertyField;
+        protected override void InitializeVisualElement(VisualElement visualElement)
+        {
+            base.InitializeVisualElement(visualElement);
+
+            _nameTokenProperty = serializedObject.FindProperty(nameof(ItemDef.nameToken));
+            _pickupTokenProperty = serializedObject.FindProperty(nameof(ItemDef.pickupToken));
+            _descriptionTokenProperty = serializedObject.FindProperty(nameof(ItemDef.descriptionToken));
+            _loreTokenProperty = serializedObject.FindProperty(nameof(ItemDef.loreToken));
+
+            visualElement.Q<PropertyField>("DeprecatedTier").RegisterValueChangeCallback(OnDeprecatedTierChanged);
+            _itemTierDefPropertyField = visualElement.Q<PropertyField>("ItemTierDef");
+
+            var foldout = visualElement.Q<Foldout>("TokenContainer");
+            foldout.value = GetOrCreateSetting(ITEM_TOKEN_EXPANDED_SETTING_NAME, false, EditorSettingManager.SettingType.UserSetting);
+            foldout.RegisterValueChangedCallback(OnFoldoutClicked);
+            foldout.AddSimpleContextMenu(new ContextMenuData
+            {
+                actionStatusCheck = (_) => R2EKSettings.instance.tokenExists ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled,
+                menuAction = AssignTokens,
+                menuName = "Generate Tokens",
+            });
+        }
+
+        private void OnFoldoutClicked(ChangeEvent<bool> evt)
+        {
+            SetSetting(ITEM_TOKEN_EXPANDED_SETTING_NAME, evt.newValue, EditorSettingManager.SettingType.UserSetting);
+        }
+
+        private void AssignTokens(DropdownMenuAction action)
+        {
+            var prefixToken = R2EKSettings.instance.GetTokenAllUpperCase();
+
+            var objName = serializedObject.targetObject.name;
+            var properName = objName.ToUpperInvariant().Replace(" ", "");
+            var stringToFormat = prefixToken + "_ITEM_" + properName + "_{0}";
+
+            _nameTokenProperty.stringValue = string.Format(stringToFormat, "NAME");
+            _pickupTokenProperty.stringValue = string.Format(stringToFormat, "PICKUP");
+            _descriptionTokenProperty.stringValue = string.Format(stringToFormat, "DESC");
+            _loreTokenProperty.stringValue = string.Format(stringToFormat, "LORE");
+
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        private void OnDeprecatedTierChanged(SerializedPropertyChangeEvent propertyChangedEvent)
+        {
+            var enumName = propertyChangedEvent.changedProperty.enumNames[propertyChangedEvent.changedProperty.enumValueIndex];
+            ItemTier newItemTier = (ItemTier)Enum.Parse(typeof(ItemTier), enumName);
+
+            _itemTierDefPropertyField.SetDisplay(newItemTier == ItemTier.AssignedAtRuntime);
+        }
+        /*private SerializedProperty deprecatedTierEnumProperty;
         private SerializedProperty nameTokenProperty;
         private SerializedProperty pickupTokenProperty;
         private SerializedProperty descTokenProperty;
         private SerializedProperty loreTokenProperty;
+
         private PropertyField itemTierDefField;
+
         protected override void InitializeVisualElement(VisualElement templateInstanceRoot)
         {
             deprecatedTierEnumProperty = serializedObject.FindProperty("deprecatedTier");
@@ -76,6 +136,6 @@ namespace RoR2.Editor.Inspectors
                 default:
                     return null;
             }
-        }
+        }*/
     }
 }

@@ -8,7 +8,7 @@ using UnityEngine;
 namespace RoR2.Editor.Inspectors
 {
     [CustomEditor(typeof(ZiprailController))]
-    public sealed class ZiprailInspector : IMGUIComponentInspector<ZiprailController>
+    public sealed class ZiprailInspector : ComponentIMGUIEditor<ZiprailController>
     {
         protected override void DrawIMGUI()
         {

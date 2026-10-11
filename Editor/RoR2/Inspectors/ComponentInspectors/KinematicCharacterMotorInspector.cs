@@ -5,7 +5,7 @@ using UnityEngine;
 namespace RoR2.Editor.Inspectors
 {
     [CustomEditor(typeof(KinematicCharacterMotor))]
-    public class KinematicCharacterMotorInspector : IMGUIComponentInspector<KinematicCharacterMotor>
+    public class KinematicCharacterMotorInspector : ComponentIMGUIEditor<KinematicCharacterMotor>
     {
         private HideFlags _originalFlags;
         protected override void DrawIMGUI()
@@ -18,7 +18,7 @@ namespace RoR2.Editor.Inspectors
             }
         }
 
-        protected override void OnInspectorEnabled()
+        protected override void OnEditorEnabled()
         {
             if (!targetType || !targetType.Capsule)
                 return;
@@ -27,7 +27,7 @@ namespace RoR2.Editor.Inspectors
             targetType.Capsule.hideFlags = HideFlags.NotEditable;
         }
 
-        protected override void OnInspectorDisabled()
+        protected override void OnEditorDisabled()
         {
             if (!targetType || !targetType.Capsule)
                 return;

@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 namespace RoR2.Editor.Inspectors
 {
     [CustomEditor(typeof(EntityStateConfiguration))]
-    public class EntityStateConfigurationInspector : VisualElementScriptableObjectInspector<EntityStateConfiguration>
+    public class EntityStateConfigurationInspector : ScriptableObjectVisualElementEditor<EntityStateConfiguration>
     {
 
         private SerializedProperty _stateTypeProperty;

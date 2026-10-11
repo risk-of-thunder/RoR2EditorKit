@@ -4,10 +4,10 @@ using UnityEngine;
 namespace RoR2.Editor.Inspectors
 {
     [CustomEditor(typeof(JumpVolume))]
-    public class JumpVolumeInspector : IMGUIComponentInspector<JumpVolume>
+    public class JumpVolumeInspector : ComponentIMGUIEditor<JumpVolume>
     {
         private const string SETTING_NAME = "autoCalculateJumpVelocity";
-        private bool autoCalculateJumpVelocity => inspectorProjectSettings.GetOrCreateSetting(SETTING_NAME, true);
+        private bool autoCalculateJumpVelocity => editorProjectSettings.GetOrCreateSetting(SETTING_NAME, true);
         private SerializedProperty _targetElevationTransformProperty;
         private SerializedProperty _timeProperty;
 
@@ -19,24 +19,45 @@ namespace RoR2.Editor.Inspectors
         }
         protected override void DrawIMGUI()
         {
-            if (IMGUIUtil.CreateFieldForSetting(inspectorProjectSettings, SETTING_NAME, true))
-            {
-                AutoCalculateJumpVelocity();
-            }
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(_targetElevationTransformProperty);
-            EditorGUILayout.PropertyField(_timeProperty);
-            if (EditorGUI.EndChangeCheck())
-            {
-                AutoCalculateJumpVelocity();
-            }
+            DrawJumpVolumeSettings();
+            EditorGUILayout.Space(4);
+            DrawJumpVelocitySettings();
+        }
 
-            EditorGUI.BeginDisabledGroup(autoCalculateJumpVelocity);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(JumpVolume.jumpVelocity)));
-            EditorGUI.EndDisabledGroup();
+        private void DrawJumpVolumeSettings()
+        {
+            EditorGUILayout.LabelField("Jump Volume Settings", EditorStyles.boldLabel);
 
+            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(JumpVolume.acceptTeam)));
             EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(JumpVolume.jumpSoundString)));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(JumpVolume.AllowAirControl)));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(JumpVolume.disableFallDamage)));
             EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(JumpVolume.onJump)));
+        }
+
+        private void DrawJumpVelocitySettings()
+        {
+            EditorGUILayout.LabelField($"Jump Velocity Settings", EditorStyles.boldLabel);
+
+            if (IMGUIUtil.CreateFieldForSetting(editorProjectSettings, SETTING_NAME, true))
+            {
+                AutoCalculateJumpVelocity();
+            }
+
+            {
+                using var changeScope = new EditorGUI.ChangeCheckScope();
+                EditorGUILayout.PropertyField(_targetElevationTransformProperty);
+                EditorGUILayout.PropertyField(_timeProperty);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(JumpVolume.alignJumpVelocityToTransform)));
+
+                if (changeScope.changed)
+                    AutoCalculateJumpVelocity();
+            }
+
+            using(new EditorGUI.DisabledGroupScope(autoCalculateJumpVelocity))
+            {
+                EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(JumpVolume.jumpVelocity)));
+            }
         }
 
         private void AutoCalculateJumpVelocity()
