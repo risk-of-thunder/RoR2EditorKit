@@ -1,5 +1,4 @@
 ﻿using EntityStates;
-using R2API.AddressReferencedAssets;
 using RoR2.AsyncManagement;
 using RoR2.Projectile;
 using UnityEngine;
@@ -53,7 +52,10 @@ namespace RoR2.Editor
         public DamageType enumFlagsValue;
         [SerializeField]
         public HullClassification enumValue;
-        [SerializeField, AddressableComponentRequirement(typeof(ProjectileController))]
+        [SerializeField]
+#if R2EK_R2API_ADDRESSABLES
+        [R2API.AddressReferencedAssets.AddressableComponentRequirement(typeof(ProjectileController))]
+#endif
         public EntityStateGameObject projectilePrefab;
     }
 }
