@@ -43,6 +43,7 @@ namespace RoR2.Editor
         /// <returns>The visual element that represents the control for the serialized property</returns>
         public sealed override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
+            base.CreatePropertyGUI(property);
             VisualElementTemplateDictionary.instance.GetTemplateInstance(GetType().Name, rootVisualElement, ValidatePath);
             FinishUI();
             return rootVisualElement;
