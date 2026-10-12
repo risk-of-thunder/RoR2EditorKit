@@ -47,6 +47,8 @@ namespace RoR2.Editor.PropertyDrawers
             /// </summary>
             public Action<AddressablesPathDropdown.Item> onItemSelected;
 
+            public Action onButtonClicked;
+
             //GUI related
             /// <summary>
             /// The label for the picker field
@@ -92,6 +94,7 @@ namespace RoR2.Editor.PropertyDrawers
             GUIContent dropdownButtonLabel = GetDropdownButtonLabel(args.currentGUIDValue);
             if(EditorGUI.DropdownButton(rectForDropdownControl, dropdownButtonLabel, FocusType.Passive))
             {
+                args.onButtonClicked?.Invoke();
                 Type requiredComponentType = args.requiredComponentType;
                 bool searchInChildren = args.searchComponentInChildren;
 
