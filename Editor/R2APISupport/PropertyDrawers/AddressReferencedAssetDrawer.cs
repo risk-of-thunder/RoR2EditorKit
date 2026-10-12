@@ -26,6 +26,18 @@ namespace RoR2.Editor.PropertyDrawers
     [CustomPropertyDrawer(typeof(AddressReferencedAsset), true)]
     public class AddressReferencedAssetDrawer : IMGUIPropertyDrawer<AddressReferencedAsset>
     {
+        private struct LockedProperties
+        {
+            public SerializedProperty parentProperty;
+            public SerializedProperty addressProperty;
+
+            public LockedProperties(SerializedProperty parentProperty)
+            {
+                this.parentProperty = parentProperty;
+                addressProperty = parentProperty.FindPropertyRelative("_address");
+            }
+        }
+
         private static bool _useFullPathForItems;
 
         /// <summary>
@@ -36,17 +48,15 @@ namespace RoR2.Editor.PropertyDrawers
         /// <summary>
         /// Wether the asset is currently using a direct reference.
         /// </summary>
-        protected bool usingDirectReference => _useDirectReferenceProperty.boolValue;
+        protected bool usingDirectReference { get; private set; }
 
         /// <summary>
         /// Wether the asset can be loaded from a catalog.
         /// </summary>
-        protected bool canLoadFromCatalog => _canLoadFromCatalogProperty?.boolValue ?? false;
+        protected bool canLoadFromCatalog { get; private set; }
 
-        private SerializedProperty _assetProperty;
-        private SerializedProperty _addressProperty;
-        private SerializedProperty _useDirectReferenceProperty;
-        private SerializedProperty _canLoadFromCatalogProperty;
+        private LockedProperties? _lockedProperties;
+
         private AddressablesPathPropertyDrawerPickerHelper.DrawerArgs _drawerArgs;
 
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -55,10 +65,10 @@ namespace RoR2.Editor.PropertyDrawers
 
             AddressableComponentRequirementAttribute componentRequirement = fieldInfo.GetCustomAttribute<AddressableComponentRequirementAttribute>(true);
 
-            _assetProperty = property.FindPropertyRelative("_asset");
-            _addressProperty = property.FindPropertyRelative("_address");
-            _useDirectReferenceProperty = property.FindPropertyRelative("_useDirectReference");
-            _canLoadFromCatalogProperty = property.FindPropertyRelative("_canLoadFromCatalog");
+            var _assetProperty = property.FindPropertyRelative("_asset");
+            var _addressProperty = property.FindPropertyRelative("_address");
+            var _useDirectReferenceProperty = property.FindPropertyRelative("_useDirectReference");
+            var _canLoadFromCatalogProperty = property.FindPropertyRelative("_canLoadFromCatalog");
 
             //Fuck this shi, but if its using direct reference, nullify the address, otherwise, nullify the asset.
             if(_useDirectReferenceProperty.boolValue)
@@ -76,6 +86,9 @@ namespace RoR2.Editor.PropertyDrawers
                 _canLoadFromCatalogProperty.boolValue = false;
             }
 
+            usingDirectReference = _useDirectReferenceProperty.boolValue;
+            canLoadFromCatalog = _canLoadFromCatalogProperty?.boolValue ?? false;
+
             if (_drawerArgs == null)
             {
                 _drawerArgs = new AddressablesPathPropertyDrawerPickerHelper.DrawerArgs
@@ -86,7 +99,8 @@ namespace RoR2.Editor.PropertyDrawers
                     label = property.GetGUIContent(),
                     requiredComponentType = componentRequirement?.requiredComponentType ?? null,
                     searchComponentInChildren = componentRequirement?.searchInChildren ?? false,
-                    onItemSelected = ValidateAssetAndAssign
+                    onItemSelected = ValidateAssetAndAssign,
+                    onButtonClicked = () => LockProperty(serializedProperty)
                 };
             }
 
@@ -136,10 +150,11 @@ namespace RoR2.Editor.PropertyDrawers
 
                         if (canLoadFromCatalog)
                         {
-                            menu.AddItem(new GUIContent("Open Address Picker"), false, () =>
+                            menu.AddItem(new GUIContent("Open Address Picker"), false, (data) =>
                             {
+                                LockProperty((SerializedProperty)data);
                                 OpenAddressablesDropdown(fieldRect, componentRequirement);
-                            });
+                            }, serializedProperty);
                         }
                         ModifyContextMenu(menu);
                         menu.ShowAsContext();
@@ -151,6 +166,11 @@ namespace RoR2.Editor.PropertyDrawers
             }
         }
 
+        private void LockProperty(SerializedProperty property = null)
+        {
+            _lockedProperties = new LockedProperties(property ?? serializedProperty);
+        }
+
         public override bool CanCacheInspectorGUI(SerializedProperty property)
         {
             return false;
@@ -159,6 +179,10 @@ namespace RoR2.Editor.PropertyDrawers
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             base.GetPropertyHeight(property, label);
+            if(property.FindPropertyRelative("_useDirectReference").boolValue)
+            {
+                return standardPropertyHeight;
+            }
             return standardPropertyHeight * 2;
         }
 
@@ -229,15 +253,21 @@ namespace RoR2.Editor.PropertyDrawers
 
         private void ValidateAssetAndAssign(AddressablesPathDropdown.Item item)
         {
-            if (AddressablesPathDictionary.instance.TryGetGUIDFromPath(item.assetPath, out var guid))
+            if(_lockedProperties.HasValue)
             {
-                _addressProperty.stringValue = guid;
+                var addressProperty = _lockedProperties.Value.addressProperty;
+
+                if (AddressablesPathDictionary.instance.TryGetGUIDFromPath(item.assetPath, out var guid))
+                {
+                    addressProperty.stringValue = guid;
+                }
+                else if(item.isNone)
+                {
+                    addressProperty.stringValue = "";
+                }
+                _lockedProperties = null;
             }
-            else if(item.isNone)
-            {
-                _addressProperty.stringValue = "";
-            }
-            _addressProperty.serializedObject.ApplyModifiedProperties();
+            serializedObject.ApplyModifiedProperties();
         }
 
         /// <summary>

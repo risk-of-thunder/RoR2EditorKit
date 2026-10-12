@@ -1,3 +1,13 @@
+# 6.0.2
+
+### RoR2ScriptsChanges
+
+* Fixed the ``AssetReferenceT<>`` property drawer sometimes assigning the picked address to the wrong field
+
+### R2APIScriptsChanges
+
+* Fixed the ``AddressReferencedAsset`` property drawer sometimes assigning the picked address to the wrong field
+
 # 6.0.1
 
 ### RoR2ScriptsChanges
