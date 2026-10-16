@@ -99,7 +99,7 @@ namespace RoR2.Editor
         {
             if(string.IsNullOrWhiteSpace(_gameExecPath))
             {
-                if(TryFindAppInstallDirectory(ROR2_APP_ID, out string directory))
+                if(TryFindAppInstallDirectory(ROR2_APP_ID, out string directory) && File.Exists(Path.Combine(directory, EXECUTABLE_NAME)))
                 {
                     _gameExecPath = Path.Combine(directory, EXECUTABLE_NAME);
                     return _gameExecPath;
