@@ -47,27 +47,7 @@ namespace RoR2.Editor
                 VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(R2EKPreferences), rootElement);
 
                 var execPath = rootElement.Q<PropertyField>("GameExecutablePath");
-                execPath.RegisterValueChangeCallback(OnGameExecPathSet);
                 rootElement.Bind(_serializedObject);
-            }
-
-            private void OnGameExecPathSet(SerializedPropertyChangeEvent evt)
-            {
-                var changedProperty = evt.changedProperty;
-                var path = changedProperty.stringValue;
-
-                if (string.IsNullOrWhiteSpace(path))
-                {
-                    return;
-                }
-
-                var fileNameWithExtension = IOPath.GetFileName(path);
-                if (fileNameWithExtension != EXECUTABLE_NAME)
-                {
-                    EditorUtility.DisplayDialog("Invalid Executable", "The executable you've selected is not Risk of Rain 2, please select the game's executable.", "Ok");
-                    changedProperty.stringValue = "";
-                    changedProperty.serializedObject.ApplyModifiedProperties();
-                }
             }
 
             public override void OnDeactivate()
@@ -91,6 +71,12 @@ namespace RoR2.Editor
         private const string STEAM_REGISTRY_PATH = @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Valve\Steam";
         private const string EXECUTABLE_OPERATION_CANCELLED_MESSAGE = "The operation for finding the Risk of Rain 2 Executable has been cancelled, the full capabilities of the Risk of Rain 2 Editor Kit may not be available.";
         const uint ROR2_APP_ID = 632360U;
+
+        [InitializeOnLoadMethod]
+        private static void VerifyExecutable()
+        {
+            instance.GetGameExecutablePath();
+        }
 
         /// <summary>
         /// Retrieves the path to the Risk of Rain 2 Executable.
