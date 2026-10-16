@@ -407,7 +407,7 @@ namespace RoR2.Editor
                 return System.IO.File.ReadAllText(jsonFilePath);
             }
 
-            RoR2EKLog.Fatal("LRAPI_RETURNS NOT FOUND!\n The json file lrapi_returns was not found, This version of RoR2EditorKit requires the game to be at the very least post memory management update.");
+            RoR2EKLog.Message("LRAPI_RETURNS NOT FOUND!\n The json file lrapi_returns was not found, This version of RoR2EditorKit requires the game to be at the very least post memory management update.");
             return "";
         }
 
