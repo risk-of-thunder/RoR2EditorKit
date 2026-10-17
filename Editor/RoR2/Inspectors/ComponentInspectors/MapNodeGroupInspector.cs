@@ -2,6 +2,7 @@ using RoR2.Navigation;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Unity.EditorCoroutines.Editor;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -132,17 +133,25 @@ namespace RoR2.Editor.Inspectors
             templateInstanceRoot.Q<Button>("MakeAirNodes").clicked += MakeAirNodes;
             templateInstanceRoot.Q<Button>("MakeGroundNodes").clicked += MakeGroundNodes;
             templateInstanceRoot.Q<Button>("ClearNodes").clicked += ClearNodes;
-            templateInstanceRoot.Q<Button>("BakeNodeGraph").clicked += BakeNodeGraph;
-            templateInstanceRoot.Q<Button>("BakeGraphAsync").clicked += BakeGraphAsync;
+            templateInstanceRoot.Q<Button>("BakeNodeGraph").clicked += BakeNodeGraphOptimized;
+            templateInstanceRoot.Q<Button>("BakeVanilla").clicked += BakeVanilla;
             templateInstanceRoot.Q<Button>("DisableNodeIcons").clicked += DisableNodeIcons;
             templateInstanceRoot.Q<Button>("EnableNodeIcons").clicked += EnableNodeIcons;
             
             _buttonsContainer = templateInstanceRoot.Q<VisualElement>("ButtonContainer");
         }
 
-        private void BakeGraphAsync()
+        private void BakeVanilla()
         {
-            _bakingCoroutine = EditorCoroutineUtility.StartCoroutine(BakeNodeGraphAsync(rootVisualElement.Q<ProgressBar>(), _buttonsContainer), this);
+            var sw = Stopwatch.StartNew();
+
+            EditorUtility.SetDirty(targetType.nodeGraph);
+            targetType.Bake(targetType.nodeGraph);
+            AssetDatabase.SaveAssets();
+
+            sw.Stop();
+
+            RoR2EKLog.Debug("Baking node graph with vanilla method took " + sw.ElapsedMilliseconds);
         }
 
         private void OnUsePainterSet(ChangeEvent<bool> evt)
@@ -202,8 +211,9 @@ namespace RoR2.Editor.Inspectors
             {
                 if (mapNode)
                 {
-                    if (mapNode.links.Count <= 0) //Destroy instantly as there's no links.
+                    if (mapNode.links.Count <= 0) 
                     {
+                        // Destroy instantly as there's no links.
                         DestroyImmediate(mapNode.gameObject);
                         c++;
                         continue;
@@ -230,55 +240,178 @@ namespace RoR2.Editor.Inspectors
             }
         }
 
-        private void BakeNodeGraph()
+        private void BakeNodeGraphOptimized()
         {
+            var sw = Stopwatch.StartNew();
+
             EditorUtility.SetDirty(targetType.nodeGraph);
-            targetType.Bake(targetType.nodeGraph);
+            BakeOptimised(targetType.nodeGraph);
             AssetDatabase.SaveAssets();
+
+            sw.Stop();
+
+            RoR2EKLog.Debug("Baking node graph optimized took " + sw.ElapsedMilliseconds);
         }
 
-        private IEnumerator BakeNodeGraphAsync(ProgressBar progressBar, VisualElement buttonContainer)
+        private static Vector3Int WorldToCell(Vector3 position, float cellSize)
         {
-            progressBar.SetDisplay(true);
-            buttonContainer.SetEnabled(false);
-            EditorUtility.SetDirty(targetType.nodeGraph);
-            List<MapNode> nodes = targetType.GetNodes();
-            ReadOnlyCollection<MapNode> readOnlyCollection = nodes.AsReadOnly();
+            return new Vector3Int(
+                Mathf.FloorToInt(position.x / cellSize),
+                Mathf.FloorToInt(position.y / cellSize),
+                Mathf.FloorToInt(position.z / cellSize));
+        }
 
-            var modulo = Mathf.Floor((Mathf.Log10(nodes.Count) + 1) * 2);
+        private Dictionary<Vector3Int, List<MapNode>> BuildSpatialGrid(
+            List<MapNode> nodes,
+            float cellSize,
+            DisposableProgressBar disposableProgressBar)
+        {
+            Dictionary<Vector3Int, List<MapNode>> grid = new Dictionary<Vector3Int, List<MapNode>>();
+
             for (int i = 0; i < nodes.Count; i++)
             {
-                progressBar.title = $"Building Links for Node {i} thru {i + modulo}";
-                progressBar.value = R2EKMath.Remap(i, 0, nodes.Count - 1, 0, 0.5f);
+                disposableProgressBar.Update(R2EKMath.Remap(i, 0, nodes.Count, 0, 0.25f), null, $"Building Spatial Grid ({i + 1}/{nodes.Count})");
+                Vector3Int cell = WorldToCell(nodes[i].transform.position, cellSize);
 
-                if (i % modulo == 0)
-                    yield return null;
-
-                nodes[i].BuildLinks(readOnlyCollection, targetType.graphType);
-            }
-            List<SerializableBitArray> list = new List<SerializableBitArray>();
-            for (int i = 0; i < nodes.Count; i++)
-            {
-                float nodeIterationProgress = R2EKMath.Remap(i, 0, nodes.Count - 1, 0.5f, 1f);
-                progressBar.title = $"Testing node {i} thru {i + modulo}'s LOS with other nodes";
-                progressBar.value = nodeIterationProgress;
-                if (i % modulo == 0)
-                    yield return null;
-
-                MapNode mapNode = nodes[i];
-                SerializableBitArray serializableBitArray = new SerializableBitArray(nodes.Count);
-                for (int j = 0; j < nodes.Count; j++)
+                if (!grid.TryGetValue(cell, out List<MapNode> bucket))
                 {
-                    MapNode other = nodes[j];
-                    serializableBitArray[j] = mapNode.TestLineOfSight(other);
+                    bucket = new List<MapNode>();
+                    grid.Add(cell, bucket);
                 }
-                list.Add(serializableBitArray);
+
+                bucket.Add(nodes[i]);
             }
-            targetType.nodeGraph.SetNodes(readOnlyCollection, list.AsReadOnly());
-            buttonContainer.SetEnabled(true);
-            progressBar.SetDisplay(false);
-            AssetDatabase.SaveAssetIfDirty(targetType.nodeGraph);
-            _bakingCoroutine = null;
+
+            return grid;
+        }
+
+        private List<MapNode> GetNearbyNodes(
+            MapNode node,
+            Dictionary<Vector3Int, List<MapNode>> grid,
+            float cellSize)
+        {
+            List<MapNode> result = new List<MapNode>();
+            Vector3Int center = WorldToCell(node.transform.position, cellSize);
+
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    for (int dz = -1; dz <= 1; dz++)
+                    {
+                        Vector3Int cell = new Vector3Int(
+                            center.x + dx,
+                            center.y + dy,
+                            center.z + dz);
+
+                        if (grid.TryGetValue(cell, out List<MapNode> bucket))
+                            result.AddRange(bucket);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private void BuildLinks(
+            List<MapNode> nodes,
+            Dictionary<Vector3Int, List<MapNode>> grid,
+            float cellSize,
+            int start,
+            int end,
+            MapNodeGroup.GraphType graphType,
+            DisposableProgressBar disposableProgressBar)
+        {
+            for (int i = start; i < end; i++)
+            {
+                disposableProgressBar.Update(R2EKMath.Remap(i, 0, end, 0.25f, 0.5f), null, $"Building Links ({i + 1}/{end})");
+                List<MapNode> nearbyNodes =
+                    GetNearbyNodes(nodes[i], grid, cellSize);
+
+                nodes[i].BuildLinks(
+                    nearbyNodes.AsReadOnly(),
+                    graphType);
+            }
+        }
+
+        private void BuildLineOfSight(
+            List<MapNode> nodes,
+            List<SerializableBitArray> visibility,
+            int start,
+            int end,
+            DisposableProgressBar disposableProgressBar)
+        {
+            for (int j = start; j < end; j++)
+            {
+                disposableProgressBar.Update(R2EKMath.Remap(j, 0, end, 0.75f, 1f), null, $"Building line of sight, this might take a while... ({j + 1}/{end})");
+
+                MapNode mapNode = nodes[j];
+
+                for (int k = j + 1; k < nodes.Count; k++)
+                {
+                    bool visible = mapNode.TestLineOfSight(nodes[k]);
+
+                    visibility[j][k] = visible;
+                    visibility[k][j] = visible;
+                }
+            }
+        }
+
+        private void BakeOptimised(NodeGraph nodeGraph)
+        {
+            using var disposableProgressBar = new DisposableProgressBar("Baking Nodes", "Baking Nodes...", 0);
+
+            MapNodeGroupEventDispatcher dispatcher =
+                FindFirstObjectByType<MapNodeGroupEventDispatcher>();
+
+            if (dispatcher)
+                dispatcher.PreBake(targetType);
+
+            List<MapNode> nodes = targetType.GetNodes();
+            int nodeCount = nodes.Count;
+
+            float linkCellSize =
+                targetType.graphType == MapNodeGroup.GraphType.Ground
+                    ? MapNode.maxConnectionDistance
+                    : MapNode.maxConnectionDistance * 2f;
+
+            Dictionary<Vector3Int, List<MapNode>> grid =
+                BuildSpatialGrid(nodes, linkCellSize, disposableProgressBar);
+
+            ReadOnlyCollection<MapNode> readOnlyCollection =
+                nodes.AsReadOnly();
+
+            BuildLinks(
+                nodes,
+                grid,
+                linkCellSize,
+                0,
+                nodeCount,
+                targetType.graphType,
+                disposableProgressBar);
+
+            List<SerializableBitArray> visibility =
+                new List<SerializableBitArray>(nodeCount);
+
+            for (int i = 0; i < nodeCount; i++)
+            {
+                disposableProgressBar.Update(R2EKMath.Remap(i, 0, nodeCount, 0.5f, 0.75f), null, $"Creating visibility list ({i + 1}/{nodeCount})");
+                visibility.Add(new SerializableBitArray(nodeCount));
+            }
+
+            BuildLineOfSight(
+                nodes,
+                visibility,
+                0,
+                nodeCount, 
+                disposableProgressBar);
+
+            nodeGraph.SetNodes(
+                readOnlyCollection,
+                visibility.AsReadOnly());
+
+            if (dispatcher)
+                dispatcher.PostBake(targetType);
         }
 
         private void UpdateTeleporterMasks()
