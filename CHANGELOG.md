@@ -1,3 +1,19 @@
+# 6.1.0
+
+### Core Changes
+
+* The ``VisualElementPropertyDrawer`` now calls the base method for it's ``CreatePropertyGUI`` method
+* Considerably improved the ``R2EKPreferences``'s class method for obtaining the Game Executable path.
+	* If the automatic detection fails, the user is prompted to select it manually.
+	* If at any point the saved path is not Risk of Rain 2, or becomes invalid, the user is prompted to select it manually.
+
+### RoR2ScriptsChanges
+
+* Improved the NodeGraph editor
+	* Removed the BakeAsync button, as it proved to be too slow and inneficient
+	* Added a "Bake Optimized" button, courtesy of IDeath
+* AddressablesPathDictionary no longer quits the editor if LRAPI_Returns fails to load
+
 # 6.0.2
 
 ### RoR2ScriptsChanges
