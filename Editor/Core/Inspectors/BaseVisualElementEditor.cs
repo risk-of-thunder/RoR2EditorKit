@@ -64,7 +64,17 @@ namespace RoR2.Editor
             base.OnEditorEnabled();
             var editorElement = CreateInspectorUI();
             rootVisualElement.Add(editorElement);
-            if(hasDoneFirstDrawing)
+
+            //Once we add the visual element to the root, add the aligned field to any base field that doesnt have it.
+            foreach (var unalignedBaseField in rootVisualElement.Query<VisualElement>().Class("unity-base-field__inspector-field").ToList())
+            {
+                if (!unalignedBaseField.ClassListContains("unity-base-field__aligned"))
+                {
+                    unalignedBaseField.AddToClassList("unity-base-field__aligned");
+                }
+            }
+
+            if (hasDoneFirstDrawing)
             {
                 rootVisualElement.Bind(serializedObject);
             }
