@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace RoR2.Editor.PropertyDrawers
 {
-    [Obsolete("This class has been marked as obsolete as it was proven to be too buggy.")]
+    [Obsolete("This class has been marked as obsolete as it was proven to be too buggy. A better way for drawing the AddressablesPathDropdown may be included in the future")]
     public static class AddressablesPathPropertyDrawerPickerHelper
     {
         public sealed class DrawerArgs
