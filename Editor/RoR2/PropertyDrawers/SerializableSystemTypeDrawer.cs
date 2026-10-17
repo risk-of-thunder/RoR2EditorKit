@@ -11,6 +11,14 @@ namespace RoR2.Editor.PropertyDrawers
     [CustomPropertyDrawer(typeof(SerializableSystemType))]
     internal sealed class SerializableSystemTypePropertyDrawer : IMGUIPropertyDrawer<SerializableSystemType>
     {
+        private struct NewPropertyValueContainer
+        {
+            public SerializedProperty targetProperty;
+            public string newStringValue;
+        }
+
+        private NewPropertyValueContainer? newPropertyValueContainer;
+
         private static bool _useFullName = false;
 
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -20,15 +28,27 @@ namespace RoR2.Editor.PropertyDrawers
                 FullyQualify(property);
             }
 
+            SerializedProperty assemblyQualifiedNameProperty = property.FindPropertyRelative("assemblyQualifiedName");
+
             var _drawer = new SerializableSystemTypeDrawer(GetBaseType());
             _drawer.useFullName = _useFullName;
 
             _drawer.onTypeSelectedHandler += (item) =>
             {
-                property.FindPropertyRelative("assemblyQualifiedName").stringValue = item.assemblyQualifiedName;
-                property.serializedObject.ApplyModifiedProperties();
+                newPropertyValueContainer = new NewPropertyValueContainer
+                {
+                    targetProperty = assemblyQualifiedNameProperty,
+                    newStringValue = item.assemblyQualifiedName
+                };
             };
             _drawer.DoEditorGUI(position, property.FindPropertyRelative("assemblyQualifiedName").stringValue, label);
+
+            if(newPropertyValueContainer.HasValue && SerializedProperty.EqualContents(newPropertyValueContainer.Value.targetProperty, assemblyQualifiedNameProperty))
+            {
+                assemblyQualifiedNameProperty.stringValue = newPropertyValueContainer.Value.newStringValue;
+                serializedObject.ApplyModifiedProperties();
+                newPropertyValueContainer = null;
+            }
         }
 
         private Type GetBaseType()

@@ -27,127 +27,156 @@ namespace RoR2.Editor.PropertyDrawers
     [CustomPropertyDrawer(typeof(AssetReference), true)]
     public class BaseGameAssetReferenceTDrawer : IMGUIPropertyDrawer<AssetReference>
     {
-        private struct LockedProperties
+        private struct NewPropertyValueContainer
         {
-            public SerializedProperty parentProperty;
-            public SerializedProperty m_AssetGUIDProperty;
-            public SerializedProperty m_SubObjectNameProperty;
+            public SerializedProperty assetGUIDProperty;
+            public SerializedProperty subObjectNameProperty;
 
-            public LockedProperties(SerializedProperty property)
+            public string assetGUID;
+            public string subObjectName;
+
+            public bool SerializedPropertyEqualContents(SerializedProperty _assetGUIDProperty, SerializedProperty _subObjectNameProperty)
             {
-                parentProperty = property;
-
-                if(!BaseGameAssetReferenceTDrawer.GetChildProperties(property, out m_AssetGUIDProperty, out m_SubObjectNameProperty))
-                {
-                    RoR2EKLog.Error($"Could not find AssetGUID property and/or SubObjectName property in {property.propertyPath}!");
-                }
+                return SerializedProperty.EqualContents(_assetGUIDProperty, assetGUIDProperty) && SerializedProperty.EqualContents(_subObjectNameProperty, subObjectNameProperty);
             }
         }
+
+        private NewPropertyValueContainer? _newPropertyValuePair;
 
         private static bool _useFullPathForItems;
         private string filter;
         private static Regex subObjectNameExtractor = new Regex(@"(?<=\[).*?(?=\])");
-
-        private AddressablesPathPropertyDrawerPickerHelper.DrawerArgs _drawerArgs;
-
-        private LockedProperties? _lockedProperties;
-
-        public static bool GetChildProperties(SerializedProperty parent, out SerializedProperty m_AssetGUID, out SerializedProperty m_SubObjectName)
-        {
-            m_SubObjectName = parent.FindPropertyRelative("m_SubObjectName");
-            m_AssetGUID = parent.FindPropertyRelative("m_AssetGUID");
-
-            return m_SubObjectName != null && m_AssetGUID != null;
-        }
-
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            serializedObject.UpdateIfRequiredOrScript();
 #if R2EK_R2API_ADDRESSABLES
             AddressableComponentRequirementAttribute componentRequirement = fieldInfo.GetCustomAttribute<AddressableComponentRequirementAttribute>(true);
 #endif
+            var pathDictionaryInstance = AddressablesPathDictionary.instance;
             Type[] typesOfAsset = GetAssetTypes();
-
-            if (_drawerArgs == null)
-            {
-                _drawerArgs = new AddressablesPathPropertyDrawerPickerHelper.DrawerArgs
-                {
-                    useFullPathForItems = _useFullPathForItems,
-                    allowedTypes = typesOfAsset,
-                    filter = filter,
-                    label = property.GetGUIContent(),
-                    requiredComponentType = componentRequirement?.requiredComponentType ?? null,
-                    searchComponentInChildren = componentRequirement?.searchInChildren ?? false,
-                    onItemSelected = OnItemSelected,
-                    onButtonClicked = OnButtonClicked
-                };
-            }
-
-            _drawerArgs.currentGUIDValue = GetCurrentGUIDValue();
             using (new EditorGUI.PropertyScope(position, label, property))
             {
-                AddressablesPathPropertyDrawerPickerHelper.DrawPicker(position, _drawerArgs);
+                if (typesOfAsset == null)
+                {
+                    EditorGUI.PropertyField(position, property, label, true);
+                    return;
+                }
+
+                //Draw the label for the main control
+                var guiContent = property.GetGUIContent();
+                var rectForDropdownControl = EditorGUI.PrefixLabel(position, guiContent);
+
+                //Compute the rect for the filter itself, then draw it
+                var rectForFilterProperty = new Rect(position.x + 32, position.y + standardPropertyHeight, position.width - 32, standardPropertyHeight);
+                filter = EditorGUI.TextField(rectForFilterProperty, "Filter:", filter);
+
+
+                //finally, draw the main control
+                SerializedProperty m_AssetGUIDProperty = property.FindPropertyRelative("m_AssetGUID");
+                SerializedProperty m_SubObjectNameProperty = property.FindPropertyRelative("m_SubObjectName");
+
+                GUIContent dropdownButtonLabel = GetDropdownButtonLabel(pathDictionaryInstance, m_AssetGUIDProperty.stringValue, m_SubObjectNameProperty.stringValue);
+                if (EditorGUI.DropdownButton(rectForDropdownControl, dropdownButtonLabel, FocusType.Passive))
+                {
+                    Type requiredComponentType =
+#if R2EK_R2API_ADDRESSABLES
+                        componentRequirement?.requiredComponentType
+#else
+                        null
+#endif
+                        ;
+
+                    bool searchInChildren =
+#if R2EK_R2API_ADDRESSABLES
+                        componentRequirement?.searchInChildren ?? false
+#else
+                        false
+#endif
+                        ;
+
+                    AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(),
+                        _useFullPathForItems,
+                        filter,
+                        requiredComponentType,
+                        searchInChildren,
+                        typesOfAsset);
+
+                    dropdown.onItemSelected += (item) =>
+                    {
+                        string mainAssetGUID = "";
+                        string subObjectName = "";
+
+                        if (!string.IsNullOrWhiteSpace(item.assetPath))
+                        {
+                            string guid = pathDictionaryInstance.GetGUIDFromPath(item.assetPath);
+
+                            //We'll match using regex to get the subObjectName
+                            Match match = subObjectNameExtractor.Match(guid);
+                            if (match == Match.Empty)
+                            {
+                                //There's no subObjectName, so store the mainAssetGUID;
+                                mainAssetGUID = guid;
+                            }
+                            else //We've found the subobjectname, we need to store it within its correct property.
+                            {
+                                subObjectName = match.Value;
+                                mainAssetGUID = guid.Substring(0, guid.IndexOf('['));
+                            }
+                        }
+
+                        _newPropertyValuePair = new NewPropertyValueContainer
+                        {
+                            assetGUID = mainAssetGUID,
+                            subObjectName = subObjectName,
+
+                            assetGUIDProperty = m_AssetGUIDProperty,
+                            subObjectNameProperty = m_SubObjectNameProperty,
+                        };
+                    };
+
+                    var mousePoint = Event.current.mousePosition;
+                    dropdown.Show(rectForDropdownControl);
+                }
+
+                if(_newPropertyValuePair?.SerializedPropertyEqualContents(m_AssetGUIDProperty, m_SubObjectNameProperty) ?? false)
+                {
+                    m_AssetGUIDProperty.stringValue = _newPropertyValuePair.Value.assetGUID;
+                    m_SubObjectNameProperty.stringValue = _newPropertyValuePair.Value.subObjectName;
+                    serializedObject.ApplyModifiedProperties();
+                    _newPropertyValuePair = null;
+                }
             }
         }
 
-        //We need to lock which properties we're modifying on this instance of the dropdown. Otherwise arrays with the drawer will end up modifying the last property drawn... idk why.
-        private void OnButtonClicked()
+        private GUIContent GetDropdownButtonLabel(AddressablesPathDictionary addressablesDictionary, string assetGUID, string subObjectName)
         {
-            _lockedProperties = new LockedProperties(serializedProperty);
-        }
+            string label = "";
+            string tooltip = "";
 
-        private string GetCurrentGUIDValue()
-        {
-            if(GetChildProperties(serializedProperty, out var m_AssetGUIDProperty, out var m_SubObjectNameProperty))
+            if (string.IsNullOrEmpty(assetGUID))
             {
-                if (string.IsNullOrWhiteSpace(m_SubObjectNameProperty.stringValue))
-                {
-                    return m_AssetGUIDProperty.stringValue;
-                }
-                else
-                {
-                    return $"{m_AssetGUIDProperty.stringValue}[{m_SubObjectNameProperty.stringValue}]";
-                }
+                label = "None";
+                tooltip = "";
+                return new GUIContent(label, tooltip);
+            }
+
+            string fullAssetPath = "";
+            if (!string.IsNullOrWhiteSpace(subObjectName))
+            {
+                string compoundedGuid = string.Format("{0}[{1}]", assetGUID, subObjectName);
+                fullAssetPath = addressablesDictionary.GetPathFromGUID(compoundedGuid);
             }
             else
             {
-                return $"Invalid Field";
+                fullAssetPath = addressablesDictionary.GetPathFromGUID(assetGUID);
             }
-        }
 
-        private void OnItemSelected(AddressablesPathDropdown.Item item)
-        {
-            if(_lockedProperties.HasValue)
-            {
-                var m_AssetGUIDProperty = _lockedProperties.Value.m_AssetGUIDProperty;
-                var m_SubObjectNameProperty = _lockedProperties.Value.m_SubObjectNameProperty;
+            string onlyAssetName = fullAssetPath.Substring(fullAssetPath.LastIndexOf('/') + 1);
 
-                if (!string.IsNullOrWhiteSpace(item.assetPath))
-                {
-                    string guid = AddressablesPathDictionary.instance.GetGUIDFromPath(item.assetPath);
+            label = onlyAssetName;
+            tooltip = fullAssetPath;
 
-                    //We'll match using regex to get the subObjectName
-                    Match match = subObjectNameExtractor.Match(guid);
-                    if (match == Match.Empty)
-                    {
-                        m_AssetGUIDProperty.stringValue = AddressablesPathDictionary.instance.GetGUIDFromPath(item.assetPath);
-                    }
-                    else //We've found the subobjectname, we need to store it within its correct property.
-                    {
-                        string subObjectName = match.Value;
-                        string mainAssetGUID = guid.Substring(0, guid.IndexOf('['));
-
-                        m_AssetGUIDProperty.stringValue = mainAssetGUID;
-                        m_SubObjectNameProperty.stringValue = subObjectName;
-                    }
-                }
-                else
-                {
-                    m_AssetGUIDProperty.stringValue = "";
-                    m_SubObjectNameProperty.stringValue = "";
-                }
-                _lockedProperties = null;
-            }
-            serializedObject.ApplyModifiedProperties();
+            return new GUIContent(label, tooltip);
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
@@ -156,7 +185,7 @@ namespace RoR2.Editor.PropertyDrawers
             Type[] type = GetAssetTypes();
 
             //If the type it returns is null or has no length, we should instead display the default drawer instead, so take into account that.
-            if(type == null || type.Length == 0)
+            if (type == null || type.Length == 0)
             {
                 var propHeight = standardPropertyHeight;
                 if (property.isExpanded)

@@ -15,12 +15,20 @@ namespace RoR2.Editor.PropertyDrawers
     /// <typeparam name="TEnum">The type of enum that we're drawing</typeparam>
     public abstract class AdvancedDropdownEnumPropertyDrawer<TEnum> : IMGUIPropertyDrawer<TEnum> where TEnum : Enum
     {
+        private struct NewPropertyValueContainer
+        {
+            public SerializedProperty targetProperty;
+            public int newEnumIndexValue;
+        }
+
+        private NewPropertyValueContainer? newPropertyValue;
+
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            using(new EditorGUI.PropertyScope(position, label, property))
+            using (new EditorGUI.PropertyScope(position, label, property))
             {
                 var dropdownButtonRect = EditorGUI.PrefixLabel(position, label);
-                if(EditorGUI.DropdownButton(dropdownButtonRect, GetEnumValueName(property), FocusType.Passive))
+                if (EditorGUI.DropdownButton(dropdownButtonRect, GetEnumValueName(property), FocusType.Passive))
                 {
                     var dropdown = new AdvancedDropdownEnum(new AdvancedDropdownState());
                     dropdown.onItemSelected += (item) =>
@@ -28,22 +36,37 @@ namespace RoR2.Editor.PropertyDrawers
                         var enumValue = item.enumValue;
                         var enumName = Enum.GetName(typeof(TEnum), enumValue);
                         int index = -1;
-                        for(int i = 0; i < property.enumNames.Length; i++)
+                        for (int i = 0; i < property.enumNames.Length; i++)
                         {
                             var enumPropertyName = property.enumNames[i];
-                            if(string.Equals(enumPropertyName, enumName))
+                            if (string.Equals(enumPropertyName, enumName))
                             {
                                 index = i;
                                 break;
                             }
                         }
 
-                        property.enumValueIndex = index;
-                        property.serializedObject.ApplyModifiedProperties();
+                        newPropertyValue = new NewPropertyValueContainer
+                        {
+                            newEnumIndexValue = index,
+                            targetProperty = property,
+                        };
                     };
                     dropdown.Show(position);
                 }
+
+                if (newPropertyValue.HasValue && SerializedProperty.EqualContents(newPropertyValue.Value.targetProperty, property))
+                {
+                    property.enumValueIndex = newPropertyValue.Value.newEnumIndexValue;
+                    serializedObject.ApplyModifiedProperties();
+                    newPropertyValue = null;
+                }
             }
+        }
+
+        public override bool CanCacheInspectorGUI(SerializedProperty property)
+        {
+            return false;
         }
 
         private GUIContent GetEnumValueName(SerializedProperty property)
