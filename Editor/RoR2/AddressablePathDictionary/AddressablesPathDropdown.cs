@@ -51,10 +51,10 @@ namespace RoR2.Editor
 
 
             var items = new Dictionary<string, Item>();
-            var rootItem = new Item(_rootItemKey, _rootItemKey);
+            var rootItem = new Item(_rootItemKey, _rootItemKey, _rootItemKey);
             items.Add(_rootItemKey, rootItem);
 
-            items.Add("None", new Item("None", string.Empty, true));
+            items.Add("None", new Item("None", string.Empty, string.Empty, true));
             foreach(var assetPath in keys)
             {
                 var fullPath = assetPath;
@@ -64,7 +64,7 @@ namespace RoR2.Editor
                     if(!items.ContainsKey(fullPath))
                     {
                         var path = lastDashIndex == -1 ? fullPath : fullPath.Substring(lastDashIndex + 1);
-                        var item = new Item(_useFullPathAsItemName ? fullPath : path, fullPath);
+                        var item = new Item(_useFullPathAsItemName ? fullPath : path, fullPath, AddressablesPathDictionary.instance.GetGUIDFromPath(fullPath));
                         items.Add(fullPath, item);
                     }
 
@@ -152,18 +152,24 @@ namespace RoR2.Editor
         public class Item : AdvancedDropdownItem
         {
             /// <summary>
-            /// The Addressable Path to the asset, you can use <see cref="AddressablesPathDictionary"/>'s GetGUIDFromPath to obtain the actual guid of the asset.
+            /// The Addressable Path to the asset.
             /// </summary>
             public string assetPath { get; }
+
+            /// <summary>
+            /// The Asset GUID of the selected asset.
+            /// </summary>
+            public string assetGUID { get; }
 
             /// <summary>
             /// This value is true if this is the "None" item.
             /// </summary>
             public bool isNone { get; }
 
-            internal Item(string displayName, string assetPath, bool isNone = false) : base(displayName)
+            internal Item(string displayName, string assetPath, string assetGUID, bool isNone = false) : base(displayName)
             {
                 this.assetPath = assetPath;
+                this.assetGUID = assetGUID;
                 this.isNone = isNone;
             }
         }

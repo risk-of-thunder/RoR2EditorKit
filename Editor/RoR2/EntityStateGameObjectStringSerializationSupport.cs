@@ -3,6 +3,7 @@ using RoR2.Editor.PropertyDrawers;
 using System;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -38,26 +39,22 @@ namespace RoR2.Editor
 
         private class EntityStateGameObjectField : VisualElement
         {
-            private AddressablesPathPropertyDrawerPickerHelper.DrawerArgs _drawerArgs;
             private VisualElementUtil.DeconstructedChangeEvent _changeEvent;
+
+            private Type _requiredComponentType;
+            private bool _searchComponentInChildren;
+            private string _filter;
+            private string _currentGUIDValue;
+            private bool _useFullPathForItems;
+            private GUIContent _elementLabel;
 
             public EntityStateGameObjectField(VisualElementUtil.ControlBuilderArgs controlBuilderArgs)
             {
-                Type requiredComponentType = GetRequiredComponentType(controlBuilderArgs.fieldInfo);
-                bool searchComponentInChildren = GetSearchComponentInChildren(controlBuilderArgs.fieldInfo);
-                string currentGUIDValue = ((EntityStateGameObject)controlBuilderArgs.valueRetriever()).GetGUID();
-
-                _drawerArgs = new AddressablesPathPropertyDrawerPickerHelper.DrawerArgs
-                {
-                    allowedTypes = new Type[] { typeof(GameObject) },
-                    useFullPathForItems = EditorSettingManager.GetOrCreateSettingsFor(typeof(EntityStateGameObjectField), EditorSettingManager.SettingType.UserSetting).GetOrCreateSetting("useFullPathForItems", true),
-                    label = new GUIContent(controlBuilderArgs.elementLabel),
-                    requiredComponentType = requiredComponentType,
-                    searchComponentInChildren = searchComponentInChildren,
-                    currentGUIDValue = currentGUIDValue,
-                    onItemSelected = OnItemSelected
-                };
-
+                _requiredComponentType = GetRequiredComponentType(controlBuilderArgs.fieldInfo);
+                _searchComponentInChildren = GetSearchComponentInChildren(controlBuilderArgs.fieldInfo);
+                _currentGUIDValue = ((EntityStateGameObject)controlBuilderArgs.valueRetriever()).GetGUID();
+                _useFullPathForItems = EditorSettingManager.GetOrCreateSettingsFor(typeof(EntityStateGameObjectField), EditorSettingManager.SettingType.UserSetting).GetOrCreateSetting("useFullPathForItems", true);
+                _elementLabel = new GUIContent(controlBuilderArgs.elementLabel);
                 _changeEvent = controlBuilderArgs.changeEvent;
 
                 Add(new IMGUIContainer(DrawProperty));
@@ -89,21 +86,42 @@ namespace RoR2.Editor
 
             private void DrawProperty()
             {
-                Rect rect = EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight * 2);
-                AddressablesPathPropertyDrawerPickerHelper.DrawPicker(rect, _drawerArgs);
+                Rect totalRect = EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight * 2);
+
+                //Rect for the field itself
+                Rect fieldRect = new Rect(totalRect.x, totalRect.y, totalRect.width, EditorGUIUtility.singleLineHeight);
+
+                var rectForDropdownButton = EditorGUI.PrefixLabel(fieldRect, _elementLabel);
+
+                var filterRect = new Rect(fieldRect.x + 32, fieldRect.y + EditorGUIUtility.singleLineHeight, fieldRect.width - 32, EditorGUIUtility.singleLineHeight);
+                _filter = EditorGUI.TextField(filterRect, "Filter:", _filter);
+
+                GUIContent dropdownButtonLabel = GetDropdownButtonLabel();
+                if(EditorGUI.DropdownButton(rectForDropdownButton, dropdownButtonLabel, FocusType.Passive))
+                {
+                    AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new AdvancedDropdownState(),
+                        _useFullPathForItems,
+                        _filter,
+                        _requiredComponentType,
+                        _searchComponentInChildren,
+                        typeof(GameObject));
+
+                    dropdown.onItemSelected += OnItemSelected;
+                    dropdown.Show(rectForDropdownButton);
+                }
             }
 
             private void OnItemSelected(AddressablesPathDropdown.Item item)
             {
-                var oldGUID = _drawerArgs.currentGUIDValue;
+                var oldGUID = _currentGUIDValue;
                 
                 if(AddressablesPathDictionary.instance.TryGetGUIDFromPath(item.assetPath, out string guid))
                 {
-                    _drawerArgs.currentGUIDValue = guid;
+                    _currentGUIDValue = guid;
                 }
                 else if(item.isNone)
                 {
-                    _drawerArgs.currentGUIDValue = "";
+                    _currentGUIDValue = "";
                 }
                 else
                 {
@@ -114,9 +132,30 @@ namespace RoR2.Editor
                 _changeEvent(new VisualElementUtil.DeconstructedChangeEventData
                 {
                     eventBase = null,
-                    newValue = new EntityStateGameObject(_drawerArgs.currentGUIDValue),
+                    newValue = new EntityStateGameObject(_currentGUIDValue),
                     previousValue = new EntityStateGameObject(oldGUID),
                 });
+            }
+
+            private GUIContent GetDropdownButtonLabel()
+            {
+                string label = "";
+                string tooltip = "";
+
+                if (string.IsNullOrEmpty(_currentGUIDValue))
+                {
+                    label = "None";
+                    tooltip = "";
+                    return new GUIContent(label, tooltip);
+                }
+
+                string fullAssetPath = AddressablesPathDictionary.instance.GetPathFromGUID(_currentGUIDValue);
+                string onlyAssetName = fullAssetPath.Substring(fullAssetPath.LastIndexOf('/') + 1);
+
+                label = onlyAssetName;
+                tooltip = fullAssetPath;
+
+                return new GUIContent(label, tooltip);
             }
         }
     }

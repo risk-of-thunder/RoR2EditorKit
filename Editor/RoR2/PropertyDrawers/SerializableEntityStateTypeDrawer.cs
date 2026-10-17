@@ -10,6 +10,14 @@ namespace RoR2.Editor.PropertyDrawers
     [CustomPropertyDrawer(typeof(SerializableEntityStateType))]
     internal sealed class SerializableEntityStateTypePropertyDrawer : IMGUIPropertyDrawer<SerializableEntityStateType>
     {
+        private struct NewPropertyValueContainer
+        {
+            public SerializedProperty targetProperty;
+            public string newStringValue;
+        }
+
+        private NewPropertyValueContainer? newPropertyValueContainer;
+
         private static bool _useFullName = false;
 
         protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -19,15 +27,28 @@ namespace RoR2.Editor.PropertyDrawers
                 FullyQualify(property);
             }
 
+            SerializedProperty _typeNameProperty = property.FindPropertyRelative("_typeName");
+
             var _drawer = new SerializableEntityStateTypeDrawer();
             _drawer.useFullName = _useFullName;
 
             _drawer.onTypeSelectedHandler += (item) =>
             {
-                property.FindPropertyRelative("_typeName").stringValue = item.assemblyQualifiedName;
-                property.serializedObject.ApplyModifiedProperties();
+                newPropertyValueContainer = new NewPropertyValueContainer
+                {
+                    newStringValue = item.assemblyQualifiedName,
+                    targetProperty = _typeNameProperty
+                };
             };
             _drawer.DoEditorGUI(position, property.FindPropertyRelative("_typeName").stringValue, label);
+
+            if(newPropertyValueContainer.HasValue && SerializedProperty.EqualContents(newPropertyValueContainer.Value.targetProperty, _typeNameProperty))
+            {
+                _typeNameProperty.stringValue = newPropertyValueContainer.Value.newStringValue;
+                serializedObject.ApplyModifiedProperties();
+                newPropertyValueContainer = null;
+            }
+
         }
 
         private bool IsFullyQualified(SerializedProperty property)
