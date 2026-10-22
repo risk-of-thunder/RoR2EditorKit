@@ -170,6 +170,10 @@ namespace RoR2.Editor
                 foreach (var fieldInfo in _serializableInstanceFields)
                 {
                     var control = CreateControl(fieldInfo, GetOrCreateField(_serializedFieldsProperty, fieldInfo));
+                    if(control.ClassListContains("unity-base-field"))
+                    {
+                        control.AddToClassList("unity-base-field__aligned");
+                    }
                     instanceFieldsFoldout.Add(control);
                 }
             }
@@ -184,6 +188,10 @@ namespace RoR2.Editor
                 foreach (var fieldInfo in _serializableStaticFields)
                 {
                     var control = CreateControl(fieldInfo, GetOrCreateField(_serializedFieldsProperty, fieldInfo));
+                    if (control.ClassListContains("unity-base-field"))
+                    {
+                        control.AddToClassList("unity-base-field__aligned");
+                    }
                     staticFieldsFoldout.Add(control);
                 }
             }
