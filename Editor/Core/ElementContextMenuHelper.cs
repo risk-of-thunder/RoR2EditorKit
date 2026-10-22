@@ -21,7 +21,8 @@ namespace RoR2.Editor
         /// </summary>
         /// <param name="element">The element that will be modified to be held by a ContextualMenuWrapper, this element will be removed from the hierarchy, parented to a ContextualMenuWrapper, and then the Wrapper will be inserted in the element's original position, preserving its position in the hierarchy and adding the icon that will contain the field's context menu.</param>
         /// <param name="data">The data for the context menu.</param>
-        public static void AddSimpleContextMenu(this VisualElement element, ContextMenuData data)
+        /// <returns>The ContextMenuWrapper that's now wrapping <paramref name="element"/></returns>
+        public static ContextMenuWrapperElement AddSimpleContextMenu(this VisualElement element, ContextMenuData data)
         {
             ContextMenuWrapperElement wrapper = WrapElement(element, data);
             var datas = _wrapperToData.GetValue(wrapper, CreateNewEntry);
@@ -29,6 +30,8 @@ namespace RoR2.Editor
             {
                 datas.Add(data);
             }
+
+            return wrapper;
         }
 
         private static List<ContextMenuData> CreateNewEntry(ContextMenuWrapperElement element)

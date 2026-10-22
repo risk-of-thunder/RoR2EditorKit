@@ -3,6 +3,7 @@ using RoR2.Editor.PropertyDrawers;
 using System;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -32,91 +33,146 @@ namespace RoR2.Editor
         }
 
         private static VisualElement EntityStateGameObjectControlBuilder(VisualElementUtil.ControlBuilderArgs args)
-        {
+        { 
             return new EntityStateGameObjectField(args);
         }
 
         private class EntityStateGameObjectField : VisualElement
         {
-            private AddressablesPathPropertyDrawerPickerHelper.DrawerArgs _drawerArgs;
+            private AdvancedDropdownElement _advancedDropdownElement;
+            private TextField _filterElement;
+
+            private FieldInfo _targetFieldInfo;
+            private string _filter;
+            private bool _useFullPathForItems;
             private VisualElementUtil.DeconstructedChangeEvent _changeEvent;
 
             public EntityStateGameObjectField(VisualElementUtil.ControlBuilderArgs controlBuilderArgs)
             {
-                Type requiredComponentType = GetRequiredComponentType(controlBuilderArgs.fieldInfo);
-                bool searchComponentInChildren = GetSearchComponentInChildren(controlBuilderArgs.fieldInfo);
-                string currentGUIDValue = ((EntityStateGameObject)controlBuilderArgs.valueRetriever()).GetGUID();
+                VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(EntityStateGameObjectField), this);
 
-                _drawerArgs = new AddressablesPathPropertyDrawerPickerHelper.DrawerArgs
-                {
-                    allowedTypes = new Type[] { typeof(GameObject) },
-                    useFullPathForItems = EditorSettingManager.GetOrCreateSettingsFor(typeof(EntityStateGameObjectField), EditorSettingManager.SettingType.UserSetting).GetOrCreateSetting("useFullPathForItems", true),
-                    label = new GUIContent(controlBuilderArgs.elementLabel),
-                    requiredComponentType = requiredComponentType,
-                    searchComponentInChildren = searchComponentInChildren,
-                    currentGUIDValue = currentGUIDValue,
-                    onItemSelected = OnItemSelected
-                };
+                _advancedDropdownElement = this.Q<AdvancedDropdownElement>();
+                _advancedDropdownElement.label = controlBuilderArgs.elementLabel;
+                _advancedDropdownElement.getDropdownButtonText = GetDropdownButtonLabel;
+                _advancedDropdownElement.createDropdown = CreateDropdown;
+                _advancedDropdownElement.value = GetCurrentValue(controlBuilderArgs.valueRetriever());
+                _advancedDropdownElement.RegisterValueChangedCallback(OnValueChanged);
 
+                _filterElement = this.Q<TextField>();
+                _filterElement.RegisterValueChangedCallback((evt) => _filter = evt.newValue);
+
+                var editorSettingCollection = EditorSettingManager.GetOrCreateSettingsFor(GetType(), EditorSettingManager.SettingType.UserSetting);
+                _useFullPathForItems = editorSettingCollection.GetOrCreateSetting("useFullPathForItems", false);
+
+                _targetFieldInfo = controlBuilderArgs.fieldInfo;
                 _changeEvent = controlBuilderArgs.changeEvent;
-
-                Add(new IMGUIContainer(DrawProperty));
             }
 
-            private bool GetSearchComponentInChildren(FieldInfo fInfo)
+            private void OnValueChanged(ChangeEvent<AdvancedDropdownItem> evt)
             {
-                if (fInfo == null)
-                    return false;
+                var previousValue = evt.previousValue;
+                var newValue = evt.newValue;
 
-#if R2EK_R2API_ADDRESSABLES
-                return fInfo.GetCustomAttribute<R2API.AddressReferencedAssets.AddressableComponentRequirementAttribute>()?.searchInChildren ?? false;
-#else
-                return false;
-#endif
-            }
-
-            private Type GetRequiredComponentType(FieldInfo fInfo)
-            {
-                if (fInfo == null)
-                    return null;
-
-#if R2EK_R2API_ADDRESSABLES
-                return fInfo.GetCustomAttribute<R2API.AddressReferencedAssets.AddressableComponentRequirementAttribute>()?.requiredComponentType ?? null;
-#else
-                return null;
-#endif
-            }
-
-            private void DrawProperty()
-            {
-                Rect rect = EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight * 2);
-                AddressablesPathPropertyDrawerPickerHelper.DrawPicker(rect, _drawerArgs);
-            }
-
-            private void OnItemSelected(AddressablesPathDropdown.Item item)
-            {
-                var oldGUID = _drawerArgs.currentGUIDValue;
-                
-                if(AddressablesPathDictionary.instance.TryGetGUIDFromPath(item.assetPath, out string guid))
+                if (previousValue is not AddressablesPathDropdown.Item previousItem || newValue is not AddressablesPathDropdown.Item newItem)
                 {
-                    _drawerArgs.currentGUIDValue = guid;
+                    return;
                 }
-                else if(item.isNone)
+
+                var oldGUID = previousItem.assetGUID;
+                string newGUID = "";
+                if(newItem.isValid)
                 {
-                    _drawerArgs.currentGUIDValue = "";
+                    newGUID = newItem.assetGUID;
+                }
+                else if(newItem.isNone)
+                {
+                    newGUID = "";
                 }
                 else
                 {
-                    RoR2EKLog.Warning($"Item {item.assetPath} does not exist within the AddressablesPathDictionary, not applying item.");
+                    RoR2EKLog.Warning($"Item {newItem.assetPath} does not exist within the AddressablesPathDictionary, not applying item.");
                     return;
                 }
 
                 _changeEvent(new VisualElementUtil.DeconstructedChangeEventData
                 {
-                    eventBase = null,
-                    newValue = new EntityStateGameObject(_drawerArgs.currentGUIDValue),
-                    previousValue = new EntityStateGameObject(oldGUID),
+                    eventBase = evt,
+                    newValue = new EntityStateGameObject(newGUID),
+                    previousValue = new EntityStateGameObject(oldGUID)
                 });
+            }
+
+            private bool GetSearchComponentInChildren()
+            {
+                if (_targetFieldInfo == null)
+                    return false;
+
+#if R2EK_R2API_ADDRESSABLES
+                return _targetFieldInfo.GetCustomAttribute<R2API.AddressReferencedAssets.AddressableComponentRequirementAttribute>()?.searchInChildren ?? false;
+#else
+                return false;
+#endif
+            }
+
+            private Type GetRequiredComponentType()
+            {
+                if (_targetFieldInfo == null)
+                    return null;
+
+#if R2EK_R2API_ADDRESSABLES
+                return _targetFieldInfo.GetCustomAttribute<R2API.AddressReferencedAssets.AddressableComponentRequirementAttribute>()?.requiredComponentType ?? null;
+#else
+                return null;
+#endif
+            }
+
+            private AdvancedDropdown CreateDropdown(AdvancedDropdownElement requester)
+            {
+                var dropdown = new AddressablesPathDropdown(new AdvancedDropdownState(),
+                    _useFullPathForItems,
+                    _filter,
+                    GetRequiredComponentType(),
+                    GetSearchComponentInChildren(),
+                    typeof(GameObject));
+                dropdown.onItemSelected += requester.OnItemSelected;
+                return dropdown;
+            }
+
+            private AddressablesPathDropdown.Item GetCurrentValue(object currentValueBoxed)
+            {
+                var none = new AddressablesPathDropdown.Item("None", "None", "", true);
+                if (currentValueBoxed is not EntityStateGameObject esgo)
+                {
+                    return none;
+                }
+
+                string guid = esgo.GetGUID();
+                if(!AddressablesPathDictionary.instance.IsGUIDValid(guid))
+                {
+                    return none;
+                }
+
+                var path = AddressablesPathDictionary.instance.GetPathFromGUID(guid);
+                return new AddressablesPathDropdown.Item(_useFullPathForItems ? path : path.Substring(path.LastIndexOf("/") + 1), path, guid);
+            }
+
+            private GUIContent GetDropdownButtonLabel(AdvancedDropdownItem value)
+            {
+                if(value is not AddressablesPathDropdown.Item item || item.isNone)
+                {
+                    return new GUIContent("None");
+                }
+
+                string label = "None";
+                string tooltip = "";
+
+                if(item.isValid)
+                {
+                    tooltip = item.assetPath;
+                    label = tooltip.Substring(tooltip.LastIndexOf("/") + 1);
+                }
+
+                return new GUIContent(label, tooltip);
             }
         }
     }

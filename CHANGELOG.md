@@ -1,3 +1,36 @@
+# 6.2.0
+
+### Core Changes
+
+* The ``BaseVisualElementEditor`` now automatically assigns any ``BaseField<T>`` elements with the ``unity-base-field__aligned`` class
+	* You should finally see some proper editors with good labels rather than unaligned controls
+* The ``ElementContextMenuHelper.AddSimpleContextMenu(VisualElement, ContextMenuData)`` method now returns the ``ContextualMenuWrapperElement``, this should allow the usage of this system inside property drawers in a more sensible fashion.
+* Fixed an issue where the main settings for RoR2EditorKit would fail to open properly on domain reloads and on boot.
+
+### RoR2ScriptsChanges
+
+* Added the ``AdvancedDropdownElement``, a ``VisualElement`` inheriting from ``BaseField<T>`` that allows the usage of ``AdvancedDropdown`` in UI Elements
+* All property drawers utilizing ``AdvancedDropdown`` now have proper VisualElement support thanks to this
+* The ``AddressablesPathPropertyDrawerPickerHelper`` class has been deprecated
+	* This has been done due to the buggy state and overall unreliability of this class to handle value changes properly
+	* All the property drawers that used this picker have been reverted to the version prior to adoption, and then changes where applied afterwards.
+* The following ``AdvancedDropdown`` using ``PropertyDrawers`` now apply new values on the GUI call:
+	* ``AdvancedDropdownEnumPropertyDrawer``
+	* ``BaseGameAssetReferenceTDrawer``
+	* ``SerializableEntityStateTypeDrawer``
+	* ``SerializableSystemTypeDrawer``
+		* You should now be able to do simple value change cheks properly in IMGUI inspectors
+* Added a ``ShowFieldObsoleteVerbose`` property drawer
+* ``AddressablesPathDropdown.Item`` now contain properties for the asset GUID and wether the GUID is valid
+* ``AddressablesPathDictionary`` has a new method to check if a GUID is inside the dictionary data
+* Controls created by the ``SerializedFieldCollectionElement`` should now be aligned properly in the inspector
+* ``EntityStateGameObject`` inside ``EntityStateConfiguration`` now use a VisualElement based drawer rather than IMGUI
+
+### R2APIScriptsChanges
+
+* The ``AddressReferencedAssetDrawer`` now applies new values on the GUI call
+* The ``AddressReferencedAssetDrawer`` now has proper ``VisualElement`` support
+
 # 6.1.0
 
 ### Core Changes

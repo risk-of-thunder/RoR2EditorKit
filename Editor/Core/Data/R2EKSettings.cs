@@ -202,7 +202,7 @@ namespace RoR2.Editor
             EditorApplication.update -= ShowSettingsWindow;
             if (!instance.hasHelpBoxBeenDismissed)
             {
-                SettingsService.OpenProjectSettings("Project/RoR2EditorKit/Settings");
+                SettingsService.OpenProjectSettings("Project/RoR2EditorKit/Main Settings");
             }
         }
 

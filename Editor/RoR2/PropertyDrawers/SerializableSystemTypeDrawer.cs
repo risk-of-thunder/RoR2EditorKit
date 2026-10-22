@@ -9,26 +9,105 @@ using UnityEngine.UIElements;
 namespace RoR2.Editor.PropertyDrawers
 {
     [CustomPropertyDrawer(typeof(SerializableSystemType))]
-    internal sealed class SerializableSystemTypePropertyDrawer : IMGUIPropertyDrawer<SerializableSystemType>
+    internal sealed class SerializableSystemTypePropertyDrawer : ExtendedPropertyDrawer<SerializableSystemType>
     {
+        private struct NewPropertyValueContainer
+        {
+            public SerializedProperty targetProperty;
+            public string newStringValue;
+        }
+
+        private NewPropertyValueContainer? newPropertyValueContainer;
+
         private static bool _useFullName = false;
 
-        protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            if (!IsFullyQualified(property))
+            EnsureFullyQualified(property);
+
+            var advancedDropdownElement = new AdvancedDropdownElement(property.GetGUIContent(), GetCurrentValue(property), (element) =>
             {
-                FullyQualify(property);
+                var dropdown = new InheritingTypeSelectDropdown(new AdvancedDropdownState(), GetBaseType(), _useFullName);
+                dropdown.onItemSelected += element.OnItemSelected;
+                return dropdown;
+            }, GetDropdownButtonLabel);
+            advancedDropdownElement.RegisterValueChangedCallback(evt =>
+            {
+                var item = (InheritingTypeSelectDropdown.Item)evt.newValue;
+
+                string typeName = "";
+                if (item.isValid)
+                {
+                    typeName = item.assemblyQualifiedName;
+                }
+
+                property.FindPropertyRelative("assemblyQualifiedName").stringValue = typeName;
+                property.serializedObject.ApplyModifiedProperties();
+            });
+            advancedDropdownElement.showMixedValue = property.hasMultipleDifferentValues;
+
+            return advancedDropdownElement;
+        }
+
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            base.OnGUI(position, property, label);
+
+            EnsureFullyQualified(property);
+
+            SerializedProperty assemblyQualifiedNameProperty = property.FindPropertyRelative("assemblyQualifiedName");
+
+            using(new EditorGUI.PropertyScope(position, label, property))
+            {
+                Rect controlRect = EditorGUI.PrefixLabel(position, label);
+                if(EditorGUI.DropdownButton(controlRect, GetDropdownButtonLabel(GetCurrentValue(property)), FocusType.Passive))
+                {
+                    var dropdown = new InheritingTypeSelectDropdown(new AdvancedDropdownState(), GetBaseType(), _useFullName);
+                    dropdown.onItemSelected += (item) =>
+                    {
+                        newPropertyValueContainer = new NewPropertyValueContainer
+                        {
+                            newStringValue = item.assemblyQualifiedName,
+                            targetProperty = assemblyQualifiedNameProperty
+                        };
+                    };
+                    dropdown.Show(position);
+                }
+
+                if (newPropertyValueContainer.HasValue && SerializedProperty.EqualContents(newPropertyValueContainer.Value.targetProperty, assemblyQualifiedNameProperty))
+                {
+                    assemblyQualifiedNameProperty.stringValue = newPropertyValueContainer.Value.newStringValue;
+                    serializedObject.ApplyModifiedProperties();
+                    newPropertyValueContainer = null;
+                }
+            }
+        }
+
+        private InheritingTypeSelectDropdown.Item GetCurrentValue(SerializedProperty property)
+        {
+            SerializedProperty assemblyQualifiedNameProperty = property.FindPropertyRelative("assemblyQualifiedName");
+
+            if (string.IsNullOrWhiteSpace(assemblyQualifiedNameProperty.stringValue))
+                return null;
+
+            Type type = Type.GetType(assemblyQualifiedNameProperty.stringValue);
+            if (type == null)
+                return null;
+
+            return new InheritingTypeSelectDropdown.Item(_useFullName ? type.FullName : type.Name, type.Name, type.FullName, type.AssemblyQualifiedName);
+        }
+
+        private GUIContent GetDropdownButtonLabel(AdvancedDropdownItem value)
+        {
+            if(value is not InheritingTypeSelectDropdown.Item item || !item.isValid)
+            {
+                return new GUIContent($"No {GetBaseType()?.Name ?? "Type"} Set");
             }
 
-            var _drawer = new SerializableSystemTypeDrawer(GetBaseType());
-            _drawer.useFullName = _useFullName;
+            string label = item.typeName;
+            string tooltip = item.assemblyQualifiedName;
 
-            _drawer.onTypeSelectedHandler += (item) =>
-            {
-                property.FindPropertyRelative("assemblyQualifiedName").stringValue = item.assemblyQualifiedName;
-                property.serializedObject.ApplyModifiedProperties();
-            };
-            _drawer.DoEditorGUI(position, property.FindPropertyRelative("assemblyQualifiedName").stringValue, label);
+            return new GUIContent(label, tooltip);
         }
 
         private Type GetBaseType()
@@ -39,6 +118,14 @@ namespace RoR2.Editor.PropertyDrawers
                 return attribute.type;
             }
             return null;
+        }
+
+        private void EnsureFullyQualified(SerializedProperty property)
+        {
+            if (IsFullyQualified(property) == false)
+            {
+                FullyQualify(property);
+            }
         }
 
         private bool IsFullyQualified(SerializedProperty property)
@@ -67,6 +154,7 @@ namespace RoR2.Editor.PropertyDrawers
         }
     }
 
+    [Obsolete("The SerializableEntityStateTypeDrawer is Obsolete")]
     public class SerializableSystemTypeDrawer
     {
         public bool useFullName;

@@ -9,7 +9,7 @@
 }
 
 .r2ek-bombardier {
-    -unity-font: url('project://database/Packages/riskofthunder-ror2editorkit/Assets/Bombardier.ttf?fileID=12800000&guid=c206b3ea191bcc942ad15474d24d061e&type=3#Bombardier');
+    -unity-font: url("project://database/Packages/riskofthunder-ror2editorkit/Assets/Bombardier.ttf?fileID=12800000&guid=c206b3ea191bcc942ad15474d24d061e&type=3#Bombardier");
     -unity-font-definition: initial;
 }
 
@@ -29,4 +29,16 @@
     max-width: none;
     flex-grow: 1;
     flex-basis: 1px;
+}
+
+.r2ek-filter-field {
+    padding-left: 30px;
+}
+
+.r2ek-filter-field__textinput #unity-text-input {
+    padding-left: 0;
+    padding-bottom: 0;
+    padding-top: 0;
+    padding-right: 0;
+    margin-left: 64px;
 }
