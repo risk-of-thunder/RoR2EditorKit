@@ -463,6 +463,14 @@ namespace RoR2.Editor
         }
 
         /// <summary>
+        /// Returns true if the specified GUID is in the <see cref="AddressablesPathDictionary"/>
+        /// </summary>
+        public bool IsGUIDValid(string assetGUID)
+        {
+            return guidToEntryDictionary.ContainsKey(assetGUID);
+        }
+
+        /// <summary>
         /// Returns a ReadOnlyCollection of all the paths stored in the dictionary
         /// </summary>
         public ReadOnlyCollection<string> GetAllPaths()

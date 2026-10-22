@@ -63,8 +63,11 @@ namespace RoR2.Editor
                     var lastDashIndex = fullPath.LastIndexOf('/');
                     if(!items.ContainsKey(fullPath))
                     {
+                        string guid = "";
+                        AddressablesPathDictionary.instance.TryGetGUIDFromPath(fullPath, out guid);
+
                         var path = lastDashIndex == -1 ? fullPath : fullPath.Substring(lastDashIndex + 1);
-                        var item = new Item(_useFullPathAsItemName ? fullPath : path, fullPath, AddressablesPathDictionary.instance.GetGUIDFromPath(fullPath));
+                        var item = new Item(_useFullPathAsItemName ? fullPath : path, fullPath, guid);
                         items.Add(fullPath, item);
                     }
 
@@ -166,7 +169,8 @@ namespace RoR2.Editor
             /// </summary>
             public bool isNone { get; }
 
-            internal Item(string displayName, string assetPath, string assetGUID, bool isNone = false) : base(displayName)
+            public bool isValid => AddressablesPathDictionary.instance.IsGUIDValid(assetGUID);
+            public Item(string displayName, string assetPath, string assetGUID, bool isNone = false) : base(displayName)
             {
                 this.assetPath = assetPath;
                 this.assetGUID = assetGUID;
