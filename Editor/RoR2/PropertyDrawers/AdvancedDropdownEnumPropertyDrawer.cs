@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
+using UnityEditor.VersionControl;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace RoR2.Editor.PropertyDrawers
 {
@@ -13,8 +15,45 @@ namespace RoR2.Editor.PropertyDrawers
     /// Thanks to this users can search for a specific enum value in the AdvancedDropdownWindow, expediting the query for a specific value, particularly useful with enums that have a large amount of entries.
     /// </summary>
     /// <typeparam name="TEnum">The type of enum that we're drawing</typeparam>
-    public abstract class AdvancedDropdownEnumPropertyDrawer<TEnum> : IMGUIPropertyDrawer<TEnum> where TEnum : Enum
+    public abstract class AdvancedDropdownEnumPropertyDrawer<TEnum> : ExtendedPropertyDrawer<TEnum> where TEnum : Enum
     {
+        #region VisualElement
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            AdvancedDropdownElement dropdownElement = new AdvancedDropdownElement(property.GetGUIContent(), GetCurrentValue(property), (element) =>
+            {
+                AdvancedDropdownEnum dropdown = new AdvancedDropdownEnum(new AdvancedDropdownState());
+                dropdown.onItemSelected += element.OnItemSelected;
+                return dropdown;
+            });
+            dropdownElement.showMixedValue = property.hasMultipleDifferentValues;
+            dropdownElement.RegisterValueChangedCallback((evt) =>
+            {
+                var newValue = evt.newValue;
+                if (newValue is AdvancedDropdownEnum.Item item)
+                {
+                    var enumValue = item.enumValue;
+                    var enumName = Enum.GetName(typeof(TEnum), enumValue);
+                    int index = -1;
+                    for (int i = 0; i < property.enumNames.Length; i++)
+                    {
+                        var enumPropertyName = property.enumNames[i];
+                        if (string.Equals(enumPropertyName, enumName))
+                        {
+                            index = i;
+                            break;
+                        }
+                    }
+
+                    property.enumValueIndex = index;
+                    property.serializedObject.ApplyModifiedProperties();
+                }
+            });
+            return dropdownElement;
+        }
+        #endregion
+
+        #region IMGUI
         private struct NewPropertyValueContainer
         {
             public SerializedProperty targetProperty;
@@ -23,12 +62,13 @@ namespace RoR2.Editor.PropertyDrawers
 
         private NewPropertyValueContainer? newPropertyValue;
 
-        protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            base.OnGUI(position, property, label);
             using (new EditorGUI.PropertyScope(position, label, property))
             {
                 var dropdownButtonRect = EditorGUI.PrefixLabel(position, label);
-                if (EditorGUI.DropdownButton(dropdownButtonRect, GetEnumValueName(property), FocusType.Passive))
+                if (EditorGUI.DropdownButton(dropdownButtonRect, new GUIContent(GetCurrentValue(property).name), FocusType.Passive))
                 {
                     var dropdown = new AdvancedDropdownEnum(new AdvancedDropdownState());
                     dropdown.onItemSelected += (item) =>
@@ -46,34 +86,26 @@ namespace RoR2.Editor.PropertyDrawers
                             }
                         }
 
-                        newPropertyValue = new NewPropertyValueContainer
-                        {
-                            newEnumIndexValue = index,
-                            targetProperty = property,
-                        };
+                        newPropertyValue = new NewPropertyValueContainer { newEnumIndexValue = index, targetProperty = property };
                     };
+
                     dropdown.Show(position);
                 }
 
                 if (newPropertyValue.HasValue && SerializedProperty.EqualContents(newPropertyValue.Value.targetProperty, property))
                 {
-                    property.enumValueIndex = newPropertyValue.Value.newEnumIndexValue;
-                    serializedObject.ApplyModifiedProperties();
+                    newPropertyValue.Value.targetProperty.enumValueIndex = newPropertyValue.Value.newEnumIndexValue;
                     newPropertyValue = null;
+                    property.serializedObject.ApplyModifiedProperties();
                 }
             }
         }
+        #endregion
 
-        public override bool CanCacheInspectorGUI(SerializedProperty property)
+        private AdvancedDropdownEnum.Item GetCurrentValue(SerializedProperty property)
         {
-            return false;
-        }
-
-        private GUIContent GetEnumValueName(SerializedProperty property)
-        {
-            var index = property.enumValueIndex;
-            var enumName = property.enumNames[index];
-            return new GUIContent(enumName);
+            TEnum currentValue = (TEnum)Enum.Parse(typeof(TEnum), property.enumNames[property.enumValueIndex]);
+            return new AdvancedDropdownEnum.Item(currentValue);
         }
 
         private class AdvancedDropdownEnum : AdvancedDropdown
@@ -86,12 +118,12 @@ namespace RoR2.Editor.PropertyDrawers
 
             protected override AdvancedDropdownItem BuildRoot()
             {
-                Item root = new Item(ObjectNames.NicifyVariableName(typeof(TEnum).Name), default);
+                Item root = new Item(default, ObjectNames.NicifyVariableName(typeof(TEnum).Name));
 
                 TEnum[] enumValues = (TEnum[])Enum.GetValues(typeof(TEnum));
                 foreach(TEnum enumValue in enumValues)
                 {
-                    root.AddChild(new Item(Enum.GetName(typeof(TEnum), enumValue), enumValue));
+                    root.AddChild(new Item(enumValue));
                 }
 
                 return root;
@@ -105,7 +137,8 @@ namespace RoR2.Editor.PropertyDrawers
 
             public class Item : AdvancedDropdownItem
             {
-                public Item(string name, TEnum enumValue) : base(name)
+                public Item(TEnum enumValue) : this(enumValue, enumValue.ToString()) { }
+                public Item(TEnum enumValue, string name) : base(name)
                 {
                     this.enumValue = enumValue;
                 }

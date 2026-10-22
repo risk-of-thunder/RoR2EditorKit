@@ -36,7 +36,7 @@ namespace RoR2.Editor
             var rootItem = new Item(rootItemKey, rootItemKey, rootItemKey, rootItemKey);
             items.Add(rootItemKey, rootItem);
 
-            items.Add("None", new Item("None", string.Empty, string.Empty, string.Empty));
+            items.Add("None", new Item("None", string.Empty, string.Empty, string.Empty, isNone: true));
             foreach (var assemblyQualifiedName in types.Select(x => x.AssemblyQualifiedName).OrderBy(x => x))
             {
                 var itemFullName = assemblyQualifiedName.Split(',')[0];
@@ -125,7 +125,14 @@ namespace RoR2.Editor
             /// </summary>
             public string assemblyQualifiedName { get; }
 
-            internal Item(string displayName, string typeName, string fullName, string assemblyQualifiedName) : base(
+            /// <summary>
+            /// Returns true if <see cref="assemblyQualifiedName"/> resolves into a valid <see cref="Type"/>
+            /// </summary>
+            public bool isValid => Type.GetType(assemblyQualifiedName) != null;
+
+            public bool isNone { get; }
+
+            internal Item(string displayName, string typeName, string fullName, string assemblyQualifiedName, bool isNone = false) : base(
     displayName)
             {
                 this.typeName = typeName;

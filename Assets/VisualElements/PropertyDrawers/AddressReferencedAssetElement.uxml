@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <Style src="project://database/Packages/riskofthunder-ror2editorkit/Assets/VisualElements/R2EKGlobalStlye.uss?fileID=7433441132597879392&amp;guid=81861b4c6318b874391de872e1793059&amp;type=3#R2EKGlobalStlye" />
+    <ui:VisualElement name="RootElement">
+        <ui:VisualElement name="AddressControls">
+            <RoR2.Editor.AdvancedDropdownElement label="Address" dropdown-button-text="Value" name="AddressDropdown" />
+            <ui:TextField picking-mode="Ignore" label="Address" name="CatalogOrAddressField" class="unity-base-field__aligned" />
+            <ui:TextField picking-mode="Ignore" label="Filter:" name="Filter" is-delayed="true" class="unity-base-field__aligned r2ek-filter-field r2ek-filter-field__textinput" />
+        </ui:VisualElement>
+        <uie:ObjectField label="Direct Reference" name="DirectReference" class="unity-base-field__aligned" />
+    </ui:VisualElement>
+</ui:UXML>

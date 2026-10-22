@@ -6,8 +6,11 @@ using System;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.UIElements;
+using RoR2.Editor.VisualElements;
 
 namespace RoR2.Editor.PropertyDrawers
 {
@@ -24,7 +27,7 @@ namespace RoR2.Editor.PropertyDrawers
     /// </summary>
     /// <typeparam name="T">The type of <see cref="AddressReferencedAsset"/> that's being drawn.</typeparam>
     [CustomPropertyDrawer(typeof(AddressReferencedAsset), true)]
-    public class AddressReferencedAssetDrawer : IMGUIPropertyDrawer<AddressReferencedAsset>
+    public class AddressReferencedAssetDrawer : ExtendedPropertyDrawer<AddressReferencedAsset>
     {
         private static bool _useFullPathForItems;
 
@@ -53,8 +56,25 @@ namespace RoR2.Editor.PropertyDrawers
 
         private NewPropertyValueContainer? newGUIDValue;
 
-        protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
+            var element = new AddressReferencedAssetElement(_useFullPathForItems, null, property);
+
+            Type[] assetTypes = GetRequiredAssetTypes();
+            element.assetTypesForDropdown = assetTypes;
+            element.assetType = assetTypes.Length > 1 ? typeof(UnityEngine.Object) : HG.ArrayUtils.GetSafe(assetTypes, 0);
+            element.ForbidCatalogUsage(fieldInfo.GetCustomAttribute<NoCatalogLoadAttribute>() != null);
+
+            AddressableComponentRequirementAttribute attribute = fieldInfo.GetCustomAttribute<AddressableComponentRequirementAttribute>();
+
+            element.addressableComponentRequirement = attribute?.requiredComponentType ?? null;
+            element.searchInChildren = attribute?.searchInChildren ?? false;
+
+            return element;
+        }
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            float standardPropertyHeight = base.GetPropertyHeight(property, label);
             serializedObject.Update();
 
             bool hasNoCatalogLoad = fieldInfo.GetCustomAttribute<NoCatalogLoadAttribute>(true) != null;
@@ -85,7 +105,7 @@ namespace RoR2.Editor.PropertyDrawers
             usingDirectReference = _useDirectReferenceProperty.boolValue;
             canLoadFromCatalog = _canLoadFromCatalogProperty?.boolValue ?? false;
 
-            using(new EditorGUI.PropertyScope(position, label, property))
+            using (new EditorGUI.PropertyScope(position, label, property))
             {
                 var fieldRect = new Rect(position.x, position.y, position.width - 16, standardPropertyHeight);
 
@@ -156,7 +176,7 @@ namespace RoR2.Editor.PropertyDrawers
                     }
                 }
 
-                if(newGUIDValue.HasValue && SerializedProperty.EqualContents(newGUIDValue.Value.targetProperty, _addressProperty))
+                if (newGUIDValue.HasValue && SerializedProperty.EqualContents(newGUIDValue.Value.targetProperty, _addressProperty))
                 {
                     _addressProperty.stringValue = newGUIDValue.Value.address;
                     serializedObject.ApplyModifiedProperties();
@@ -165,15 +185,10 @@ namespace RoR2.Editor.PropertyDrawers
             }
         }
 
-        public override bool CanCacheInspectorGUI(SerializedProperty property)
-        {
-            return false;
-        }
-
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            base.GetPropertyHeight(property, label);
-            return standardPropertyHeight * 2;
+            float basePropertyHeight = base.GetPropertyHeight(property, label);
+            return basePropertyHeight * 2;
         }
 
         /// <summary>
@@ -213,7 +228,7 @@ namespace RoR2.Editor.PropertyDrawers
         protected virtual Type[] GetRequiredAssetTypes()
         {
             //Get the type of the field, and a reference to AddressReferencedAsset<>
-            Type fieldInfoType = propertyDrawerData.GetType();
+            Type fieldInfoType = fieldInfo.FieldType;
 
             Type addressReferencedAssetT = typeof(AddressReferencedAsset<>);
 

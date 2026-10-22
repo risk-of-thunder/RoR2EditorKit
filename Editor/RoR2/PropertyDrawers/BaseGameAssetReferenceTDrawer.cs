@@ -8,6 +8,9 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using IOPath = System.IO.Path;
+using UnityEngine.UIElements;
+using UnityEditor.IMGUI.Controls;
+
 #if R2EK_R2API_ADDRESSABLES
 using R2API.AddressReferencedAssets;
 #endif
@@ -25,8 +28,81 @@ namespace RoR2.Editor.PropertyDrawers
     /// This property drawer is disabled if the Addressables package is installed.
     /// </summary>
     [CustomPropertyDrawer(typeof(AssetReference), true)]
-    public class BaseGameAssetReferenceTDrawer : IMGUIPropertyDrawer<AssetReference>
+    public class BaseGameAssetReferenceTDrawer : ExtendedPropertyDrawer<AssetReference>
     {
+        private static bool _useFullPathForItems;
+        private string _filter;
+        private static Regex subObjectNameExtractor = new Regex(@"(?<=\[).*?(?=\])");
+
+        #region VisualElement
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            var result = VisualElementTemplateDictionary.instance.GetTemplateInstance("BaseGameAssetReferenceTDrawer");
+
+            //Setup the advanced dropdown element
+            AdvancedDropdownElement element = result.Q<AdvancedDropdownElement>();
+            element.createDropdown = (element) =>
+            {
+                AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(),
+                        _useFullPathForItems,
+                        _filter,
+                        GetRequiredComponentType(),
+                        GetSearchComponentInChildren(),
+                        GetAssetTypes());
+
+                dropdown.onItemSelected += element.OnItemSelected;
+                return dropdown;
+            };
+            element.getDropdownButtonText = GetDropdownButtonLabel;
+            element.SetLabelGUIContent(property.GetGUIContent());
+            element.RegisterValueChangedCallback(evt =>
+            {
+                var item = (AddressablesPathDropdown.Item)evt.newValue;
+
+                string mainAssetGUID = "";
+                string subObjectName = "";
+
+                if (item.isValid)
+                {
+                    string guid = item.assetGUID;
+
+                    //We'll match using regex to get the subObjectName
+                    Match match = subObjectNameExtractor.Match(guid);
+                    if (match == Match.Empty)
+                    {
+                        //There's no subObjectName, so store the mainAssetGUID;
+                        mainAssetGUID = guid;
+                    }
+                    else //We've found the subobjectname, we need to store it within its correct property.
+                    {
+                        subObjectName = match.Value;
+                        mainAssetGUID = guid.Substring(0, guid.IndexOf('['));
+                    }
+                }
+
+                SerializedProperty m_AssetGUIDProperty = property.FindPropertyRelative("m_AssetGUID");
+                SerializedProperty m_SubObjectNameProperty = property.FindPropertyRelative("m_SubObjectName");
+
+                m_AssetGUIDProperty.stringValue = mainAssetGUID;
+                m_SubObjectNameProperty.stringValue = subObjectName;
+
+                property.serializedObject.ApplyModifiedProperties();
+            });
+            element.showMixedValue = property.hasMultipleDifferentValues;
+            element.value = GetCurrentValue(property);
+
+            //Setup the filter
+            TextField filter = result.Q<TextField>();
+            filter.RegisterValueChangedCallback((evt) =>
+            {
+                _filter = evt.newValue;
+            });
+
+            return result;
+        }
+        #endregion
+
+        #region IMGUI
         private struct NewPropertyValueContainer
         {
             public SerializedProperty assetGUIDProperty;
@@ -43,17 +119,17 @@ namespace RoR2.Editor.PropertyDrawers
 
         private NewPropertyValueContainer? _newPropertyValuePair;
 
-        private static bool _useFullPathForItems;
-        private string filter;
-        private static Regex subObjectNameExtractor = new Regex(@"(?<=\[).*?(?=\])");
-        protected override void DrawIMGUI(Rect position, SerializedProperty property, GUIContent label)
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            float standardPropertyHeight = base.GetPropertyHeight(property, label);
             serializedObject.UpdateIfRequiredOrScript();
 #if R2EK_R2API_ADDRESSABLES
             AddressableComponentRequirementAttribute componentRequirement = fieldInfo.GetCustomAttribute<AddressableComponentRequirementAttribute>(true);
 #endif
-            var pathDictionaryInstance = AddressablesPathDictionary.instance;
             Type[] typesOfAsset = GetAssetTypes();
+
+            SerializedProperty m_AssetGUIDProperty = property.FindPropertyRelative("m_AssetGUID");
+            SerializedProperty m_SubObjectNameProperty = property.FindPropertyRelative("m_SubObjectName");
             using (new EditorGUI.PropertyScope(position, label, property))
             {
                 if (typesOfAsset == null)
@@ -68,37 +144,18 @@ namespace RoR2.Editor.PropertyDrawers
 
                 //Compute the rect for the filter itself, then draw it
                 var rectForFilterProperty = new Rect(position.x + 32, position.y + standardPropertyHeight, position.width - 32, standardPropertyHeight);
-                filter = EditorGUI.TextField(rectForFilterProperty, "Filter:", filter);
+                _filter = EditorGUI.TextField(rectForFilterProperty, "Filter:", _filter);
 
 
                 //finally, draw the main control
-                SerializedProperty m_AssetGUIDProperty = property.FindPropertyRelative("m_AssetGUID");
-                SerializedProperty m_SubObjectNameProperty = property.FindPropertyRelative("m_SubObjectName");
-
-                GUIContent dropdownButtonLabel = GetDropdownButtonLabel(pathDictionaryInstance, m_AssetGUIDProperty.stringValue, m_SubObjectNameProperty.stringValue);
+                GUIContent dropdownButtonLabel = GetDropdownButtonLabel(GetCurrentValue(property));
                 if (EditorGUI.DropdownButton(rectForDropdownControl, dropdownButtonLabel, FocusType.Passive))
                 {
-                    Type requiredComponentType =
-#if R2EK_R2API_ADDRESSABLES
-                        componentRequirement?.requiredComponentType
-#else
-                        null
-#endif
-                        ;
-
-                    bool searchInChildren =
-#if R2EK_R2API_ADDRESSABLES
-                        componentRequirement?.searchInChildren ?? false
-#else
-                        false
-#endif
-                        ;
-
                     AddressablesPathDropdown dropdown = new AddressablesPathDropdown(new UnityEditor.IMGUI.Controls.AdvancedDropdownState(),
                         _useFullPathForItems,
-                        filter,
-                        requiredComponentType,
-                        searchInChildren,
+                        _filter,
+                        GetRequiredComponentType(),
+                        GetSearchComponentInChildren(),
                         typesOfAsset);
 
                     dropdown.onItemSelected += (item) =>
@@ -106,9 +163,9 @@ namespace RoR2.Editor.PropertyDrawers
                         string mainAssetGUID = "";
                         string subObjectName = "";
 
-                        if (!string.IsNullOrWhiteSpace(item.assetPath))
+                        if (item.isValid)
                         {
-                            string guid = pathDictionaryInstance.GetGUIDFromPath(item.assetPath);
+                            string guid = item.assetGUID;
 
                             //We'll match using regex to get the subObjectName
                             Match match = subObjectNameExtractor.Match(guid);
@@ -148,40 +205,9 @@ namespace RoR2.Editor.PropertyDrawers
             }
         }
 
-        private GUIContent GetDropdownButtonLabel(AddressablesPathDictionary addressablesDictionary, string assetGUID, string subObjectName)
-        {
-            string label = "";
-            string tooltip = "";
-
-            if (string.IsNullOrEmpty(assetGUID))
-            {
-                label = "None";
-                tooltip = "";
-                return new GUIContent(label, tooltip);
-            }
-
-            string fullAssetPath = "";
-            if (!string.IsNullOrWhiteSpace(subObjectName))
-            {
-                string compoundedGuid = string.Format("{0}[{1}]", assetGUID, subObjectName);
-                fullAssetPath = addressablesDictionary.GetPathFromGUID(compoundedGuid);
-            }
-            else
-            {
-                fullAssetPath = addressablesDictionary.GetPathFromGUID(assetGUID);
-            }
-
-            string onlyAssetName = fullAssetPath.Substring(fullAssetPath.LastIndexOf('/') + 1);
-
-            label = onlyAssetName;
-            tooltip = fullAssetPath;
-
-            return new GUIContent(label, tooltip);
-        }
-
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            base.GetPropertyHeight(property, label);
+            float standardPropertyHeight = base.GetPropertyHeight(property, label);
             Type[] type = GetAssetTypes();
 
             //If the type it returns is null or has no length, we should instead display the default drawer instead, so take into account that.
@@ -197,6 +223,68 @@ namespace RoR2.Editor.PropertyDrawers
 
             //Otherwise, use the new property drawer.
             return standardPropertyHeight * 2;
+        }
+        #endregion
+
+        private AddressablesPathDropdown.Item GetCurrentValue(SerializedProperty property)
+        {
+            var m_AssetGUID = property.FindPropertyRelative("m_AssetGUID");
+            var m_SubObjectNameProperty = property.FindPropertyRelative("m_SubObjectName");
+
+            if(string.IsNullOrWhiteSpace(m_AssetGUID.stringValue))
+            {
+                return new AddressablesPathDropdown.Item("None", "None", "", true);
+            }
+
+            string guid = string.Empty;
+            if(!string.IsNullOrWhiteSpace(m_SubObjectNameProperty.stringValue))
+            {
+                guid = $"{m_AssetGUID.stringValue}[{m_SubObjectNameProperty.stringValue}]";
+            }
+            else
+            {
+                guid = m_AssetGUID.stringValue;
+            }
+
+            string path = AddressablesPathDictionary.instance.GetPathFromGUID(guid);
+            return new AddressablesPathDropdown.Item(path.Substring(path.LastIndexOf('/') + 1), path, guid, false);
+        }
+
+        private GUIContent GetDropdownButtonLabel(AdvancedDropdownItem value)
+        {
+            if(value is not AddressablesPathDropdown.Item item || item.isNone)
+            {
+                return new GUIContent("None");
+            }
+
+            string label = "None";
+            string tooltip = "";
+
+            if(item.isValid)
+            {
+                tooltip = item.assetPath;
+                label = tooltip.Substring(tooltip.LastIndexOf("/") + 1);
+            }
+
+            return new GUIContent(label, tooltip);
+        }
+
+        private Type GetRequiredComponentType()
+        {
+            Type type = null;
+#if R2EK_R2API_ADDRESSABLES
+            type = fieldInfo.GetCustomAttribute<AddressableComponentRequirementAttribute>()?.requiredComponentType ?? null;
+#endif
+            return type;
+        }
+
+        private bool GetSearchComponentInChildren()
+        {
+            bool searchComponentInChildren = false;
+#if R2EK_R2API_ADDRESSABLES
+            searchComponentInChildren = fieldInfo.GetCustomAttribute<AddressableComponentRequirementAttribute>()?.searchInChildren ?? false;
+#endif
+            return searchComponentInChildren;
         }
 
         [Obsolete("Use GetAssetTypes instead.")]
@@ -228,7 +316,7 @@ namespace RoR2.Editor.PropertyDrawers
         protected bool TryGetAssetTypeFromPopertyDrawerData(out Type type)
         {
             type = null;
-            Type assetReferenceTType = propertyDrawerData.GetType();
+            Type assetReferenceTType = fieldInfo.FieldType;
 
             //If the type has no generic arguments, but it inherits from AssetReferenceT, we need to get the base type and obtain the arguments. This is the case for something like AssetReferenceTexture, which inherits from AssetReferenceT<Texture>
             var genericTypes = assetReferenceTType.GetGenericArguments();

@@ -23,7 +23,8 @@
         "R2API.Core.dll",
         "R2API.Addressables.dll",
         "R2API.Director.dll",
-        "com.unity.multiplayer-hlapi.Runtime.dll"
+        "com.unity.multiplayer-hlapi.Runtime.dll",
+        "HGCSharpUtils.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [

@@ -167,6 +167,15 @@ namespace RoR2.Editor
         /// <param name="display">True if its displayed, false if its hidden</param>
         public static void SetDisplay(this VisualElement visualElement, bool display) => visualElement.style.display = display ? DisplayStyle.Flex : DisplayStyle.None;
 
+        public static void SetLabelGUIContent<T>(this BaseField<T> baseField, GUIContent guiContent)
+        {
+            if(baseField != null)
+            {
+                baseField.label = guiContent.text;
+                baseField.labelElement.tooltip = guiContent.tooltip;
+            }
+        }
+
         /// <summary>
         /// Normalizes a name for usage on UXML trait attributes
         /// <para>Due to limitations on UIBuilder, the UXML trait's name needs to have a specific name formtting that must match the required property that's going to set the value.</para>
