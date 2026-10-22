@@ -169,6 +169,9 @@ namespace RoR2.Editor
             /// </summary>
             public bool isNone { get; }
 
+            /// <summary>
+            /// Returns true if <see cref="assetGUID"/> is inside the <see cref="AddressablesPathDictionary"/>
+            /// </summary>
             public bool isValid => AddressablesPathDictionary.instance.IsGUIDValid(assetGUID);
             public Item(string displayName, string assetPath, string assetGUID, bool isNone = false) : base(displayName)
             {

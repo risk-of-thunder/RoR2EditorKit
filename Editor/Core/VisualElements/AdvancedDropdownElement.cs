@@ -171,7 +171,7 @@ namespace RoR2.Editor
                 return;
 
             AdvancedDropdown dropdown = createDropdown?.Invoke(this);
-            dropdown.Show(_buttonElement.worldBound);
+            dropdown.Show(worldBound);
         }
 
         /// <summary>
@@ -180,6 +180,11 @@ namespace RoR2.Editor
         public void OnItemSelected(AdvancedDropdownItem item)
         {
             value = item;
+        }
+
+        internal void OnItemSelected(object onItemSelected)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>

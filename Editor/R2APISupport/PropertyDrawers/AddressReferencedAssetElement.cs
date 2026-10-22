@@ -285,72 +285,67 @@ namespace RoR2.Editor.VisualElements
             UpdateControlsDependingOnValues();
         }
 
-        bool runningUpdateControls = false;
+        bool _isUpdatingControls = false;
         private void UpdateControlsDependingOnValues()
         {
-            if (runningUpdateControls)
+            if (_isUpdatingControls)
                 return;
 
-            EditorApplication.delayCall += NextUpdate;
-
-            void NextUpdate()
+            _isUpdatingControls = true;
+            try
             {
-                runningUpdateControls = true;
-                try
+                //Enable or disable control display depending on values
+                if (useDirectReference)
                 {
-                    //Enable or disable control display depending on values
-                    if (useDirectReference)
-                    {
-                        _addressControls.SetDisplay(false);
-                        advancedDropdownElementAddress.SetDisplay(false);
-                        textFieldAddress.SetDisplay(false);
-                        objectFieldDirectReference.SetDisplay(true);
-                    }
-                    else
-                    {
-                        _addressControls.SetDisplay(true);
-                        advancedDropdownElementAddress.SetDisplay(canLoadFromCatalog == false);
-                        textFieldAddress.SetDisplay(canLoadFromCatalog == true);
-                        objectFieldDirectReference.SetDisplay(false);
-                    }
-
-                    //If cant load from catalog is true, and the address is invalid, set address to null
-                    if (!canLoadFromCatalog && !AddressablesPathDictionary.instance.IsGUIDValid(address))
-                    {
-                        address = null;
-                    }
-
-                    if (string.IsNullOrWhiteSpace(address))
-                    {
-                        textFieldAddress.value = "";
-                        advancedDropdownElementAddress.value = null;
-                    }
-                    else
-                    {
-                        textFieldAddress.value = address;
-
-                        string tooltip = "";
-                        string text = "";
-
-                        if (AddressablesPathDictionary.instance.IsGUIDValid(address))
-                        {
-                            var path = AddressablesPathDictionary.instance.GetPathFromGUID(address);
-
-                            text = path.Substring(path.LastIndexOf("/") + 1);
-                            tooltip = path;
-                        }
-                        advancedDropdownElementAddress.dropdownButtonText = text;
-                        advancedDropdownElementAddress.dropdownButtonTooltip = tooltip;
-                    }
-
-                    objectFieldDirectReference.value = asset;
+                    _addressControls.SetDisplay(false);
+                    advancedDropdownElementAddress.SetDisplay(false);
+                    textFieldAddress.SetDisplay(false);
+                    objectFieldDirectReference.SetDisplay(true);
                 }
-                finally
+                else
                 {
-                    runningUpdateControls = false;
+                    _addressControls.SetDisplay(true);
+                    advancedDropdownElementAddress.SetDisplay(canLoadFromCatalog == false);
+                    textFieldAddress.SetDisplay(canLoadFromCatalog == true);
+                    objectFieldDirectReference.SetDisplay(false);
                 }
+
+                //If cant load from catalog is true, and the address is invalid, set address to null
+                if (!canLoadFromCatalog && !AddressablesPathDictionary.instance.IsGUIDValid(address))
+                {
+                    address = null;
+                }
+
+                if (string.IsNullOrWhiteSpace(address))
+                {
+                    textFieldAddress.value = "";
+                    advancedDropdownElementAddress.value = new AddressablesPathDropdown.Item("None", "", "", true);
+                }
+                else
+                {
+                    textFieldAddress.value = address;
+
+                    string tooltip = "";
+                    string text = "";
+
+                    if (AddressablesPathDictionary.instance.IsGUIDValid(address))
+                    {
+                        var path = AddressablesPathDictionary.instance.GetPathFromGUID(address);
+
+                        text = path.Substring(path.LastIndexOf("/") + 1);
+                        tooltip = path;
+                    }
+                    advancedDropdownElementAddress.dropdownButtonText = text;
+                    advancedDropdownElementAddress.dropdownButtonTooltip = tooltip;
+                }
+
+                objectFieldDirectReference.value = asset;
 
                 MarkDirtyRepaint();
+            }
+            finally
+            {
+                _isUpdatingControls = false;
             }
         }
 

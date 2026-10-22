@@ -247,7 +247,7 @@ namespace RoR2.Editor.PropertyDrawers
             }
 
             string path = AddressablesPathDictionary.instance.GetPathFromGUID(guid);
-            return new AddressablesPathDropdown.Item(path.Substring(path.LastIndexOf('/') + 1), path, guid, false);
+            return new AddressablesPathDropdown.Item(_useFullPathForItems ? path : path.Substring(path.LastIndexOf('/') + 1), path, guid, false);
         }
 
         private GUIContent GetDropdownButtonLabel(AdvancedDropdownItem value)
