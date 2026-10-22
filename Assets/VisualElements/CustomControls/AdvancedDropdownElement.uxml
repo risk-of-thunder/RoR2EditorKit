@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="Button" class="unity-base-field__input unity-base-popup-field__input unity-popup_field__input">
+        <ui:Label text="Label" display-tooltip-when-elided="true" name="DropdownLabel" class="unity-base-popup-field__text" />
+        <ui:VisualElement name="Arrow" class="unity-base-popup-field__arrow" />
+    </ui:VisualElement>
+</ui:UXML>
