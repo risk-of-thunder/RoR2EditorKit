@@ -319,7 +319,7 @@ namespace RoR2.Editor.VisualElements
                 if (string.IsNullOrWhiteSpace(address))
                 {
                     textFieldAddress.value = "";
-                    advancedDropdownElementAddress.value = new AddressablesPathDropdown.Item("None", "", "", true);
+                    advancedDropdownElementAddress.SetValueWithoutNotify(new AddressablesPathDropdown.Item("None", "", "", true));
                 }
                 else
                 {
