@@ -6,7 +6,8 @@
         "GUID:a44f47cf3ada4435dbc516bad0bc86fe",
         "GUID:478a2357cc57436488a56e564b08d223",
         "GUID:9e24947de15b9834991c9d8411ea37cf",
-        "GUID:84651a3751eca9349aac36a66bba901b"
+        "GUID:84651a3751eca9349aac36a66bba901b",
+        "GUID:2bafac87e7f4b9b418d9448d219b01ab"
     ],
     "includePlatforms": [
         "Editor"
@@ -28,7 +29,8 @@
         "com.unity.multiplayer-hlapi.Runtime.dll",
         "R2API.Addressables.dll",
         "AsyncManagement.dll",
-        "R2API.StringSerializerExtensions.dll"
+        "R2API.StringSerializerExtensions.dll",
+        "UnityEngine.UI.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [
