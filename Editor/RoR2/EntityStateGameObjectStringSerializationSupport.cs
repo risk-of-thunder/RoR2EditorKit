@@ -1,11 +1,14 @@
+using HG.GeneralSerializer;
 using RoR2.AsyncManagement;
 using RoR2.Editor.PropertyDrawers;
 using System;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static RoR2.Editor.VisualElementUtil;
 
 namespace RoR2.Editor
 {
@@ -39,36 +42,149 @@ namespace RoR2.Editor
 
         private class EntityStateGameObjectField : VisualElement
         {
+            enum UIState
+            {
+                Address,
+                Reference
+            }
+            private string _label;
+            private Func<object> _valueRetriever;
+            private SerializedProperty _fieldProperty;
+            private FieldInfo _targetFieldInfo;
+
+            private VisualElement _addressPickerContainer;
             private AdvancedDropdownElement _advancedDropdownElement;
             private TextField _filterElement;
 
-            private FieldInfo _targetFieldInfo;
+            private VisualElement _objectFieldContainer;
+            private ObjectField _objectField;
+            private bool _directReferenceCheckmark;
+
             private string _filter;
             private bool _useFullPathForItems;
             private VisualElementUtil.DeconstructedChangeEvent _changeEvent;
 
             public EntityStateGameObjectField(VisualElementUtil.ControlBuilderArgs controlBuilderArgs)
             {
+                _fieldProperty = controlBuilderArgs.fieldProperty;
+                _targetFieldInfo = controlBuilderArgs.fieldInfo;
+                _changeEvent = controlBuilderArgs.changeEvent;
+                _label = controlBuilderArgs.elementLabel;
+                _valueRetriever = controlBuilderArgs.valueRetriever;
+
                 VisualElementTemplateDictionary.instance.GetTemplateInstance(nameof(EntityStateGameObjectField), this);
 
-                _advancedDropdownElement = this.Q<AdvancedDropdownElement>();
-                _advancedDropdownElement.label = controlBuilderArgs.elementLabel;
-                _advancedDropdownElement.getDropdownButtonText = GetDropdownButtonLabel;
-                _advancedDropdownElement.createDropdown = CreateDropdown;
-                _advancedDropdownElement.value = GetCurrentValue(controlBuilderArgs.valueRetriever());
-                _advancedDropdownElement.RegisterValueChangedCallback(OnValueChanged);
+                InitializeElements();
+                
+                UpdateUIWithState(GetCurrentUIState());
 
-                _filterElement = this.Q<TextField>();
-                _filterElement.RegisterValueChangedCallback((evt) => _filter = evt.newValue);
+#if R2EK_R2API_STRINGSERIALIZER
+                InitializeDirectReferenceSupport(_addressPickerContainer.parent);
+#else
+                _objectFieldContainer.SetDisplay(false);
+                _objectFieldContainer.SetEnabled(false);
+#endif
 
                 var editorSettingCollection = EditorSettingManager.GetOrCreateSettingsFor(GetType(), EditorSettingManager.SettingType.UserSetting);
                 _useFullPathForItems = editorSettingCollection.GetOrCreateSetting("useFullPathForItems", false);
-
-                _targetFieldInfo = controlBuilderArgs.fieldInfo;
-                _changeEvent = controlBuilderArgs.changeEvent;
             }
 
-            private void OnValueChanged(ChangeEvent<AdvancedDropdownItem> evt)
+            private void InitializeElements()
+            {
+                object value = _valueRetriever?.Invoke();
+
+                AddressablesPathDropdown.Item currentPickerValue = GetCurrentDropdownValue(value);
+                GameObject currentDirectReferenceValue = GetCurrentDirectReferenceValue(value);
+                _directReferenceCheckmark = currentDirectReferenceValue != null;
+
+                //Addressable part
+                _addressPickerContainer = this.Q<VisualElement>("AddressPicker");
+
+                _advancedDropdownElement = _addressPickerContainer.Q<AdvancedDropdownElement>();
+                _advancedDropdownElement.label = _label;
+                _advancedDropdownElement.getDropdownButtonText = GetDropdownButtonLabel;
+                _advancedDropdownElement.createDropdown = CreateDropdown;
+                _advancedDropdownElement.value = currentPickerValue;
+                _advancedDropdownElement.RegisterValueChangedCallback(OnAddressReferenceValueChanged);
+
+                _filterElement = _addressPickerContainer.Q<TextField>();
+                _filterElement.RegisterValueChangedCallback((evt) => _filter = evt.newValue);
+
+                //Direct Reference part
+                _objectFieldContainer = this.Q<VisualElement>("ObjectField");
+                _objectField = _objectFieldContainer.Q<ObjectField>();
+                _objectField.label = _label;
+                _objectField.SetObjectType<GameObject>();
+                _objectField.value = currentDirectReferenceValue;
+                _objectField.RegisterValueChangedCallback(OnDirectReferenceValueChanged);
+            }
+
+            private GameObject GetCurrentDirectReferenceValue(object value)
+            {
+                if(value is GameObject go)
+                {
+                    return go;
+                }
+                return null;
+            }
+
+            private void UpdateUIWithState(UIState uiState)
+            {
+                _objectFieldContainer.SetDisplay(uiState == UIState.Reference);
+                _objectFieldContainer.SetEnabled(uiState == UIState.Reference);
+
+                _addressPickerContainer.SetDisplay(uiState == UIState.Address);
+                _addressPickerContainer.SetEnabled(uiState == UIState.Address);
+            }
+
+            private UIState GetCurrentUIState()
+            {
+#if R2EK_R2API_STRINGSERIALIZER
+                if(_directReferenceCheckmark)
+                {
+                    return UIState.Reference;
+                }
+                SerializedProperty objectValue = _fieldProperty.FindPropertyRelative("fieldValue").FindPropertyRelative("objectValue");
+                return objectValue.objectReferenceValue ? UIState.Reference : UIState.Address;
+#else
+                return UIState.Address;
+#endif
+            }
+
+            private void InitializeDirectReferenceSupport(VisualElement contextMenuTarget)
+            {
+                contextMenuTarget.AddSimpleContextMenu(new ContextMenuData
+                {
+                    menuName = "Use Direct Reference",
+                    actionStatusCheck = (act) => GetCurrentUIState() == UIState.Address ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Checked,
+                    menuAction = (act) =>
+                    {
+                        if(_directReferenceCheckmark == true)
+                        {
+                            _objectField.value = null;
+                            _directReferenceCheckmark = false;
+                        }
+                        else
+                        {
+                            _advancedDropdownElement.value = GetCurrentDropdownValue(null);
+                            _directReferenceCheckmark = true;
+                        }
+                        UpdateUIWithState(GetCurrentUIState());
+                    }
+                });
+            }
+
+            private void OnDirectReferenceValueChanged(ChangeEvent<UnityEngine.Object> evt)
+            {
+                _changeEvent(new DeconstructedChangeEventData
+                {
+                    eventBase = evt,
+                    newValue = evt.newValue,
+                    previousValue = evt.previousValue
+                });
+            }
+
+            private void OnAddressReferenceValueChanged(ChangeEvent<AdvancedDropdownItem> evt)
             {
                 var previousValue = evt.previousValue;
                 var newValue = evt.newValue;
@@ -138,7 +254,7 @@ namespace RoR2.Editor
                 return dropdown;
             }
 
-            private AddressablesPathDropdown.Item GetCurrentValue(object currentValueBoxed)
+            private AddressablesPathDropdown.Item GetCurrentDropdownValue(object currentValueBoxed)
             {
                 var none = new AddressablesPathDropdown.Item("None", "None", "", true);
                 if (currentValueBoxed is not EntityStateGameObject esgo)

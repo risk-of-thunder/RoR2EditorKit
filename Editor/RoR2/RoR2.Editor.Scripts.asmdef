@@ -27,7 +27,8 @@
         "Unity.ResourceManager.dll",
         "com.unity.multiplayer-hlapi.Runtime.dll",
         "R2API.Addressables.dll",
-        "AsyncManagement.dll"
+        "AsyncManagement.dll",
+        "R2API.StringSerializerExtensions.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [
@@ -48,6 +49,11 @@
             "name": "riskofthunder-r2api_addressables",
             "expression": "0.0.1",
             "define": "R2EK_R2API_ADDRESSABLES"
+        },
+        {
+            "name": "riskofthunder-r2api_stringserializerextensions",
+            "expression": "0.0.1",
+            "define": "R2EK_R2API_STRINGSERIALIZER"
         }
     ],
     "noEngineReferences": false
