@@ -114,18 +114,32 @@ namespace RoR2.Editor
         /// </summary>
         public void CheckForTypeBeingSerialized()
         {
+            PopulateSerializableFields();
+
             if (typeBeingSerialized == null)
             {
                 container.SetEnabled(false);
                 helpBox.SetDisplay(true);
+                helpBox.message = "No Type is being Serialized";
             }
             else
             {
                 container.SetEnabled(true);
+#if !R2EK_STRINGSERIALIZEREXTENSIONS_INSTALLED
+                foreach(var instanceField in _serializableInstanceFields)
+                {
+                    if(instanceField.FieldType.Name == "EntityStateGameObject")
+                    {
+                        helpBox.SetDisplay(true);
+                        helpBox.message = "Your state type has serializable EntityStateGameObject instance fields, it is extremely recommended to install R2API's StringSerializerExtensions as that will allow you to use your own Prefabs on EntityStateGameObjects instead of relying only on base game prefabs.";
+                        break;
+                    }
+                    helpBox.SetDisplay(false);
+                }
+#else
                 helpBox.SetDisplay(false);
+#endif
             }
-
-            PopulateSerializableFields();
 
             UpdateSerializedFieldElements();
 
@@ -283,13 +297,15 @@ namespace RoR2.Editor
             var tooltipAttribute = fieldInfo.GetCustomAttribute<TooltipAttribute>();
 
             var serializedValueProperty = fieldProperty.FindPropertyRelative("fieldValue");
+            var objectValue = serializedValueProperty.FindPropertyRelative("objectValue");
+            var stringValue = serializedValueProperty.FindPropertyRelative("stringValue");
+
             if (typeof(UnityEngine.Object).IsAssignableFrom(fieldInfo.FieldType))
             {
-                var objectValue = serializedValueProperty.FindPropertyRelative("objectValue");
                 var objectField = new ObjectField
                 {
                     label = ObjectNames.NicifyVariableName(fieldInfo.Name),
-                    tooltip = tooltipAttribute?.tooltip ?? null,
+                    tooltip = tooltipAttribute?.tooltip ?? "",
                     objectType = fieldInfo.FieldType,
                 };
 
@@ -298,11 +314,10 @@ namespace RoR2.Editor
             }
             else
             {
-                var stringValue = serializedValueProperty.FindPropertyRelative("stringValue");
                 var serializedValue = stringValue.stringValue;
 
-                var ctrl = CreateStringControl(fieldInfo, fieldProperty, stringValue, serializedValue);
-                ctrl.tooltip = tooltipAttribute?.tooltip ?? null;
+                var ctrl = CreateNonObjectFieldControl(fieldInfo, fieldProperty, objectValue, objectValue.objectReferenceValue, stringValue, serializedValue);
+                ctrl.tooltip = tooltipAttribute?.tooltip ?? "";
                 if (ctrl is PropertyField pf)
                 {
                     pf.label = ObjectNames.NicifyVariableName(fieldInfo.Name);
@@ -330,7 +345,7 @@ namespace RoR2.Editor
             unrecognizedFieldContainer.SetEnabled(false);
         }
 
-        private VisualElement CreateStringControl(FieldInfo fieldInfo, SerializedProperty fieldProperty, SerializedProperty stringValue, string serializedValue)
+        private VisualElement CreateNonObjectFieldControl(FieldInfo fieldInfo, SerializedProperty fieldProperty, SerializedProperty objectValue, UnityEngine.Object objectReferenceValue, SerializedProperty stringValue,  string serializedValue)
         {
             var fieldType = fieldInfo.FieldType;
 
@@ -341,11 +356,32 @@ namespace RoR2.Editor
             }
 
             string label = ObjectNames.NicifyVariableName(fieldInfo.Name);
-            Func<object> valueGetter = () => SerializationMediator.Deserialize(fieldType, serializedValue);
+
+            Func<object> valueGetter = () =>
+            {
+                if(objectReferenceValue != null)
+                {
+                    return objectReferenceValue;
+                }
+                return SerializationMediator.Deserialize(fieldType, serializedValue);
+            };
+
             VisualElementUtil.DeconstructedChangeEvent changeEvent = data =>
             {
                 SerializationMediator.SerializeFromFieldInfo(fieldInfo, data.newValue, out var result);
-                stringValue.stringValue = result.serializedString;
+
+                //Prefer object reference over string reference
+                if(result.objectReference)
+                {
+                    objectValue.objectReferenceValue = result.objectReference;
+                    stringValue.stringValue = null;
+                }
+                else
+                {
+                    objectValue.objectReferenceValue = null;
+                    stringValue.stringValue = result.serializedString;
+                }
+
                 stringValue.serializedObject.ApplyModifiedProperties();
 
                 onFieldValueChanged(fieldInfo, fieldProperty, data.newValue);

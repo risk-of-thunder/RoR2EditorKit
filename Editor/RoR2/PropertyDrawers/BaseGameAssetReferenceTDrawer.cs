@@ -122,7 +122,7 @@ namespace RoR2.Editor.PropertyDrawers
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             float standardPropertyHeight = base.GetPropertyHeight(property, label);
-            serializedObject.UpdateIfRequiredOrScript();
+            //serializedObject.UpdateIfRequiredOrScript();
 #if R2EK_R2API_ADDRESSABLES
             AddressableComponentRequirementAttribute componentRequirement = fieldInfo.GetCustomAttribute<AddressableComponentRequirementAttribute>(true);
 #endif
@@ -203,6 +203,7 @@ namespace RoR2.Editor.PropertyDrawers
                     _newPropertyValuePair = null;
                 }
             }
+            //serializedObject.ApplyModifiedProperties();
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)

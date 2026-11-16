@@ -1,3 +1,16 @@
+# 6.3.0
+
+### RoR2ScriptsChanges
+
+* Fixed an issue where it was impossible to assign the direct reference of a Projectile Ghost
+* Added support for using EntityStateGameObject with direct reference prefabs
+	* R2API_StringSerializerExtensions version 1.1.0 is required to be installed for this feature to work properly
+	* If this r2api submodule is not installed and R2EK detects you're serializing an EntityState that has instance fields of EntityStateGameObject, a helpbox is shown to encourage the installation of the submodule.
+
+### R2APIScriptsChanges
+* Fixed ``AddressReferencedAssetDrawer`` not working on collections of ``AddressReferencedAsset``
+* Fixed a ``StackOverflowException`` caused by the ``AddressReferencedAssetElement`` under specific circumstances
+
 # 6.2.0
 
 ### Core Changes

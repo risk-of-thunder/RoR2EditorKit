@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.UIElements;
 using RoR2.Editor.VisualElements;
+using System.Collections;
 
 namespace RoR2.Editor.PropertyDrawers
 {
@@ -228,8 +229,7 @@ namespace RoR2.Editor.PropertyDrawers
         protected virtual Type[] GetRequiredAssetTypes()
         {
             //Get the type of the field, and a reference to AddressReferencedAsset<>
-            Type fieldInfoType = fieldInfo.FieldType;
-
+            Type fieldInfoType = GetFieldInfoType();
             Type addressReferencedAssetT = typeof(AddressReferencedAsset<>);
 
             Type genericTypeDefinition = fieldInfoType.IsGenericType ? fieldInfoType.GetGenericTypeDefinition() : null;
@@ -252,6 +252,20 @@ namespace RoR2.Editor.PropertyDrawers
             }
 
             return genericArguments;
+        }
+
+        private Type GetFieldInfoType()
+        {
+            Type fInfoType = fieldInfo.FieldType;
+            if(fInfoType.IsArray)
+            {
+                return fInfoType.GetElementType();
+            }
+            if(typeof(IEnumerable).IsAssignableFrom(fInfoType))
+            {
+                return fInfoType.GenericTypeArguments.FirstOrDefault();
+            }
+            return fInfoType;
         }
 
         private void SetBoolValue(SerializedProperty property, bool booleanValue)

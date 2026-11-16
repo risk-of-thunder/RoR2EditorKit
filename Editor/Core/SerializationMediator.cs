@@ -93,7 +93,7 @@ namespace RoR2.Editor
         }
 
         /// <summary>
-        /// Serializes a value from field info, this is a modified version of the base game's SerializedValue.Serialize
+        /// Serializes a value from field info, this is a modified version of the base game's SerializedValue.SetValue
         /// </summary>
         /// <param name="fInfo">the field info to serialize</param>
         /// <param name="value">The value to serialize</param>
@@ -101,11 +101,17 @@ namespace RoR2.Editor
         public static void SerializeFromFieldInfo(FieldInfo fInfo, object value, out (UnityEngine.Object objectReference, string serializedString) result)
         {
             result.objectReference = null;
-            result.serializedString = "";
+            result.serializedString = null;
 
+            Type entityStateGameObjectType = Type.GetType("RoR2.AsyncManagement.EntityStateGameObject, AsyncManagement, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null");
             if (typeof(Object).IsAssignableFrom(fInfo.FieldType))
             {
                 result.objectReference = (Object)value;
+                return;
+            }
+            if(entityStateGameObjectType != null && entityStateGameObjectType.IsAssignableFrom(fInfo.FieldType) && value is GameObject go)
+            {
+                result.objectReference = go;
                 return;
             }
             if (CanSerializeType(fInfo.FieldType))
