@@ -187,7 +187,7 @@ namespace RoR2.Editor
             }
 
             //Work off GUIDS, like god intended
-            ReadOnlyCollection<string> allGUIDS = AddressablesPathDictionary.instance.GetAllGUIDS();
+            ReadOnlyCollection<string> allGUIDS = AddressablesPathDictionary.instance.GetBaseGameGUIDs();
             using (var disposableProgress = new DisposableProgressBar(string.Format("Building cache for {0} {1}", type.Name, searchInChildren ? "(Searching in Children)" : ""), "No info to display...", 0))
             {
                 for(int i = 0; i < allGUIDS.Count; i++)

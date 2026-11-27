@@ -135,8 +135,13 @@ namespace RoR2.Editor.PropertyDrawers
                     else
                     {
                         string dropdownDisplayName = assetName == null ? "None" : assetName;
+                        Texture2D icon = assetName == null ? null : AddressablesPathDictionary.instance.GetPreviewIconFromGUID(_addressProperty.stringValue);
                         var ctrlRect = EditorGUI.PrefixLabel(fieldRect, property.GetGUIContent());
-                        if (EditorGUI.DropdownButton(ctrlRect, new GUIContent(dropdownDisplayName), FocusType.Passive))
+                        Vector2 prevIconSize = EditorGUIUtility.GetIconSize();
+                        EditorGUIUtility.SetIconSize(new Vector2(14, 14));
+                        bool dropdownClicked = EditorGUI.DropdownButton(ctrlRect, new GUIContent(dropdownDisplayName, icon), FocusType.Passive);
+                        EditorGUIUtility.SetIconSize(prevIconSize);
+                        if (dropdownClicked)
                         {
                             OpenAddressablesDropdown(fieldRect, _addressProperty, componentRequirement);
                         }

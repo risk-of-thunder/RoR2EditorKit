@@ -281,14 +281,16 @@ namespace RoR2.Editor
 
                 string label = "None";
                 string tooltip = "";
+                Texture2D icon = null;
 
                 if(item.isValid)
                 {
                     tooltip = item.assetPath;
                     label = tooltip.Substring(tooltip.LastIndexOf("/") + 1);
+                    icon = item.icon != null ? item.icon : AddressablesPathDictionary.instance.GetPreviewIconFromGUID(item.assetGUID);
                 }
 
-                return new GUIContent(label, tooltip);
+                return new GUIContent(label, icon, tooltip);
             }
         }
     }

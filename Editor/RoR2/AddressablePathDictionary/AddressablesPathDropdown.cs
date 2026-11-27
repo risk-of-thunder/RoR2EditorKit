@@ -13,7 +13,7 @@ using UnityEngine.ResourceManagement.ResourceLocations;
 namespace RoR2.Editor
 {
     /// <summary>
-    /// Represents a Dropdown that can be used to obtain an Addressable GUID from the base game, displaying them as Addressable Paths for ease of use.
+    /// Represents a Dropdown that can be used to obtain an Addressable GUID from the base game (and project addressables when the Addressables package is installed), displaying them as Addressable Paths for ease of use.
     /// </summary>
     public class AddressablesPathDropdown : AdvancedDropdown
     {
@@ -37,64 +37,96 @@ namespace RoR2.Editor
         protected override AdvancedDropdownItem BuildRoot()
         {
             using var entryLookup = new AddressablesPathDictionary.EntryLookup();
+#if R2EK_ADDRESSABLES
+            using var projectLookup = new AddressablesPathDictionary.EntryLookup();
+            ReadOnlyCollection<string> projectKeys = null;
+#endif
             ReadOnlyCollection<string> keys = null;
-            using(var progressBar = new DisposableProgressBar("Building Dropdown...", "Building the Dropdown, please wait.", 0))
+            using (var progressBar = new DisposableProgressBar("Building Dropdown...", "Building the Dropdown, please wait.", 0))
             {
                 entryLookup.WithLookupType(AddressablesPathDictionary.EntryType.Path)
-                .WithTypeRestriction(_requiredTypes)
-                .WithFilter(_filter)
-                .WithComponentRequirement(_componentRequirement, _searchComponentInChildren)
-                .WithProgressReport(progressBar);
+                    .WithTypeRestriction(_requiredTypes)
+                    .WithFilter(_filter)
+                    .WithComponentRequirement(_componentRequirement, _searchComponentInChildren)
+                    .WithProjectAddressables(false)
+                    .WithProgressReport(progressBar);
 
                 keys = entryLookup.PerformLookup();
+
+#if R2EK_ADDRESSABLES
+                projectLookup.WithLookupType(AddressablesPathDictionary.EntryType.Path)
+                    .WithTypeRestriction(_requiredTypes)
+                    .WithFilter(_filter)
+                    .WithComponentRequirement(_componentRequirement, _searchComponentInChildren)
+                    .WithBaseGameAddressables(false)
+                    .WithProjectAddressables(true);
+
+                projectKeys = projectLookup.PerformLookup();
+#endif
             }
-
-
-            var items = new Dictionary<string, Item>();
             var rootItem = new Item(_rootItemKey, _rootItemKey, _rootItemKey);
-            items.Add(_rootItemKey, rootItem);
-
-            items.Add("None", new Item("None", string.Empty, string.Empty, true));
-            foreach(var assetPath in keys)
+            rootItem.AddChild(new Item("None", string.Empty, string.Empty, true));
+#if R2EK_ADDRESSABLES
+            if (projectKeys != null && projectKeys.Count > 0)
             {
+                var projectRoot = new Item("Project", string.Empty, string.Empty);
+                AddPathsToTree(projectRoot, projectKeys);
+                rootItem.AddChild(projectRoot);
+                if (keys != null && keys.Count > 0)
+                {
+                    var baseGameRoot = new Item("Base Game", string.Empty, string.Empty);
+                    AddPathsToTree(baseGameRoot, keys);
+                    rootItem.AddChild(baseGameRoot);
+                }
+                return rootItem;
+            }
+#endif
+            AddPathsToTree(rootItem, keys);
+            return rootItem;
+        }
+
+        private void AddPathsToTree(Item parentRoot, IEnumerable<string> paths)
+        {
+            if (paths == null) return;
+            Dictionary<string, Item> items = new Dictionary<string, Item>();
+            foreach (var assetPath in paths)
+            {
+                if (string.IsNullOrEmpty(assetPath)) continue;
                 var fullPath = assetPath;
-                while(true)
+                while (true)
                 {
                     var lastDashIndex = fullPath.LastIndexOf('/');
-                    if(!items.ContainsKey(fullPath))
+                    if (!items.ContainsKey(fullPath))
                     {
-                        string guid = "";
-                        AddressablesPathDictionary.instance.TryGetGUIDFromPath(fullPath, out guid);
-
+                        string guid = string.Empty;
+                        bool isLeaf = fullPath == assetPath;
+                        if (isLeaf) AddressablesPathDictionary.instance.TryGetGUIDFromPath(fullPath, out guid);
                         var path = lastDashIndex == -1 ? fullPath : fullPath.Substring(lastDashIndex + 1);
-                        var item = new Item(_useFullPathAsItemName ? fullPath : path, fullPath, guid);
+                        var item = new Item(_useFullPathAsItemName ? fullPath : path, fullPath, guid ?? string.Empty);
+                        if (isLeaf && !string.IsNullOrEmpty(guid))
+                        {
+                            item.icon = AddressablesPathDictionary.instance.GetPreviewIconFromGUID(guid);
+                        }
                         items.Add(fullPath, item);
                     }
-
-                    if (fullPath.IndexOf('/') == -1)
-                        break;
-
+                    if (lastDashIndex == -1) break;
                     fullPath = fullPath.Substring(0, lastDashIndex);
                 }
             }
-
-            foreach(var item in items)
+            foreach (var item in items)
             {
-                if (item.Key == _rootItemKey)
-                    continue;
-
                 var fullName = item.Key;
-                if(fullName.LastIndexOf('/') == -1)
+                var lastDashIndex = fullName.LastIndexOf('/');
+                if (lastDashIndex == -1)
                 {
-                    rootItem.AddChild(item.Value);
+                    parentRoot.AddChild(item.Value);
                 }
                 else
                 {
-                    var parentName = fullName.Substring(0, fullName.LastIndexOf('/'));
+                    var parentName = fullName.Substring(0, lastDashIndex);
                     items[parentName].AddChild(item.Value);
                 }
             }
-            return rootItem;
         }
 
         protected override void ItemSelected(AdvancedDropdownItem item)

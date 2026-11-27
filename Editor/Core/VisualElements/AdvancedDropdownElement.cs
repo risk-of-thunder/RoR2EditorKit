@@ -108,6 +108,16 @@ namespace RoR2.Editor
             set => dropdownButtonLabel.text = value;
         }
         public Label dropdownButtonLabel { get; private set; }
+        public Texture dropdownButtonIcon
+        {
+            get => _dropdownButtonIcon.image;
+            set
+            {
+                _dropdownButtonIcon.image = value;
+                _dropdownButtonIcon.SetDisplay(value != null);
+            }
+        }
+        private Image _dropdownButtonIcon;
         public string dropdownButtonTooltip
         {
             get => _buttonElement.tooltip;
@@ -163,6 +173,7 @@ namespace RoR2.Editor
             GUIContent content = getDropdownButtonText(value);
             dropdownButtonText = showMixedValue ? mixedValueString : content.text;
             dropdownButtonTooltip = showMixedValue ? "Mixed Values" : content.tooltip;
+            dropdownButtonIcon = showMixedValue ? null : content.image;
         }
 
         private void OpenDropdown()
@@ -206,6 +217,18 @@ namespace RoR2.Editor
         {
             dropdownButtonLabel = this.Q<Label>("DropdownLabel");
             _buttonElement = this.Q<VisualElement>("Button");
+            _dropdownButtonIcon = new Image
+            {
+                name = "DropdownIcon",
+                scaleMode = ScaleMode.ScaleToFit,
+                pickingMode = PickingMode.Ignore
+            };
+            _dropdownButtonIcon.style.width = 16;
+            _dropdownButtonIcon.style.height = 16;
+            _dropdownButtonIcon.style.flexShrink = 0;
+            _dropdownButtonIcon.style.marginRight = 4;
+            _dropdownButtonIcon.SetDisplay(false);
+            _buttonElement.Insert(0, _dropdownButtonIcon);
             _buttonElement.SetEnabled(false);
 
             clicked += OpenDropdown;
