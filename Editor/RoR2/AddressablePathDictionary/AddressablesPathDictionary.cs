@@ -214,12 +214,13 @@ namespace RoR2.Editor
                 includeBaseGameAddressables = include;
                 return this;
             }
-
+#if R2EK_ADDRESSABLES
             public EntryLookup WithProjectAddressables(bool include)
             {
                 includeProjectAddressables = include;
                 return this;
             }
+            #endif
 
             /// <summary>
             /// Disposes the resources utilized for the lookup
@@ -698,6 +699,11 @@ namespace RoR2.Editor
             return icon;
         }
 
+        /// <summary>
+        /// Returns a preview or type icon for the asset referenced by <paramref name="guid"/>.
+        /// For project addressables, returns the asset's cached thumbnail/preview (with Material preview support).
+        /// For base game addressables, returns the asset type's mini thumbnail icon.
+        /// </summary>
         public Texture2D GetPreviewIconFromGUID(string guid)
         {
             if (string.IsNullOrEmpty(guid)) return null;

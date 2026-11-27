@@ -108,16 +108,16 @@ namespace RoR2.Editor
             set => dropdownButtonLabel.text = value;
         }
         public Label dropdownButtonLabel { get; private set; }
-        public Texture dropdownButtonIcon
+        public Texture2D dropdownButtonIcon
         {
-            get => _dropdownButtonIcon.image;
+            get => _dropdownButtonIcon.style.backgroundImage.value.texture;
             set
             {
-                _dropdownButtonIcon.image = value;
+                _dropdownButtonIcon.style.backgroundImage = value != null ? new StyleBackground(value) : StyleKeyword.None;
                 _dropdownButtonIcon.SetDisplay(value != null);
             }
         }
-        private Image _dropdownButtonIcon;
+        private VisualElement _dropdownButtonIcon;
         public string dropdownButtonTooltip
         {
             get => _buttonElement.tooltip;
@@ -173,7 +173,7 @@ namespace RoR2.Editor
             GUIContent content = getDropdownButtonText(value);
             dropdownButtonText = showMixedValue ? mixedValueString : content.text;
             dropdownButtonTooltip = showMixedValue ? "Mixed Values" : content.tooltip;
-            dropdownButtonIcon = showMixedValue ? null : content.image;
+            dropdownButtonIcon = showMixedValue ? null : content.image as Texture2D;
         }
 
         private void OpenDropdown()
@@ -205,7 +205,7 @@ namespace RoR2.Editor
         {
 
         }
-
+        
         /// <summary>
         /// Constructor
         /// </summary>
@@ -217,16 +217,7 @@ namespace RoR2.Editor
         {
             dropdownButtonLabel = this.Q<Label>("DropdownLabel");
             _buttonElement = this.Q<VisualElement>("Button");
-            _dropdownButtonIcon = new Image
-            {
-                name = "DropdownIcon",
-                scaleMode = ScaleMode.ScaleToFit,
-                pickingMode = PickingMode.Ignore
-            };
-            _dropdownButtonIcon.style.width = 16;
-            _dropdownButtonIcon.style.height = 16;
-            _dropdownButtonIcon.style.flexShrink = 0;
-            _dropdownButtonIcon.style.marginRight = 4;
+            _dropdownButtonIcon = this.Q<VisualElement>("DropdownIcon");
             _dropdownButtonIcon.SetDisplay(false);
             _buttonElement.Insert(0, _dropdownButtonIcon);
             _buttonElement.SetEnabled(false);

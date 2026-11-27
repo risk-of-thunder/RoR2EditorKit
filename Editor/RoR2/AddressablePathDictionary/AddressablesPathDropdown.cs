@@ -48,7 +48,9 @@ namespace RoR2.Editor
                     .WithTypeRestriction(_requiredTypes)
                     .WithFilter(_filter)
                     .WithComponentRequirement(_componentRequirement, _searchComponentInChildren)
+                    #if R2EK_ADDRESSABLES
                     .WithProjectAddressables(false)
+                    #endif
                     .WithProgressReport(progressBar);
 
                 keys = entryLookup.PerformLookup();
