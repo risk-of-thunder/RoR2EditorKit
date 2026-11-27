@@ -79,11 +79,17 @@ namespace RoR2.Editor.Windows
                 .WithLookupType(AddressablesPathDictionary.EntryType.Guid)
                 .WithComponentRequirement(typeof(ItemDisplay), false)
                 .WithTypeRestriction(typeof(GameObject))
+                #if R2EK_ADDRESSABLES
+                .WithProjectAddressables(false)
+                #endif
                 .PerformLookup();
 
             HashSet<string> vanillaKeyAssetGUIDS = new HashSet<string>(new AddressablesPathDictionary.EntryLookup()
                 .WithLookupType(AddressablesPathDictionary.EntryType.Guid)
                 .WithTypeRestriction(typeof(ItemDef), typeof(EquipmentDef))
+                #if R2EK_ADDRESSABLES
+                .WithProjectAddressables(false)
+                #endif
                 .PerformLookup());
 
             int totalKeyAssetRuleGroups = source.keyAssetRuleGroups.Length;

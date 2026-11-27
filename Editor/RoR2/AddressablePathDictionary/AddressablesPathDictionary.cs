@@ -11,6 +11,10 @@ using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using IOPath = System.IO.Path;
+#if R2EK_ADDRESSABLES
+using UnityEditor.AddressableAssets;
+using UnityEditor.AddressableAssets.Settings;
+#endif
 
 namespace RoR2.Editor
 {
@@ -69,6 +73,16 @@ namespace RoR2.Editor
             public string filter;
 
             /// <summary>
+            /// Whenether base game addressables should be included in the lookup results
+            /// </summary>
+            public bool includeBaseGameAddressables = true;
+
+            /// <summary>
+            /// Whenether project addressables should be included in the lookup results when the Addressables package is properly installed
+            /// </summary>
+            public bool includeProjectAddressables = true;
+
+            /// <summary>
             /// The results of the lookup, this is populated after <see cref="PerformLookup"/> or <see cref="PerformLookupAsync"/>
             /// </summary>
             public ReadOnlyCollection<string> results;
@@ -102,45 +116,35 @@ namespace RoR2.Editor
                 {
                     HG.ArrayUtils.ArrayAppend(ref typeRestriction, typeof(GameObject));
                 }
-
-                //Get each result for each type, request entries returns the cache if it exists, and if not, it builds it
-                for (int i = 0; i < typeRestriction.Length; i++)
+                if (includeBaseGameAddressables)
                 {
-                    float minProgress = ((float)i) / typeRestriction.Length;
-                    float maxProgress = ((float)i + 1) / typeRestriction.Length;
-                    yield return null;
-
-                    Type type = typeRestriction[i];
-                    string[] cache = instance.dictionaryCache.RequestEntries(type, componentRequirement, searchComponentInChildren, entryLookupType);
-
-                    var modulo = Mathf.Floor((Mathf.Log10(cache.Length) + 1) * 2);
-                    for (int j = 0; j < cache.Length; j++)
+                    for (int i = 0; i < typeRestriction.Length; i++) //Get each result for each type, request entries returns the cache if it exists, and if not, it builds it
                     {
-                        string cacheEntry = cache[j];
-
-                        if(i % modulo == 0)
+                        float minProgress = ((float)i) / typeRestriction.Length;
+                        float maxProgress = ((float)i + 1) / typeRestriction.Length;
+                        yield return null;
+                        Type type = typeRestriction[i];
+                        string[] cache = instance.dictionaryCache.RequestEntries(type, componentRequirement, searchComponentInChildren, entryLookupType);
+                        var modulo = Mathf.Floor((Mathf.Log10(cache.Length) + 1) * 2);
+                        for (int j = 0; j < cache.Length; j++)
                         {
-                            yield return null;
-                        }
-
-                        progressReport?.Report(R2EKMath.Remap(j, 0, cache.Length, minProgress, maxProgress));//If we have a filter, filter the results
-                        if (!string.IsNullOrWhiteSpace(filter))
-                        {
-                            if (cacheEntry.Contains(filter) && !_results.Contains(cacheEntry))
+                            string cacheEntry = cache[j];
+                            if (i % modulo == 0) yield return null;
+                            progressReport?.Report(R2EKMath.Remap(j, 0, cache.Length, minProgress, maxProgress)); //If we have a filter, filter the results
+                            if (!string.IsNullOrWhiteSpace(filter))
                             {
-                                _results.Add(cacheEntry);
+                                if (cacheEntry.Contains(filter) && !_results.Contains(cacheEntry)) _results.Add(cacheEntry);
                             }
-                        }
-                        else
-                        {
-                            if (!_results.Contains(cacheEntry))
+                            else
                             {
-                                _results.Add(cacheEntry);
+                                if (!_results.Contains(cacheEntry)) _results.Add(cacheEntry);
                             }
                         }
                     }
                 }
-
+#if R2EK_ADDRESSABLES
+                if (includeProjectAddressables) instance.CollectProjectLookupEntries(typeRestriction, componentRequirement, searchComponentInChildren, entryLookupType, filter, _results);
+#endif
                 //Store the results
                 results = new ReadOnlyCollection<string>(_results);
                 yield break;
@@ -205,6 +209,19 @@ namespace RoR2.Editor
                 return this;
             }
 
+            public EntryLookup WithBaseGameAddressables(bool include)
+            {
+                includeBaseGameAddressables = include;
+                return this;
+            }
+#if R2EK_ADDRESSABLES
+            public EntryLookup WithProjectAddressables(bool include)
+            {
+                includeProjectAddressables = include;
+                return this;
+            }
+            #endif
+
             /// <summary>
             /// Disposes the resources utilized for the lookup
             /// </summary>
@@ -259,11 +276,21 @@ namespace RoR2.Editor
             {
                 File.Delete(oldPath);
             }
+
+#if R2EK_ADDRESSABLES
+            _projectEntriesDirty = true;
+            AddressableAssetSettings.OnModificationGlobal += OnAddressableSettingsModified;
+            EditorApplication.projectChanged += MarkProjectEntriesDirty;
+#endif
         }
 
         private void OnDisable()
         {
             EditorApplication.quitting -= EditorApplication_quitting;
+#if R2EK_ADDRESSABLES
+            AddressableAssetSettings.OnModificationGlobal -= OnAddressableSettingsModified;
+            EditorApplication.projectChanged -= MarkProjectEntriesDirty;
+#endif
         }
 
         private void EditorApplication_quitting()
@@ -447,19 +474,280 @@ namespace RoR2.Editor
             var instance = AddressablesPathDictionary.instance;
             RoR2EKLog.Debug($"Flushing out {instance.dictionaryCache.GetCacheCount()} entries from the Cache.");
             instance.dictionaryCache.FlushOutCache();
+#if R2EK_ADDRESSABLES
+            instance.MarkProjectEntriesDirty();
+#endif
             instance.SaveDictionary();
         }
         #endregion
 
+#if R2EK_ADDRESSABLES
+        #region Project Addressables
+        private class ProjectEntry
+        {
+            public string path;
+            public string guid;
+            public string assetPath;
+            public Type assetType;
+            public bool isSubAsset;
+        }
+        private readonly Dictionary<string, ProjectEntry> _projectPathToEntry = new Dictionary<string, ProjectEntry>();
+        private readonly Dictionary<string, ProjectEntry> _projectGuidToEntry = new Dictionary<string, ProjectEntry>();
+        private readonly List<ProjectEntry> _projectEntries = new List<ProjectEntry>();
+        private string[] _combinedPaths = Array.Empty<string>();
+        private string[] _combinedGuids = Array.Empty<string>();
+        private bool _projectEntriesDirty = true;
+        private void OnAddressableSettingsModified(AddressableAssetSettings settings, AddressableAssetSettings.ModificationEvent modificationEvent, object eventData) => MarkProjectEntriesDirty();
+        private void MarkProjectEntriesDirty() => _projectEntriesDirty = true;
+        private static AddressableAssetSettings GetProjectAddressablesSettings()
+        {
+            if (!AddressableAssetSettingsDefaultObject.SettingsExists) return null;
+            return AddressableAssetSettingsDefaultObject.Settings;
+        }
+        private static string NormalizeProjectPath(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return string.Empty;
+            path = path.Replace('\\', '/');
+            while (path.Contains("//")) path = path.Replace("//", "/");
+            return path.Trim('/');
+        }
+        private void EnsureProjectEntriesLoaded()
+        {
+            if (!_projectEntriesDirty) return;
+            RefreshProjectEntries();
+        }
+        private void RefreshProjectEntries()
+        {
+            _projectPathToEntry.Clear();
+            _projectGuidToEntry.Clear();
+            _projectEntries.Clear();
+            _combinedPaths = Array.Empty<string>();
+            _combinedGuids = Array.Empty<string>();
+            AddressableAssetSettings settings = GetProjectAddressablesSettings();
+            if (settings == null)
+            {
+                if (!EditorApplication.isUpdating && !EditorApplication.isCompiling) _projectEntriesDirty = false;
+                return;
+            }
+            _projectEntriesDirty = false;
+            List<AddressableAssetEntry> allAssets = new List<AddressableAssetEntry>();
+            try
+            {
+                settings.GetAllAssets(allAssets, true);
+            }
+            catch (Exception ex)
+            {
+                RoR2EKLog.Warning($"Failed to gather project Addressables entries: {ex.Message}");
+                return;
+            }
+            int conflictNumber = 0;
+            for (int i = 0; i < allAssets.Count; i++)
+            {
+                AddressableAssetEntry aaEntry = allAssets[i];
+                if (aaEntry == null) continue;
+                if (!string.IsNullOrEmpty(aaEntry.guid))
+                {
+                    string entryAssetPath = aaEntry.AssetPath;
+                    if (string.IsNullOrEmpty(entryAssetPath) || AssetDatabase.IsValidFolder(entryAssetPath)) continue;
+                    Type entryType = AssetDatabase.GetMainAssetTypeAtPath(entryAssetPath);
+                    if (entryType == null) continue;
+                    string rawPath = string.IsNullOrEmpty(aaEntry.address) ? entryAssetPath : aaEntry.address;
+                    AddProjectEntry(rawPath, aaEntry.guid, entryAssetPath, entryType, false, ref conflictNumber);
+                    if (aaEntry.IsSubAsset && entryType == typeof(Texture2D))
+                    {
+                        var subAssets = AssetDatabase.LoadAllAssetRepresentationsAtPath(entryAssetPath);
+                        for (int s = 0; s < subAssets.Length; s++)
+                        {
+                            var subAsset = subAssets[s];
+                            if (subAsset != null)
+                            {
+                                AddProjectEntry($"{rawPath}[{subAsset.name}]", $"{aaEntry.guid}[{subAsset.name}]", entryAssetPath, subAsset.GetType(), true, ref conflictNumber);
+                            }
+                        }
+                    }
+                }
+                else if (aaEntry.IsSubAsset && aaEntry.ParentEntry != null && !string.IsNullOrEmpty(aaEntry.ParentEntry.guid))
+                {
+                    string braaap = aaEntry.address;
+                    if (string.IsNullOrEmpty(braaap)) continue;
+                    int subStart = braaap.LastIndexOf('[');
+                    int subEnd = braaap.LastIndexOf(']');
+                    if (subStart < 0 || subEnd <= subStart) continue;
+                    string subSuffix = braaap.Substring(subStart, subEnd - subStart + 1);
+                    string entryGuid = aaEntry.ParentEntry.guid + subSuffix;
+                    string entryAssetPath = aaEntry.ParentEntry.AssetPath;
+                    var targetAsset = aaEntry.TargetAsset;
+                    Type entryType = targetAsset != null ? targetAsset.GetType() : null;
+                    AddProjectEntry(braaap, entryGuid, entryAssetPath, entryType, true, ref conflictNumber);
+                }
+            }
+            if (_projectEntries.Count > 0)
+            {
+                _combinedPaths = new string[paths.Length + _projectEntries.Count];
+                Array.Copy(paths, 0, _combinedPaths, 0, paths.Length);
+                _combinedGuids = new string[guids.Length + _projectEntries.Count];
+                Array.Copy(guids, 0, _combinedGuids, 0, guids.Length);
+                for (int i = 0; i < _projectEntries.Count; i++)
+                {
+                    _combinedPaths[paths.Length + i] = _projectEntries[i].path;
+                    _combinedGuids[guids.Length + i] = _projectEntries[i].guid;
+                }
+            }
+        }
+        private void AddProjectEntry(string rawPath, string entryGuid, string entryAssetPath, Type entryType, bool isSubObject, ref int conflictNumber)
+        {
+            if (string.IsNullOrEmpty(entryGuid) || entryType == null) return;
+            string entryPath = NormalizeProjectPath(rawPath);
+            if (string.IsNullOrEmpty(entryPath)) return;
+            if (guidToEntryDictionary.ContainsKey(entryGuid) || _projectGuidToEntry.ContainsKey(entryGuid)) return;
+            string uniquePath = entryPath;
+            if (pathToEntryDictionary.ContainsKey(uniquePath) || _projectPathToEntry.ContainsKey(uniquePath))
+            {
+                uniquePath = $"{entryPath}:{entryType.Name}";
+                while (pathToEntryDictionary.ContainsKey(uniquePath) || _projectPathToEntry.ContainsKey(uniquePath))
+                {
+                    uniquePath = $"{entryPath}:{entryType.Name}*{conflictNumber}";
+                    conflictNumber++;
+                }
+            }
+            ProjectEntry projectEntry = new ProjectEntry
+            {
+                path = uniquePath,
+                guid = entryGuid,
+                assetPath = entryAssetPath,
+                assetType = entryType,
+                isSubAsset = isSubObject
+            };
+            _projectGuidToEntry.Add(projectEntry.guid, projectEntry);
+            _projectPathToEntry.Add(projectEntry.path, projectEntry);
+            _projectEntries.Add(projectEntry);
+        }
+        private bool MatchesProjectEntry(ProjectEntry entry, Type type, Type componentRequirement, bool searchInChildren)
+        {
+            Type requiredType = componentRequirement ?? type;
+            if (requiredType == null) return true;
+            if (requiredType == typeof(Component) || requiredType.IsSubclassOf(typeof(Component)))
+            {
+                if (entry.assetType != typeof(GameObject)) return false;
+                GameObject gameObject = AssetDatabase.LoadAssetAtPath<GameObject>(entry.assetPath);
+                if (!gameObject) return false;
+                return searchInChildren ? gameObject.GetComponentInChildren(requiredType) != null : gameObject.TryGetComponent(requiredType, out _);
+            }
+            return requiredType.IsAssignableFrom(entry.assetType);
+        }
+        internal void CollectProjectLookupEntries(Type[] typeRestriction, Type componentRequirement,  bool searchInChildren, EntryType entryLookupType, string filter, List<string> destination)
+        {
+            EnsureProjectEntriesLoaded();
+            if (_projectEntries.Count == 0) return;
+            bool hasFilter = !string.IsNullOrWhiteSpace(filter);
+            HashSet<string> existing = new HashSet<string>(destination);
+            int typeCount = typeRestriction != null ? typeRestriction.Length : 0;
+            for (int i = 0; i < _projectEntries.Count; i++)
+            {
+                ProjectEntry entry = _projectEntries[i];
+                string value = entryLookupType switch
+                {
+                    EntryType.Path => entry.path,
+                    EntryType.Guid => entry.guid,
+                    _ => null
+                };
+                if (string.IsNullOrEmpty(value) || existing.Contains(value)) continue;
+                if (hasFilter && !value.Contains(filter)) continue;
+                bool matched = false;
+                if (typeCount == 0)
+                {
+                    if (componentRequirement != null)
+                    {
+                        matched = MatchesProjectEntry(entry, null, componentRequirement, searchInChildren);
+                    }
+                }
+                else
+                {
+                    for (int t = 0; t < typeCount; t++)
+                    {
+                        if (MatchesProjectEntry(entry, typeRestriction[t], componentRequirement, searchInChildren))
+                        {
+                            matched = true;
+                            break;
+                        }
+                    }
+                }
+                if (matched)
+                {
+                    existing.Add(value);
+                    destination.Add(value);
+                }
+            }
+        }
+        #endregion
+#endif
+        internal ReadOnlyCollection<string> GetBaseGameGUIDs() => new ReadOnlyCollection<string>(guids);
+
+        private readonly Dictionary<Type, Texture2D> _typeIconCache = new Dictionary<Type, Texture2D>();
+
+        private Texture2D GetTypeIcon(Type assetType)
+        {
+            if (assetType == null) return null;
+            if (_typeIconCache.TryGetValue(assetType, out Texture2D cached)) return cached;
+            Texture2D icon = AssetPreview.GetMiniTypeThumbnail(assetType);
+            if (icon == null)
+            {
+                GUIContent content = EditorGUIUtility.ObjectContent(null, assetType);
+                icon = content?.image as Texture2D;
+            }
+            _typeIconCache[assetType] = icon;
+            return icon;
+        }
+
+        /// <summary>
+        /// Returns a preview or type icon for the asset referenced by <paramref name="guid"/>.
+        /// For project addressables, returns the asset's cached thumbnail/preview (with Material preview support).
+        /// For base game addressables, returns the asset type's mini thumbnail icon.
+        /// </summary>
+        public Texture2D GetPreviewIconFromGUID(string guid)
+        {
+            if (string.IsNullOrEmpty(guid)) return null;
+#if R2EK_ADDRESSABLES
+            EnsureProjectEntriesLoaded();
+            if (_projectGuidToEntry.TryGetValue(guid, out ProjectEntry projectEntry))
+            {
+                if (!string.IsNullOrEmpty(projectEntry.assetPath))
+                {
+                    if (projectEntry.assetType != null && typeof(Material).IsAssignableFrom(projectEntry.assetType))
+                    {
+                        Material material = AssetDatabase.LoadAssetAtPath<Material>(projectEntry.assetPath);
+                        if (material != null)
+                        {
+                            Texture2D materialPreview = AssetPreview.GetAssetPreview(material);
+                            if (materialPreview != null) return materialPreview;
+                        }
+                    }
+                    Texture2D cachedIcon = AssetDatabase.GetCachedIcon(projectEntry.assetPath) as Texture2D;
+                    if (cachedIcon != null) return cachedIcon;
+                }
+                return GetTypeIcon(projectEntry.assetType);
+            }
+#endif
+            if (TryGetTypeFromGUID(guid, out Type assetType)) return GetTypeIcon(assetType);
+            return null;
+        }
         /// <summary>
         /// Returns true if the AddressablesPathDictionary holds no data whatsoever.
         /// </summary>
         /// <returns></returns>
         public bool IsEmpty()
         {
-            return (pathToEntryDictionary == null || pathToEntryDictionary.Count == 0) ||
+            bool baseEmpty = (pathToEntryDictionary == null || pathToEntryDictionary.Count == 0) ||
                 (guidToEntryDictionary == null || guidToEntryDictionary.Count == 0) ||
                 (allEntries == null || allEntries.Length == 0);
+#if R2EK_ADDRESSABLES
+            if (baseEmpty)
+            {
+                EnsureProjectEntriesLoaded();
+                return _projectEntries.Count == 0;
+            }
+#endif
+            return baseEmpty;
         }
 
         /// <summary>
@@ -467,7 +755,14 @@ namespace RoR2.Editor
         /// </summary>
         public bool IsGUIDValid(string assetGUID)
         {
-            return guidToEntryDictionary.ContainsKey(assetGUID);
+            if (string.IsNullOrEmpty(assetGUID)) return false;
+            if (guidToEntryDictionary.ContainsKey(assetGUID)) return true;
+#if R2EK_ADDRESSABLES
+            EnsureProjectEntriesLoaded();
+            return _projectGuidToEntry.ContainsKey(assetGUID);
+#else
+            return false;
+#endif
         }
 
         /// <summary>
@@ -475,7 +770,10 @@ namespace RoR2.Editor
         /// </summary>
         public ReadOnlyCollection<string> GetAllPaths()
         {
-
+#if R2EK_ADDRESSABLES
+            EnsureProjectEntriesLoaded();
+            if (_projectEntries.Count > 0) return new ReadOnlyCollection<string>(_combinedPaths);
+#endif
             return new ReadOnlyCollection<string>(paths);
         }
 
@@ -485,6 +783,10 @@ namespace RoR2.Editor
         /// <returns></returns>
         public ReadOnlyCollection<string> GetAllGUIDS()
         {
+#if R2EK_ADDRESSABLES
+            EnsureProjectEntriesLoaded();
+            if (_projectEntries.Count > 0) return new ReadOnlyCollection<string>(_combinedGuids);
+#endif
             return new ReadOnlyCollection<string>(guids);
         }
 
@@ -497,11 +799,22 @@ namespace RoR2.Editor
         public bool TryGetGUIDFromPath(string path, out string? guid)
         {
             guid = null;
+            if (string.IsNullOrEmpty(path))
+                return false;
+
             if (pathToEntryDictionary.TryGetValue(path, out Entry value))
             {
                 guid = value.guid;
                 return true;
             }
+#if R2EK_ADDRESSABLES
+            EnsureProjectEntriesLoaded();
+            if (_projectPathToEntry.TryGetValue(path, out ProjectEntry projectValue))
+            {
+                guid = projectValue.guid;
+                return true;
+            }
+#endif
             return false;
         }
 
@@ -511,10 +824,7 @@ namespace RoR2.Editor
         /// <param name="path">The addressable path from which we want it's guid</param>
         public string GetGUIDFromPath(string path)
         {
-            if(TryGetGUIDFromPath(path, out string guid))
-            {
-                return guid;
-            }
+            if(TryGetGUIDFromPath(path, out string guid)) return guid;
             RoR2EKLog.Warning($"Path {path} is not in the AddressablesPathDictionary");
             return string.Empty;
         }
@@ -528,11 +838,20 @@ namespace RoR2.Editor
         public bool TryGetPathFromGUID(string guid, out string? path)
         {
             path = null;
+            if (string.IsNullOrEmpty(guid)) return false;
             if(guidToEntryDictionary.TryGetValue(guid, out Entry value))
             {
                 path = value.path;
                 return true;
             }
+#if R2EK_ADDRESSABLES
+            EnsureProjectEntriesLoaded();
+            if (_projectGuidToEntry.TryGetValue(guid, out ProjectEntry projectValue))
+            {
+                path = projectValue.path;
+                return true;
+            }
+#endif
             return false;
         }
 
@@ -542,11 +861,7 @@ namespace RoR2.Editor
         /// <param name="guid">The addressable guid from which we want it's path</param>
         public string GetPathFromGUID(string guid)
         {
-            if(TryGetPathFromGUID(guid, out string? path))
-            {
-                return path;
-            }
-
+            if(TryGetPathFromGUID(guid, out string? path)) return path;
             RoR2EKLog.Warning($"GUID {guid} is not in the AddressablesPathDictionary");
             return string.Empty;
         }
@@ -560,10 +875,15 @@ namespace RoR2.Editor
         public bool TryGetTypeFromPath(string path, out Type type)
         {
             type = null;
-            if(pathToEntryDictionary.TryGetValue(path, out Entry value))
+            if (string.IsNullOrEmpty(path)) return false;
+            if(pathToEntryDictionary.TryGetValue(path, out Entry value)) type = Type.GetType(value.assemblyQualifiedTypeName);
+#if R2EK_ADDRESSABLES
+            if (type == null)
             {
-                type = Type.GetType(value.assemblyQualifiedTypeName);
+                EnsureProjectEntriesLoaded();
+                if (_projectPathToEntry.TryGetValue(path, out ProjectEntry projectValue)) type = projectValue.assetType;
             }
+#endif
             return type != null;
         }
 
@@ -573,10 +893,7 @@ namespace RoR2.Editor
         /// <param name="path">The path of the asset to get it's type</param>
         public Type GetTypeFromPath(string path)
         {
-            if(TryGetTypeFromPath(path, out Type type))
-            {
-                return type;
-            }
+            if(TryGetTypeFromPath(path, out Type type)) return type;
             RoR2EKLog.Warning($"Path {path} is not in the AddressablesPathDictionary");
             return null;
         }
@@ -590,10 +907,15 @@ namespace RoR2.Editor
         public bool TryGetTypeFromGUID(string guid, out Type type)
         {
             type = null;
-            if (guidToEntryDictionary.TryGetValue(guid, out Entry value))
+            if (string.IsNullOrEmpty(guid)) return false;
+            if (guidToEntryDictionary.TryGetValue(guid, out Entry value)) type = Type.GetType(value.assemblyQualifiedTypeName);
+#if R2EK_ADDRESSABLES
+            if (type == null)
             {
-                type = Type.GetType(value.assemblyQualifiedTypeName);
+                EnsureProjectEntriesLoaded();
+                if (_projectGuidToEntry.TryGetValue(guid, out ProjectEntry projectValue)) type = projectValue.assetType;
             }
+#endif
             return type != null;
         }
 
@@ -603,10 +925,7 @@ namespace RoR2.Editor
         /// <param name="guid">The guid of the asset to get it's type</param>
         public Type GetTypeFromGUID(string guid)
         {
-            if (TryGetTypeFromGUID(guid, out Type type))
-            {
-                return type;
-            }
+            if (TryGetTypeFromGUID(guid, out Type type)) return type;
             RoR2EKLog.Warning($"GUID {guid} is not in the AddressablesPathDictionary");
             return null;
         }

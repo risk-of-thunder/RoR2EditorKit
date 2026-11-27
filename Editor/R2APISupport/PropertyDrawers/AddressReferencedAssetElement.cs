@@ -327,6 +327,7 @@ namespace RoR2.Editor.VisualElements
 
                     string tooltip = "";
                     string text = "";
+                    Texture2D icon = null;
 
                     if (AddressablesPathDictionary.instance.IsGUIDValid(address))
                     {
@@ -334,9 +335,11 @@ namespace RoR2.Editor.VisualElements
 
                         text = path.Substring(path.LastIndexOf("/") + 1);
                         tooltip = path;
+                        icon = AddressablesPathDictionary.instance.GetPreviewIconFromGUID(address);
                     }
                     advancedDropdownElementAddress.dropdownButtonText = text;
                     advancedDropdownElementAddress.dropdownButtonTooltip = tooltip;
+                    advancedDropdownElementAddress.dropdownButtonIcon = icon;
                 }
 
                 objectFieldDirectReference.value = asset;
@@ -394,14 +397,16 @@ namespace RoR2.Editor.VisualElements
 
                 string label = "None";
                 string tooltip = "";
+                Texture2D icon = null;
 
                 if(item.isValid)
                 {
                     tooltip = item.assetPath;
                     label = tooltip.Substring(tooltip.LastIndexOf("/") + 1);
+                    icon = item.icon != null ? item.icon : AddressablesPathDictionary.instance.GetPreviewIconFromGUID(item.assetGUID);
                 }
 
-                return new GUIContent(label, tooltip);
+                return new GUIContent(label, icon, tooltip);
             };
             advancedDropdownElementAddress.RegisterValueChangedCallback(value =>
             {
